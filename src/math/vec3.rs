@@ -63,6 +63,14 @@ impl Vec3 {
     pub fn normalized(v: Vec3) -> Vec3 {
         v / v.length()
     }
+
+    pub fn normalize(&mut self) -> &Vec3 {
+        self.x /= self.length();
+        self.y /= self.length();
+        self.z /= self.length();
+
+        self
+    }
 }
 
 impl ops::Neg for Vec3 {
