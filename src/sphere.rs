@@ -1,0 +1,51 @@
+use crate::hittable::{HitRecord, Hittable};
+use crate::math::Vec3;
+use crate::ray::Ray;
+use crate::utils::Point;
+
+#[derive(Default)]
+pub struct Sphere {
+    center: Point,
+    radius: f64,
+}
+
+impl Sphere {
+    pub fn new(center: Point, radius: f64) -> Self {
+        Sphere { center, radius }
+    }
+}
+
+impl Hittable for Sphere {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, hit_record: &mut HitRecord) -> bool {
+        let center_to_origin = ray.origin() - self.center;
+
+        // application of the quadratic formula
+        let a = ray.direction().length_squared();
+        let half_b = Vec3::dot(&center_to_origin, &ray.direction());
+        let c = center_to_origin.length_squared() - self.radius * self.radius;
+        let discriminant = half_b * half_b - a * c;
+
+        if a == 0.0 {
+            panic!("Error: division by zero");
+        }
+
+        // CLEAN: make this more self-explanatory
+        if discriminant < 0.0 {
+            false
+        } else {
+            let r1 = (-half_b - discriminant.sqrt()) / a;
+            let r2 = (-half_b + discriminant.sqrt()) / a;
+
+            if (r1 < t_min || r1 > t_max) && (r2 < t_min || r2 > t_max) {
+                false
+            } else {
+                hit_record.t = r1;
+                hit_record.point = ray.position_at(hit_record.t);
+                let outward_normal = (hit_record.point - self.center) / self.radius;
+                hit_record.set_face_normal(ray, &outward_normal);
+
+                true
+            }
+        }
+    }
+}

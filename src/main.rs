@@ -1,10 +1,20 @@
-use math::*;
+use common::*;
+use hittable::{HitRecord, Hittable};
+use hittable_list::HittableList;
 use ray::*;
-use std::io::{self, Write};
-use utils::*;
+use sphere::*;
+use std::{
+    cell::RefCell,
+    io::{self, Write},
+    rc::Rc,
+};
 
+pub mod common;
+mod hittable;
+mod hittable_list;
 mod math;
 mod ray;
+mod sphere;
 mod utils;
 
 const ASPECT_RATIO: f32 = 16.0 / 9.0;
@@ -20,40 +30,19 @@ const CAMERA_ORIGIN: Point = Point::ZEROS();
 const CAMERA_HORIZONTAL: Vec3 = Vec3::new(VIEWPORT_WIDTH as f64, 0.0, 0.0);
 const CAMERA_VERTICAL: Vec3 = Vec3::new(0.0, VIEWPORT_HEIGHT as f64, 0.0);
 
-fn ray_color(ray: &Ray) -> Color {
-    match hit_sphere(Point::new(0.0, 0.0, -1.0), 0.5, ray) {
-        Some(t) => {
-            let normal = Vec3::normalized(ray.position_at(t) - Vec3::new(0.0, 0.0, -1.0));
-            (normal + Vec3::ONES()) * 0.50
-        }
-        None => {
-            let direction = Vec3::normalized(ray.direction());
-            let t = 0.5 * (direction.y() + 1.0);
+fn ray_color(ray: &Ray, world: &HittableList) -> Color {
+    let mut hit_record = HitRecord::default();
 
-            // compute a simple gradient
-            // blended_value = (1 - t) * start_value t * end_value
-            Color::ONES() * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
-            // ^^^white                 ^^^blue
-        }
-    }
-}
+    if world.hit(ray, 0.0, INFINITY, &mut hit_record) {
+        (hit_record.normal + Color::ONES()) * 0.5
+    } else {
+        let direction = Vec3::normalized(ray.direction());
+        let t = 0.5 * (direction.y() + 1.0);
 
-fn hit_sphere(center: Point, radius: f64, ray: &Ray) -> Option<f64> {
-    let center_to_origin = ray.origin() - center;
-
-    // application of the quadratic formula
-    let a = ray.direction().length_squared();
-    let half_b = Vec3::dot(&center_to_origin, &ray.direction());
-    let c = center_to_origin.length_squared() - radius * radius;
-    let discriminant = half_b * half_b - a * c;
-
-    if a == 0.0 {
-        panic!("Error: division by zero");
-    }
-
-    match discriminant < 0.0 {
-        true => None,
-        false => Some((-half_b - discriminant.sqrt()) / a),
+        // compute a simple gradient
+        // blended_value = (1 - t) * start_value t * end_value
+        Color::ONES() * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
+        // ^^^white                 ^^^blue
     }
 }
 
@@ -64,6 +53,16 @@ fn main() {
         - Vec3::new(0.0, 0.0, FOCAL_LENGTH as f64);
 
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
+
+    let mut world = HittableList::default();
+    world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
+        Point::new(0.0, 0.0, -1.0),
+        0.5,
+    )))));
+    world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
+        Point::new(0.0, -100.5, -1.0),
+        100.0,
+    )))));
 
     for j in (0..IMAGE_HEIGHT).rev() {
         eprintln!("Progress: [{}/{}]", IMAGE_HEIGHT - j, IMAGE_HEIGHT);
@@ -78,7 +77,7 @@ fn main() {
                 CAMERA_LOWER_LEFT + CAMERA_HORIZONTAL * u + CAMERA_VERTICAL * v - CAMERA_ORIGIN,
             );
 
-            write_color(ray_color(&ray));
+            write_color(ray_color(&ray, &world));
         }
         println!("");
     }
