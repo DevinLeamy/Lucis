@@ -16,3 +16,19 @@ pub fn sample_unit_sphere() -> Vec3 {
         }
     }
 }
+
+pub fn random_unit_vector() -> Vec3 {
+    Vec3::normalized(sample_unit_sphere())
+}
+
+pub fn sample_hemisphere(normal: &Vec3) -> Vec3 {
+    let unit_sphere_sample = sample_unit_sphere();
+
+    if Vec3::dot(&unit_sphere_sample, normal) > 0.0 {
+        // vectors point in the "same" direction
+        unit_sphere_sample
+    } else {
+        // vectors point in "opposite" directions
+        -unit_sphere_sample
+    }
+}

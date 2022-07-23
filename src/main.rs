@@ -36,7 +36,8 @@ fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
         a unit sphere tangent to point of intersection. Then determine
         the color obtained from the resulting bounced ray
         */
-        let target: Point = hit_record.point + hit_record.normal + sample_unit_sphere();
+        // let target: Point = hit_record.point + hit_record.normal + random_unit_vector();
+        let target: Point = hit_record.point + sample_hemisphere(&hit_record.normal);
         let bounced_ray = Ray::new(hit_record.point, target - hit_record.point);
         ray_color(&bounced_ray, world, bounce_depth + 1) * 0.5
     } else {
@@ -65,10 +66,6 @@ fn main() {
     world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
         Point::new(0.0, -100.5, -1.0),
         100.0,
-    )))));
-    world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
-        Point::new(3.0, 0.25, -3.0),
-        0.75,
     )))));
 
     for j in (0..image_height).rev() {

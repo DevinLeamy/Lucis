@@ -1,12 +1,16 @@
 use crate::math::Vec3;
 use crate::ray::Ray;
+use crate::ray_tracer::Material;
 use crate::utils::Point;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Clone, Default)]
 pub struct HitRecord {
     pub point: Point,
     pub normal: Vec3,
     pub t: f64,
+    pub material: Option<Rc<RefCell<Box<dyn Material>>>>,
     pub hit_front_face: bool,
 }
 
