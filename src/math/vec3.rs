@@ -1,3 +1,4 @@
+use crate::common::{random_float, random_float_in_range};
 use std::ops;
 
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
@@ -21,6 +22,22 @@ impl Vec3 {
             x: 0f64,
             y: 0f64,
             z: 0f64,
+        }
+    }
+
+    pub fn RAND() -> Self {
+        Self {
+            x: random_float(),
+            y: random_float(),
+            z: random_float(),
+        }
+    }
+
+    pub fn RAND_RANGE(min: f64, max: f64) -> Self {
+        Self {
+            x: random_float_in_range(min, max),
+            y: random_float_in_range(min, max),
+            z: random_float_in_range(min, max),
         }
     }
 

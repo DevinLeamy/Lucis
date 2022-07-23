@@ -20,12 +20,25 @@ mod sphere;
 mod utils;
 
 const SAMPLES_PER_PIXEL: u32 = 100;
+const MAXIMUM_BOUNCE_DEPTH: u32 = 50;
 
-fn ray_color(ray: &Ray, world: &HittableList) -> Color {
+fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
+    if bounce_depth == MAXIMUM_BOUNCE_DEPTH {
+        return Color::ZEROS();
+    }
+
     let mut hit_record = HitRecord::default();
 
-    if world.hit(ray, 0.0, INFINITY, &mut hit_record) {
-        (hit_record.normal + Color::ONES()) * 0.5
+    // 0.001 used to avoid "shadow acne"
+    if world.hit(ray, 0.001, INFINITY, &mut hit_record) {
+        /*
+        Compute a target point for the bounced ray by picking a random point inside
+        a unit sphere tangent to point of intersection. Then determine
+        the color obtained from the resulting bounced ray
+        */
+        let target: Point = hit_record.point + hit_record.normal + sample_unit_sphere();
+        let bounced_ray = Ray::new(hit_record.point, target - hit_record.point);
+        ray_color(&bounced_ray, world, bounce_depth + 1) * 0.5
     } else {
         let direction = Vec3::normalized(ray.direction());
         let t = 0.5 * (direction.y() + 1.0);
@@ -53,6 +66,10 @@ fn main() {
         Point::new(0.0, -100.5, -1.0),
         100.0,
     )))));
+    world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
+        Point::new(3.0, 0.25, -3.0),
+        0.75,
+    )))));
 
     for j in (0..image_height).rev() {
         eprintln!("Progress: [{}/{}]", image_height - j, image_height);
@@ -66,7 +83,7 @@ fn main() {
                 let v = (j as f64 + random_float()) / ((image_height - 1) as f64); // pixel y coordinate
 
                 let ray = camera.create_ray(u, v);
-                pixel_color += ray_color(&ray, &world);
+                pixel_color += ray_color(&ray, &world, 0);
             }
 
             write_color(pixel_color, SAMPLES_PER_PIXEL);

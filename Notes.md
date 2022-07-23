@@ -22,6 +22,9 @@
 # Definitions
 - `focus length`: Distance between the projection plane and the projection point 
 - `antialiasing`: Sending rays through multiple points inside a pixel to get an average color
+- `gamma correction`: transforming a value in the range [0, 1] before storing in (as bytes)
+- `shadow acne`: undesirable featured caused by floating point approximations
+  - eg: rays intersecting at `t = -0.0000001` or `t = 0.0000001` rather than exactly `t = 0` 
 
 # Creating Gradients with Interpolation
 ![Gradient](images/gradient.png)
