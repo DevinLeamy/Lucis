@@ -1,5 +1,3 @@
-use std::cell::RefCell;
-
 use crate::math::Vec3;
 use crate::ray::Ray;
 use crate::utils::Point;

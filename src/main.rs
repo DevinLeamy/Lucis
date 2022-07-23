@@ -2,6 +2,7 @@ use common::*;
 use hittable::{HitRecord, Hittable};
 use hittable_list::HittableList;
 use ray::*;
+use ray_tracer::*;
 use sphere::*;
 use std::{
     cell::RefCell,
@@ -9,26 +10,16 @@ use std::{
     rc::Rc,
 };
 
-pub mod common;
+mod common;
 mod hittable;
 mod hittable_list;
 mod math;
 mod ray;
+mod ray_tracer;
 mod sphere;
 mod utils;
 
-const ASPECT_RATIO: f32 = 16.0 / 9.0;
-
-const VIEWPORT_HEIGHT: f32 = 2.0;
-const VIEWPORT_WIDTH: f32 = VIEWPORT_HEIGHT * ASPECT_RATIO;
-const FOCAL_LENGTH: f32 = 1.0;
-
-const IMAGE_WIDTH: u32 = 400;
-const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
-
-const CAMERA_ORIGIN: Point = Point::ZEROS();
-const CAMERA_HORIZONTAL: Vec3 = Vec3::new(VIEWPORT_WIDTH as f64, 0.0, 0.0);
-const CAMERA_VERTICAL: Vec3 = Vec3::new(0.0, VIEWPORT_HEIGHT as f64, 0.0);
+const SAMPLES_PER_PIXEL: u32 = 100;
 
 fn ray_color(ray: &Ray, world: &HittableList) -> Color {
     let mut hit_record = HitRecord::default();
@@ -47,12 +38,11 @@ fn ray_color(ray: &Ray, world: &HittableList) -> Color {
 }
 
 fn main() {
-    let CAMERA_LOWER_LEFT: Vec3 = CAMERA_ORIGIN
-        - CAMERA_HORIZONTAL / 2.0
-        - CAMERA_VERTICAL / 2.0
-        - Vec3::new(0.0, 0.0, FOCAL_LENGTH as f64);
+    let camera: Camera = Camera::default();
+    let image_width: u32 = 400;
+    let image_height: u32 = (image_width as f32 / camera.aspect_ratio()) as u32;
 
-    println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
+    println!("P3\n{} {}\n255", image_width, image_height);
 
     let mut world = HittableList::default();
     world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
@@ -64,20 +54,22 @@ fn main() {
         100.0,
     )))));
 
-    for j in (0..IMAGE_HEIGHT).rev() {
-        eprintln!("Progress: [{}/{}]", IMAGE_HEIGHT - j, IMAGE_HEIGHT);
+    for j in (0..image_height).rev() {
+        eprintln!("Progress: [{}/{}]", image_height - j, image_height);
         io::stderr().flush();
 
-        for i in 0..IMAGE_WIDTH {
-            let u = (i as f64) / ((IMAGE_WIDTH - 1) as f64); // pixel x coordinate
-            let v = (j as f64) / ((IMAGE_HEIGHT - 1) as f64); // pixel y coordinate
+        for i in 0..image_width {
+            let mut pixel_color = Color::ZEROS();
 
-            let ray = Ray::new(
-                CAMERA_ORIGIN,
-                CAMERA_LOWER_LEFT + CAMERA_HORIZONTAL * u + CAMERA_VERTICAL * v - CAMERA_ORIGIN,
-            );
+            for _ in 0..SAMPLES_PER_PIXEL {
+                let u = (i as f64 + random_float()) / ((image_width - 1) as f64); // pixel x coordinate
+                let v = (j as f64 + random_float()) / ((image_height - 1) as f64); // pixel y coordinate
 
-            write_color(ray_color(&ray, &world));
+                let ray = camera.create_ray(u, v);
+                pixel_color += ray_color(&ray, &world);
+            }
+
+            write_color(pixel_color, SAMPLES_PER_PIXEL);
         }
         println!("");
     }
