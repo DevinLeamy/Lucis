@@ -1,6 +1,6 @@
 use std::ops;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Vec3 {
     x: f64,
     y: f64,
@@ -8,7 +8,15 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-    pub fn ZERO() -> Self {
+    pub const fn ONES() -> Self {
+        Self {
+            x: 1f64,
+            y: 1f64,
+            z: 1f64,
+        }
+    }
+
+    pub const fn ZEROS() -> Self {
         Self {
             x: 0f64,
             y: 0f64,
@@ -16,7 +24,7 @@ impl Vec3 {
         }
     }
 
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
+    pub const fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
 
