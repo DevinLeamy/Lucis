@@ -3,22 +3,24 @@ use crate::ray::Ray;
 use crate::utils::*;
 
 pub struct Camera {
-    aspect_ratio: f32,
-    focal_length: f32,
+    aspect_ratio: f64,
+    focal_length: f64,
     origin: Point,
-    viewport_height: f32,
-    viewport_width: f32,
+    viewport_height: f64,
+    viewport_width: f64,
     horizontal: Vec3,
     vertical: Vec3,
     lower_left: Vec3,
 }
 
-impl Default for Camera {
-    fn default() -> Self {
-        let aspect_ratio: f32 = 16.0 / 9.0;
+impl Camera {
+    pub fn new(fov: f64, aspect_ratio: f64) -> Self {
+        let theta = fov.to_radians();
+        let height = (theta / 2.0).tan();
+
         let focal_length = 1.0;
-        let viewport_height: f32 = 2.0;
-        let viewport_width: f32 = viewport_height * aspect_ratio;
+        let viewport_height = 2.0 * height;
+        let viewport_width: f64 = viewport_height * aspect_ratio;
         let origin = Point::ZEROS();
 
         let horizontal = Vec3::new(viewport_width as f64, 0.0, 0.0);
@@ -37,10 +39,8 @@ impl Default for Camera {
             lower_left,
         }
     }
-}
 
-impl Camera {
-    pub fn aspect_ratio(&self) -> f32 {
+    pub fn aspect_ratio(&self) -> f64 {
         self.aspect_ratio
     }
 

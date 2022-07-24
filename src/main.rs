@@ -73,46 +73,34 @@ fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
 
 fn main() {
     let now = Instant::now();
+    let aspect_ratio = 16.0 / 9.0;
 
-    let camera: Camera = Camera::default();
+    let camera: Camera = Camera::new(90.0, aspect_ratio);
     let image_width: u32 = 400;
-    let image_height: u32 = (image_width as f32 / camera.aspect_ratio()) as u32;
+    let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
+
+    let R = (PI / 4.0).cos();
 
     println!("P3\n{} {}\n255", image_width, image_height);
 
     type MaterialPointer = Rc<RefCell<Box<dyn Material>>>;
 
-    let material_ground: MaterialPointer = Rc::new(RefCell::new(Box::new(Lambertian::new(
-        Color::new(0.8, 0.8, 0.0),
+    let material_left: MaterialPointer = Rc::new(RefCell::new(Box::new(Lambertian::new(
+        Color::new(0.0, 0.0, 1.0),
     ))));
-    let material_center: MaterialPointer = Rc::new(RefCell::new(Box::new(Lambertian::new(
-        Color::new(0.1, 0.2, 0.5),
-    ))));
-    let material_left: MaterialPointer = Rc::new(RefCell::new(Box::new(Dielectric::new(1.5))));
-    let material_right: MaterialPointer = Rc::new(RefCell::new(Box::new(Metal::new(
-        Color::new(0.8, 0.6, 0.2),
-        0.0,
+    let material_right: MaterialPointer = Rc::new(RefCell::new(Box::new(Lambertian::new(
+        Color::new(1.0, 0.0, 0.0),
     ))));
 
     let mut world = HittableList::default();
     world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
-        Point::new(0.0, 0.0, -1.0),
-        0.5,
-        material_center,
-    )))));
-    world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
-        Point::new(0.0, -100.5, -1.0),
-        100.0,
-        material_ground,
-    )))));
-    world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
-        Point::new(-1.0, 0.0, -1.0),
-        0.5,
+        Point::new(-R, 0.0, -1.0),
+        R,
         material_left,
     )))));
     world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
-        Point::new(1.0, 0.0, -1.0),
-        0.5,
+        Point::new(R, 0.0, -1.0),
+        R,
         material_right,
     )))));
 
