@@ -59,3 +59,7 @@ impl Hittable for Sphere {
         }
     }
 }
+
+pub fn make_shared_hittable<T>(hittable: T) -> Rc<RefCell<T>> {
+    Rc::new(RefCell::new(hittable))
+}

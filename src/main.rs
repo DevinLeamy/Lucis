@@ -75,7 +75,13 @@ fn main() {
     let now = Instant::now();
     let aspect_ratio = 16.0 / 9.0;
 
-    let camera: Camera = Camera::new(90.0, aspect_ratio);
+    let camera: Camera = Camera::new(
+        Point::new(-2.0, 2.0, 1.0),
+        Point::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        20.0,
+        aspect_ratio,
+    );
     let image_width: u32 = 400;
     let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
 
@@ -85,24 +91,44 @@ fn main() {
 
     type MaterialPointer = Rc<RefCell<Box<dyn Material>>>;
 
-    let material_left: MaterialPointer = Rc::new(RefCell::new(Box::new(Lambertian::new(
-        Color::new(0.0, 0.0, 1.0),
-    ))));
-    let material_right: MaterialPointer = Rc::new(RefCell::new(Box::new(Lambertian::new(
-        Color::new(1.0, 0.0, 0.0),
+    let material_ground = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(
+        Color::new(0.8, 0.8, 0.0),
+    )));
+    let material_center = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(
+        Color::new(0.1, 0.2, 0.5),
+    )));
+    let material_left = make_shared_material::<Box<dyn Material>>(Box::new(Dielectric::new(1.5)));
+    let material_right: MaterialPointer = Rc::new(RefCell::new(Box::new(Metal::new(
+        Color::new(0.8, 0.6, 0.2),
+        0.0,
     ))));
 
     let mut world = HittableList::default();
-    world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
-        Point::new(-R, 0.0, -1.0),
-        R,
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(0.0, -100.5, -1.0),
+        100.0,
+        material_ground,
+    ))));
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(0.0, 0.0, -1.0),
+        0.5,
+        material_center,
+    ))));
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left.clone(),
+    ))));
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(-1.0, 0.0, -1.0),
+        -0.45,
         material_left,
-    )))));
-    world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
-        Point::new(R, 0.0, -1.0),
-        R,
+    ))));
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(1.0, 0.0, -1.0),
+        0.5,
         material_right,
-    )))));
+    ))));
 
     for j in (0..image_height).rev() {
         eprintln!(

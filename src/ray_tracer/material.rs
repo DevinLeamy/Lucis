@@ -1,3 +1,6 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use crate::common::Color;
 use crate::hittable::*;
 use crate::ray::Ray;
@@ -13,4 +16,8 @@ pub trait Material {
         attenuation: &mut Color,
         bounced_ray: &mut Ray,
     ) -> bool;
+}
+
+pub fn make_shared_material<T>(material: T) -> Rc<RefCell<T>> {
+    Rc::new(RefCell::new(material))
 }
