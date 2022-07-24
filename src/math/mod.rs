@@ -1,5 +1,7 @@
 pub use vec3::*;
 
+use crate::common::random_float_in_range;
+
 pub mod vec3;
 
 pub fn clamp(min: f64, max: f64, value: f64) -> f64 {
@@ -30,6 +32,19 @@ pub fn sample_hemisphere(normal: &Vec3) -> Vec3 {
     } else {
         // vectors point in "opposite" directions
         -unit_sphere_sample
+    }
+}
+
+pub fn sample_unit_disk() -> Vec3 {
+    loop {
+        let sample = Vec3::new(
+            random_float_in_range(-1.0, 1.0),
+            random_float_in_range(-1.0, 1.0),
+            0.0,
+        );
+        if sample.length_squared() < 1.0 {
+            return sample;
+        }
     }
 }
 

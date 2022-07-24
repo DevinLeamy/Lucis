@@ -36,6 +36,8 @@
 - `Snell's Law`: ![Snell's Law](images/snellslaw.png)
 - `Dielectric material`: A transparent material that reflects as well as refracts light
 - `Total Internal Reflection`: When a ray is _inside_ a material with a higher refractive index than the material on the outside, resulting in no possible solutions to Snell's Law, the ray reflects. 
+- `Focus distance`: Distance between the projection point and the plane where everything is in perfect focus
+- `Perfect focus`: When the `focus distance` is equal to the `focus length`
 
 
 

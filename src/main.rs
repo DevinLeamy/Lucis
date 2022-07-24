@@ -20,7 +20,8 @@ mod ray_tracer;
 mod sphere;
 mod utils;
 
-const SAMPLES_PER_PIXEL: u32 = 100;
+// const SAMPLES_PER_PIXEL: u32 = 500;
+const SAMPLES_PER_PIXEL: u32 = 10;
 const MAXIMUM_BOUNCE_DEPTH: u32 = 50;
 
 fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
@@ -71,70 +72,107 @@ fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
     }
 }
 
+fn complex_scene() -> HittableList {
+    let mut world = HittableList::default();
+
+    let ground_material = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(
+        Color::new(0.5, 0.5, 0.5),
+    )));
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(0.0, -1000.0, 0.0),
+        1000.0,
+        ground_material,
+    ))));
+
+    for i in 0..11 {
+        for j in -11..11 {
+            let mat = random_float();
+            let origin = Point::new(
+                i as f64 + 0.9 * random_float(),
+                0.2,
+                j as f64 * random_float(),
+            );
+
+            if (origin - Point::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                let material = if mat < 0.8 {
+                    let albedo = Vec3::RAND() * Vec3::RAND();
+                    make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(albedo)))
+                } else if mat < 0.95 {
+                    let albedo = Color::RAND_RANGE(0.5, 1.0);
+                    let fuzz = random_float_in_range(0.0, 0.5);
+
+                    make_shared_material::<Box<dyn Material>>(Box::new(Metal::new(albedo, fuzz)))
+                } else {
+                    make_shared_material::<Box<dyn Material>>(Box::new(Dielectric::new(1.5)))
+                };
+
+                world.add(make_shared_hittable(Box::new(Sphere::new(
+                    origin, 0.2, material,
+                ))))
+            }
+        }
+    }
+
+    let m1 = make_shared_material::<Box<dyn Material>>(Box::new(Dielectric::new(1.5)));
+    let m2 = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(Color::new(
+        0.4, 0.2, 0.1,
+    ))));
+    let m3 = make_shared_material::<Box<dyn Material>>(Box::new(Metal::new(
+        Color::new(0.7, 0.6, 0.5),
+        0.0,
+    )));
+
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(0.0, 1.0, 0.0),
+        1.0,
+        m1,
+    ))));
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(-4.0, 1.0, 0.0),
+        1.0,
+        m2,
+    ))));
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(4.0, 1.0, 0.0),
+        1.0,
+        m3,
+    ))));
+
+    world
+}
+
 fn main() {
     let now = Instant::now();
-    let aspect_ratio = 16.0 / 9.0;
+    let aspect_ratio = 3.0 / 2.0;
+
+    let camera_origin = Vec3::new(13.0, 2.0, 3.0);
+    let look_at = Vec3::new(0.0, 0.0, 0.0);
+    let world_up = Vec3::new(0.0, 1.0, 0.0);
+    let distance_to_focus = 10.0;
+    let aperture = 0.1;
 
     let camera: Camera = Camera::new(
-        Point::new(-2.0, 2.0, 1.0),
-        Point::new(0.0, 0.0, -1.0),
-        Vec3::new(0.0, 1.0, 0.0),
+        camera_origin,
+        look_at,
+        world_up,
         20.0,
         aspect_ratio,
+        aperture,
+        distance_to_focus,
     );
-    let image_width: u32 = 400;
-    let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
 
-    let R = (PI / 4.0).cos();
+    // let image_width: u32 = 1200;
+    let image_width: u32 = 200;
+    let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
 
     println!("P3\n{} {}\n255", image_width, image_height);
 
-    type MaterialPointer = Rc<RefCell<Box<dyn Material>>>;
-
-    let material_ground = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(
-        Color::new(0.8, 0.8, 0.0),
-    )));
-    let material_center = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(
-        Color::new(0.1, 0.2, 0.5),
-    )));
-    let material_left = make_shared_material::<Box<dyn Material>>(Box::new(Dielectric::new(1.5)));
-    let material_right: MaterialPointer = Rc::new(RefCell::new(Box::new(Metal::new(
-        Color::new(0.8, 0.6, 0.2),
-        0.0,
-    ))));
-
-    let mut world = HittableList::default();
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(0.0, -100.5, -1.0),
-        100.0,
-        material_ground,
-    ))));
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(0.0, 0.0, -1.0),
-        0.5,
-        material_center,
-    ))));
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(-1.0, 0.0, -1.0),
-        0.5,
-        material_left.clone(),
-    ))));
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(-1.0, 0.0, -1.0),
-        -0.45,
-        material_left,
-    ))));
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(1.0, 0.0, -1.0),
-        0.5,
-        material_right,
-    ))));
+    let world = complex_scene();
 
     for j in (0..image_height).rev() {
         eprintln!(
-            "Progress: [{}/{}] Time Elapsed: [{:.2}s]",
-            image_height - j,
-            image_height,
+            "Progress: [{:.2}%] Time Elapsed: [{:.2}s]",
+            ((image_height - j) as f32 / image_height as f32) * 100.0,
             now.elapsed().as_secs_f32()
         );
         io::stderr().flush();
