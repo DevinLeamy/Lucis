@@ -85,11 +85,13 @@ fn main() {
     let material_ground: MaterialPointer = Rc::new(RefCell::new(Box::new(Lambertian::new(
         Color::new(0.8, 0.8, 0.0),
     ))));
-    let material_center: MaterialPointer = Rc::new(RefCell::new(Box::new(Dielectric::new(1.5))));
+    let material_center: MaterialPointer = Rc::new(RefCell::new(Box::new(Lambertian::new(
+        Color::new(0.1, 0.2, 0.5),
+    ))));
     let material_left: MaterialPointer = Rc::new(RefCell::new(Box::new(Dielectric::new(1.5))));
     let material_right: MaterialPointer = Rc::new(RefCell::new(Box::new(Metal::new(
         Color::new(0.8, 0.6, 0.2),
-        1.0,
+        0.0,
     ))));
 
     let mut world = HittableList::default();

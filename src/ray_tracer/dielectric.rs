@@ -32,9 +32,19 @@ impl Material for Dielectric {
         };
 
         let unit_direction = Vec3::normalized(ray.direction());
-        let refracted = refract(&unit_direction, &hit_record.normal, refractive_ratio);
 
-        *bounced_ray = Ray::new(hit_record.point, refracted);
+        let cos_theta = f64::min(Vec3::dot(&-unit_direction, &hit_record.normal), 1.0);
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+
+        let cannot_refract = refractive_ratio * sin_theta > 1.0;
+
+        let out_direction = if cannot_refract {
+            reflect(&unit_direction, &hit_record.normal)
+        } else {
+            refract(&unit_direction, &hit_record.normal, refractive_ratio)
+        };
+
+        *bounced_ray = Ray::new(hit_record.point, out_direction);
         true
     }
 }

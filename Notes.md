@@ -35,6 +35,8 @@
   luminance when viewed from all directions lying (in the half-space) adjacent to the surface 
 - `Snell's Law`: ![Snell's Law](images/snellslaw.png)
 - `Dielectric material`: A transparent material that reflects as well as refracts light
+- `Total Internal Reflection`: When a ray is _inside_ a material with a higher refractive index than the material on the outside, resulting in no possible solutions to Snell's Law, the ray reflects. 
+
 
 
 # Creating Gradients with Interpolation
