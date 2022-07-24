@@ -21,7 +21,7 @@ mod sphere;
 mod utils;
 
 // const SAMPLES_PER_PIXEL: u32 = 500;
-const SAMPLES_PER_PIXEL: u32 = 10;
+const SAMPLES_PER_PIXEL: u32 = 100;
 const MAXIMUM_BOUNCE_DEPTH: u32 = 50;
 
 fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
@@ -84,7 +84,7 @@ fn complex_scene() -> HittableList {
         ground_material,
     ))));
 
-    for i in 0..11 {
+    for i in -11..11 {
         for j in -11..11 {
             let mat = random_float();
             let origin = Point::new(
@@ -161,8 +161,8 @@ fn main() {
         distance_to_focus,
     );
 
-    // let image_width: u32 = 1200;
-    let image_width: u32 = 200;
+    let image_width: u32 = 800;
+    // let image_width: u32 = 200;
     let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
 
     println!("P3\n{} {}\n255", image_width, image_height);
