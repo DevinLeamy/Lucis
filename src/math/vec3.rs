@@ -81,14 +81,6 @@ impl Vec3 {
         v / v.length()
     }
 
-    pub fn normalize(&mut self) -> &Vec3 {
-        self.x /= self.length();
-        self.y /= self.length();
-        self.z /= self.length();
-
-        self
-    }
-
     pub fn near_zero(&self) -> bool {
         let tolerance = 1e-8;
 
@@ -100,7 +92,7 @@ impl ops::Neg for Vec3 {
     type Output = Vec3;
 
     fn neg(self) -> Self::Output {
-        Vec3::new(self.x, self.y, self.z)
+        Vec3::new(-self.x, -self.y, -self.z)
     }
 }
 
@@ -130,7 +122,9 @@ impl ops::IndexMut<usize> for Vec3 {
 
 impl ops::DivAssign for Vec3 {
     fn div_assign(&mut self, rhs: Self) {
-        *self *= rhs;
+        self[0] /= rhs[0];
+        self[1] /= rhs[1];
+        self[2] /= rhs[2];
     }
 }
 

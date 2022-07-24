@@ -44,3 +44,18 @@ pub fn reflect(incident: &Vec3, surface_normal: &Vec3) -> Vec3 {
     */
     *incident - *surface_normal * (Vec3::dot(incident, surface_normal) * 2.0)
 }
+
+// CLEAN: too many dereferences and references
+pub fn refract(incident: &Vec3, surface_normal: &Vec3, etai_over_etat: f64) -> Vec3 {
+    let cos_theta = f64::min(
+        Vec3::dot(&(-(*incident)), surface_normal) / (incident.length() * surface_normal.length()),
+        1.0,
+    );
+    let refracted_perpendicular = (*incident + *surface_normal * cos_theta) * etai_over_etat;
+    let refracted_parallel = *surface_normal
+        * -(1.0 - refracted_perpendicular.length_squared())
+            .abs()
+            .sqrt();
+
+    refracted_perpendicular + refracted_parallel
+}

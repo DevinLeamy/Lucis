@@ -4,6 +4,7 @@ use hittable_list::HittableList;
 use ray::*;
 use ray_tracer::*;
 use sphere::*;
+use std::time::Instant;
 use std::{
     cell::RefCell,
     io::{self, Write},
@@ -30,7 +31,7 @@ fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
     let mut hit_record = HitRecord::default();
 
     // 0.001 used to avoid "shadow acne"
-    if world.hit(ray, 0.001, INFINITY, &mut hit_record) {
+    if world.hit(ray, 0.01, INFINITY, &mut hit_record) {
         /*
         Compute a target point for the bounced ray by picking a random point inside
         a unit sphere tangent to point of intersection. Then determine
@@ -47,6 +48,14 @@ fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
             &mut attenuation,
             &mut bounced_ray,
         ) {
+            // println!(
+            //     "Ray Origin: {:?} \nRay Direction: {:?} \nResult Origin: {:?} \nResult Direction: {:?}",
+            //     ray.origin(),
+            //     ray.direction(),
+            //     // attenuation,
+            //     bounced_ray.origin(),
+            //     bounced_ray.direction(), // ray_color(&bounced_ray, world, bounce_depth + 1)
+            // );
             attenuation * ray_color(&bounced_ray, world, bounce_depth + 1)
         } else {
             Color::ZEROS()
@@ -63,24 +72,25 @@ fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
 }
 
 fn main() {
+    let now = Instant::now();
+
     let camera: Camera = Camera::default();
     let image_width: u32 = 400;
     let image_height: u32 = (image_width as f32 / camera.aspect_ratio()) as u32;
 
     println!("P3\n{} {}\n255", image_width, image_height);
 
-    let material_ground: Rc<RefCell<Box<dyn Material>>> = Rc::new(RefCell::new(Box::new(
-        Lambertian::new(Color::new(0.8, 0.8, 0.0)),
-    )));
-    let material_center: Rc<RefCell<Box<dyn Material>>> = Rc::new(RefCell::new(Box::new(
-        Lambertian::new(Color::new(0.7, 0.3, 0.3)),
-    )));
-    let material_left: Rc<RefCell<Box<dyn Material>>> = Rc::new(RefCell::new(Box::new(
-        Metal::new(Color::new(0.8, 0.8, 0.8)),
-    )));
-    let material_right: Rc<RefCell<Box<dyn Material>>> = Rc::new(RefCell::new(Box::new(
-        Metal::new(Color::new(0.8, 0.6, 0.2)),
-    )));
+    type MaterialPointer = Rc<RefCell<Box<dyn Material>>>;
+
+    let material_ground: MaterialPointer = Rc::new(RefCell::new(Box::new(Lambertian::new(
+        Color::new(0.8, 0.8, 0.0),
+    ))));
+    let material_center: MaterialPointer = Rc::new(RefCell::new(Box::new(Dielectric::new(1.5))));
+    let material_left: MaterialPointer = Rc::new(RefCell::new(Box::new(Dielectric::new(1.5))));
+    let material_right: MaterialPointer = Rc::new(RefCell::new(Box::new(Metal::new(
+        Color::new(0.8, 0.6, 0.2),
+        1.0,
+    ))));
 
     let mut world = HittableList::default();
     world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
@@ -105,7 +115,12 @@ fn main() {
     )))));
 
     for j in (0..image_height).rev() {
-        eprintln!("Progress: [{}/{}]", image_height - j, image_height);
+        eprintln!(
+            "Progress: [{}/{}] Time Elapsed: [{:.2}s]",
+            image_height - j,
+            image_height,
+            now.elapsed().as_secs_f32()
+        );
         io::stderr().flush();
 
         for i in 0..image_width {
@@ -124,5 +139,5 @@ fn main() {
         println!("");
     }
 
-    eprintln!("Render complete");
+    eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
 }

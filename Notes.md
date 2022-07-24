@@ -33,6 +33,8 @@
   one angle (as is the case in specular reflection)
 - `ideal diffuse reflection`: When a surface exhibits *Lambertian* reflection, meaning that there is equal
   luminance when viewed from all directions lying (in the half-space) adjacent to the surface 
+- `Snell's Law`: ![Snell's Law](images/snellslaw.png)
+- `Dielectric material`: A transparent material that reflects as well as refracts light
 
 
 # Creating Gradients with Interpolation
@@ -55,4 +57,4 @@
 - Otherwise, the ray is coming from outside of the object
 - This can be determined by taking the dot product of the two vectors
 
-# 9.2
+# 9.6

@@ -41,20 +41,21 @@ impl Hittable for Sphere {
         if discriminant < 0.0 {
             false
         } else {
-            let r1 = (-half_b - discriminant.sqrt()) / a;
-            let r2 = (-half_b + discriminant.sqrt()) / a;
+            let mut root = (-half_b - discriminant.sqrt()) / a;
 
-            if (r1 < t_min || r1 > t_max) && (r2 < t_min || r2 > t_max) {
-                false
-            } else {
-                hit_record.t = r1;
-                hit_record.point = ray.position_at(hit_record.t);
-                let outward_normal = (hit_record.point - self.center) / self.radius;
-                hit_record.set_face_normal(ray, &outward_normal);
-                hit_record.material = Some(self.material.clone());
-
-                true
+            if root < t_min || root > t_max {
+                root = (-half_b + discriminant.sqrt()) / a;
+                if root < t_min || root > t_max {
+                    return false;
+                }
             }
+            hit_record.t = root;
+            hit_record.point = ray.position_at(hit_record.t);
+            let outward_normal = (hit_record.point - self.center) / self.radius;
+            hit_record.set_face_normal(ray, &outward_normal);
+            hit_record.material = Some(self.material.clone());
+
+            true
         }
     }
 }
