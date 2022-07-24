@@ -88,6 +88,12 @@ impl Vec3 {
 
         self
     }
+
+    pub fn near_zero(&self) -> bool {
+        let tolerance = 1e-8;
+
+        self[0].abs() < tolerance && self[1].abs() < tolerance && self[2].abs() < tolerance
+    }
 }
 
 impl ops::Neg for Vec3 {

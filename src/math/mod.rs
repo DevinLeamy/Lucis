@@ -32,3 +32,15 @@ pub fn sample_hemisphere(normal: &Vec3) -> Vec3 {
         -unit_sphere_sample
     }
 }
+
+pub fn reflect(incident: &Vec3, surface_normal: &Vec3) -> Vec3 {
+    /*
+    We take the incident vector, v, and compute the
+    projection of v onto the surface normal, n. We then
+    negate this value because v and n point in opposite directions.
+    This gives us the "amount" of v that points in the
+    direction of the normal, b. We then remove 2 * b from v
+    effectively reversing the component of v that projects onto n.
+    */
+    *incident - *surface_normal * (Vec3::dot(incident, surface_normal) * 2.0)
+}

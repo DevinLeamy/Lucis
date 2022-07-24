@@ -36,10 +36,21 @@ fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
         a unit sphere tangent to point of intersection. Then determine
         the color obtained from the resulting bounced ray
         */
-        // let target: Point = hit_record.point + hit_record.normal + random_unit_vector();
-        let target: Point = hit_record.point + sample_hemisphere(&hit_record.normal);
-        let bounced_ray = Ray::new(hit_record.point, target - hit_record.point);
-        ray_color(&bounced_ray, world, bounce_depth + 1) * 0.5
+        let mut bounced_ray = Ray::default();
+        let mut attenuation = Color::default();
+
+        let hr_clone = hit_record.clone();
+
+        if hit_record.material.unwrap().borrow().scatter(
+            ray,
+            &hr_clone,
+            &mut attenuation,
+            &mut bounced_ray,
+        ) {
+            attenuation * ray_color(&bounced_ray, world, bounce_depth + 1)
+        } else {
+            Color::ZEROS()
+        }
     } else {
         let direction = Vec3::normalized(ray.direction());
         let t = 0.5 * (direction.y() + 1.0);
@@ -58,14 +69,39 @@ fn main() {
 
     println!("P3\n{} {}\n255", image_width, image_height);
 
+    let material_ground: Rc<RefCell<Box<dyn Material>>> = Rc::new(RefCell::new(Box::new(
+        Lambertian::new(Color::new(0.8, 0.8, 0.0)),
+    )));
+    let material_center: Rc<RefCell<Box<dyn Material>>> = Rc::new(RefCell::new(Box::new(
+        Lambertian::new(Color::new(0.7, 0.3, 0.3)),
+    )));
+    let material_left: Rc<RefCell<Box<dyn Material>>> = Rc::new(RefCell::new(Box::new(
+        Metal::new(Color::new(0.8, 0.8, 0.8)),
+    )));
+    let material_right: Rc<RefCell<Box<dyn Material>>> = Rc::new(RefCell::new(Box::new(
+        Metal::new(Color::new(0.8, 0.6, 0.2)),
+    )));
+
     let mut world = HittableList::default();
     world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
         Point::new(0.0, 0.0, -1.0),
         0.5,
+        material_center,
     )))));
     world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
         Point::new(0.0, -100.5, -1.0),
         100.0,
+        material_ground,
+    )))));
+    world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
+        Point::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left,
+    )))));
+    world.add(Rc::new(RefCell::new(Box::new(Sphere::new(
+        Point::new(1.0, 0.0, -1.0),
+        0.5,
+        material_right,
     )))));
 
     for j in (0..image_height).rev() {
