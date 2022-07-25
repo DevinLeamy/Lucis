@@ -15,15 +15,9 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(
-        &self,
-        ray: &Ray,
-        hit_record: &HitRecord,
-        attenuation: &mut Color,
-        bounced_ray: &mut Ray,
-    ) -> bool {
+    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<(Color, Ray)> {
         let reflected_ray = reflect(&ray.direction(), &hit_record.normal);
-        *bounced_ray = Ray::new(
+        let bounced_ray = Ray::new(
             hit_record.point,
             /*
             add fuzziness to reflection my perturbing the reflected
@@ -32,8 +26,12 @@ impl Material for Metal {
             */
             reflected_ray + sample_unit_sphere() * self.fuzz,
         );
-        *attenuation = self.albedo;
+        let attenuation = self.albedo;
 
-        Vec3::dot(&bounced_ray.direction(), &hit_record.normal) > 0.0
+        if Vec3::dot(&bounced_ray.direction(), &hit_record.normal) > 0.0 {
+            Some((attenuation, bounced_ray))
+        } else {
+            None
+        }
     }
 }

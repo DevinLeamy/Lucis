@@ -36,15 +36,13 @@ fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
         a unit sphere tangent to point of intersection. Then determine
         the color obtained from the resulting bounced ray
         */
-        let mut bounced_ray = Ray::default();
-        let mut attenuation = Color::default();
-
-        if hit_record.clone().material.unwrap().borrow().scatter(
-            ray,
-            &hit_record,
-            &mut attenuation,
-            &mut bounced_ray,
-        ) {
+        if let Some((attenuation, bounced_ray)) = hit_record
+            .clone()
+            .material
+            .unwrap()
+            .borrow()
+            .scatter(ray, &hit_record)
+        {
             // println!(
             //     "Ray Origin: {:?} \nRay Direction: {:?} \nResult Origin: {:?} \nResult Direction: {:?}",
             //     ray.origin(),

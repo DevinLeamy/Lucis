@@ -9,13 +9,7 @@ use crate::ray::Ray;
 pub use crate::ray_tracer::lambertian::*;
 
 pub trait Material {
-    fn scatter(
-        &self,
-        ray: &Ray,
-        hit_record: &HitRecord,
-        attenuation: &mut Color,
-        bounced_ray: &mut Ray,
-    ) -> bool;
+    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<(Color, Ray)>;
 }
 
 pub fn make_shared_material<T>(material: T) -> Rc<RefCell<T>> {
