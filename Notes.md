@@ -1,6 +1,6 @@
 # Sources
 - [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
-
+- [Fast Ray Tracing](https://uwspace.uwaterloo.ca/bitstream/handle/10012/3947/thesis.pdf)
 # Conventions
 
 ### Coordinate System
@@ -61,4 +61,14 @@
 - Otherwise, the ray is coming from outside of the object
 - This can be determined by taking the dot product of the two vectors
 
-# 9.6
+### Features
+- [ ] Concurrency 
+- [ ] Store images in `jpeg`/`png`/`jpg` 
+- [ ] Add lights
+- [ ] Render 3D meshes
+- [ ] Render surface textures
+
+### TODO
+- [ ] Address `CLEAN` annotations
+- [ ] Replace `true`/`false` hit results with `Option`s
+- [ ] Create a cleaner API to instantiate materials and scene geometry

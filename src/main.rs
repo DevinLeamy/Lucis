@@ -21,7 +21,7 @@ mod sphere;
 mod utils;
 
 // const SAMPLES_PER_PIXEL: u32 = 500;
-const SAMPLES_PER_PIXEL: u32 = 100;
+const SAMPLES_PER_PIXEL: u32 = 50;
 const MAXIMUM_BOUNCE_DEPTH: u32 = 50;
 
 fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
@@ -29,10 +29,8 @@ fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
         return Color::ZEROS();
     }
 
-    let mut hit_record = HitRecord::default();
-
     // 0.001 used to avoid "shadow acne"
-    if world.hit(ray, 0.01, INFINITY, &mut hit_record) {
+    if let Some(hit_record) = world.hit(ray, 0.01, INFINITY) {
         /*
         Compute a target point for the bounced ray by picking a random point inside
         a unit sphere tangent to point of intersection. Then determine
@@ -41,11 +39,9 @@ fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
         let mut bounced_ray = Ray::default();
         let mut attenuation = Color::default();
 
-        let hr_clone = hit_record.clone();
-
-        if hit_record.material.unwrap().borrow().scatter(
+        if hit_record.clone().material.unwrap().borrow().scatter(
             ray,
-            &hr_clone,
+            &hit_record,
             &mut attenuation,
             &mut bounced_ray,
         ) {
@@ -141,6 +137,46 @@ fn complex_scene() -> HittableList {
     world
 }
 
+pub fn simple_scene() -> HittableList {
+    let mut world = HittableList::default();
+
+    let ground_material = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(
+        Color::new(0.5, 0.5, 0.5),
+    )));
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(0.0, -1000.0, 0.0),
+        1000.0,
+        ground_material,
+    ))));
+
+    let m1 = make_shared_material::<Box<dyn Material>>(Box::new(Dielectric::new(1.5)));
+    let m2 = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(Color::new(
+        0.4, 0.2, 0.1,
+    ))));
+    let m3 = make_shared_material::<Box<dyn Material>>(Box::new(Metal::new(
+        Color::new(0.7, 0.6, 0.5),
+        0.0,
+    )));
+
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(0.0, 1.0, 0.0),
+        1.0,
+        m1,
+    ))));
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(-4.0, 1.0, 0.0),
+        1.0,
+        m2,
+    ))));
+    world.add(make_shared_hittable(Box::new(Sphere::new(
+        Point::new(4.0, 1.0, 0.0),
+        1.0,
+        m3,
+    ))));
+
+    world
+}
+
 fn main() {
     let now = Instant::now();
     let aspect_ratio = 3.0 / 2.0;
@@ -161,13 +197,13 @@ fn main() {
         distance_to_focus,
     );
 
-    let image_width: u32 = 800;
+    let image_width: u32 = 200;
     // let image_width: u32 = 200;
     let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
 
     println!("P3\n{} {}\n255", image_width, image_height);
 
-    let world = complex_scene();
+    let world = simple_scene(); // complex_scene();
 
     for j in (0..image_height).rev() {
         eprintln!(

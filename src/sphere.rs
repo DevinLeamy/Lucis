@@ -24,7 +24,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, hit_record: &mut HitRecord) -> bool {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let center_to_origin = ray.origin() - self.center;
 
         // application of the quadratic formula
@@ -39,23 +39,30 @@ impl Hittable for Sphere {
 
         // CLEAN: make this more self-explanatory
         if discriminant < 0.0 {
-            false
+            None
         } else {
             let mut root = (-half_b - discriminant.sqrt()) / a;
 
             if root < t_min || root > t_max {
                 root = (-half_b + discriminant.sqrt()) / a;
                 if root < t_min || root > t_max {
-                    return false;
+                    return None;
                 }
             }
-            hit_record.t = root;
-            hit_record.point = ray.position_at(hit_record.t);
-            let outward_normal = (hit_record.point - self.center) / self.radius;
-            hit_record.set_face_normal(ray, &outward_normal);
-            hit_record.material = Some(self.material.clone());
 
-            true
+            let outer_normal = (ray.position_at(root) - self.center) / self.radius;
+
+            let mut hit_record = HitRecord {
+                point: ray.position_at(root),
+                normal: outer_normal,
+                t: root,
+                material: Some(self.material.clone()),
+                hit_front_face: false,
+            };
+
+            hit_record.set_face_normal(ray, &outer_normal);
+
+            Some(hit_record)
         }
     }
 }

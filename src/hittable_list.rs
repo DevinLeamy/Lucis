@@ -32,9 +32,8 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, hit_record: &mut HitRecord) -> bool {
-        let mut potential_hit: HitRecord = HitRecord::default();
-        let mut hit_surface = false;
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        let mut maybe_hit: Option<HitRecord> = None;
         let mut closest_hit = t_max;
 
         for hittable in &self.objects {
@@ -44,17 +43,12 @@ impl Hittable for HittableList {
             and the hit record is updated to hold the new
             closest hit
             */
-            if hittable
-                .borrow()
-                .hit(ray, t_min, closest_hit, &mut potential_hit)
-            {
-                hit_surface = true;
-                closest_hit = potential_hit.t;
-
-                *hit_record = potential_hit.clone();
+            if let Some(hit) = hittable.borrow().hit(ray, t_min, closest_hit) {
+                closest_hit = hit.t;
+                maybe_hit = Some(hit);
             }
         }
 
-        hit_surface
+        maybe_hit
     }
 }
