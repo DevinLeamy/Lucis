@@ -62,7 +62,8 @@
 - This can be determined by taking the dot product of the two vectors
 
 ### Features
-- [ ] Concurrency 
+- [x] Concurrency 
+  - [ ] Only write one frame
 - [ ] Store images in `jpeg`/`png`/`jpg` 
 - [ ] Add lights
 - [ ] Render 3D meshes

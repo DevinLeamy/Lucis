@@ -1,4 +1,7 @@
 use std::{
+    borrow::Borrow,
+    cell::RefCell,
+    sync::{Arc, Mutex},
     thread::{self, JoinHandle},
     time::Instant,
 };
@@ -41,52 +44,54 @@ fn main() {
     let image_width: u32 = 200;
     let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
 
-    let mut threads: Vec<JoinHandle<Frame>> = vec![];
+    let mut threads: Vec<JoinHandle<_>> = vec![];
     let thread_count = 8;
 
     let now = Instant::now();
 
+    let frame = Arc::new(Mutex::new(Box::new(Frame::new(image_width, image_height))));
+
     for i in 0..thread_count {
+        let clone = Arc::clone(&frame);
         threads.push(thread::spawn(move || {
             // let frame = RayTracer::render(image_width, image_height, camera, simple_scene());
-            let frame = RayTracer::render(
+            RayTracer::render(
                 image_width,
                 image_height,
                 camera,
                 complex_not_random_scene(),
+                i,
+                clone,
             );
             eprintln!("Thread [{}] complete", i);
-            frame
         }));
     }
 
-    let mut frames: Vec<Frame> = vec![];
+    // let mut frames: Vec<Frame> = vec![];
 
     for thread in threads {
-        frames.push(thread.join().unwrap());
+        thread.join().unwrap();
     }
 
-    let mut final_frame: Frame = Frame::new(image_width, image_height);
+    // for i in 0..image_width {
+    //     for j in 0..image_height {
+    //         let mut color = Color::ZEROS();
 
-    for i in 0..image_width {
-        for j in 0..image_height {
-            let mut color = Color::ZEROS();
+    //         for frame in &frames {
+    //             color += frame.get_color(i, j);
+    //         }
 
-            for frame in &frames {
-                color += frame.get_color(i, j);
-            }
-
-            final_frame.set_color(
-                i,
-                j,
-                RayTracer::normalize_color(color, RayTracer::SAMPLES_PER_PIXEL * thread_count),
-            );
-        }
-    }
+    //         final_frame.set_color(
+    //             i,
+    //             j,
+    //             RayTracer::normalize_color(color, RayTracer::SAMPLES_PER_PIXEL * thread_count),
+    //         );
+    //     }
+    // }
 
     eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
 
-    final_frame.write_to_console();
+    frame.lock().unwrap().borrow().write_to_console();
 }
 /*
 -- Simple Scene (200px width, Aspect [16/9], 50 SAMPLES, 50 MAX_BOUNCE_DEPTH)

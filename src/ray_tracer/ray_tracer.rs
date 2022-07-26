@@ -1,5 +1,8 @@
 use std::{
+    borrow::BorrowMut,
+    cell::RefCell,
     io::{self, Write},
+    sync::{Arc, Mutex},
     time::Instant,
 };
 
@@ -15,17 +18,21 @@ use super::{camera::Camera, Frame};
 pub struct RayTracer {}
 
 impl RayTracer {
-    pub const SAMPLES_PER_PIXEL: u32 = (50 / 1) as u32;
+    pub const SAMPLES_PER_PIXEL: u32 = (400 / 1) as u32;
     const MAXIMUM_BOUNCE_DEPTH: u32 = 50;
+    const THREAD_COUNT: u32 = 8;
 
     pub fn render(
         image_width: u32,
         image_height: u32,
         camera: Camera,
         scene: HittableList,
-    ) -> Frame {
+        thread_id: u32,
+        frame: Arc<Mutex<Box<Frame>>>,
+    ) -> () {
+        let mut threads: Vec<JoinHandle<_>> = vec![];
         let now = Instant::now();
-        let mut frame = Frame::new(image_width, image_height);
+        // let mut frame = Frame::new(image_width, image_height);
 
         for j in (0..image_height).rev() {
             // eprintln!(
@@ -36,6 +43,11 @@ impl RayTracer {
             io::stderr().flush();
 
             for i in 0..image_width {
+                let tile_id = j * image_height + image_width;
+                if tile_id % RayTracer::THREAD_COUNT != thread_id {
+                    continue;
+                }
+
                 let mut pixel_color = Color::ZEROS();
 
                 for _ in 0..RayTracer::SAMPLES_PER_PIXEL {
@@ -46,20 +58,25 @@ impl RayTracer {
                     pixel_color += RayTracer::ray_color(&ray, &scene, 0);
                 }
 
-                // let normalized_color =
-                //     RayTracer::normalize_color(pixel_color, RayTracer::SAMPLES_PER_PIXEL);
+                let normalized_color =
+                    RayTracer::normalize_color(pixel_color, RayTracer::SAMPLES_PER_PIXEL);
 
-                // frame.set_color(i, j, normalized_color);
-                frame.set_color(i, j, pixel_color);
-
-                // write_color(pixel_color, RayTracer::SAMPLES_PER_PIXEL);
+                frame
+                    .lock()
+                    .unwrap()
+                    .borrow_mut()
+                    .set_color(i, j, normalized_color);
             }
             // println!("");
         }
 
+        for thread in threads {
+            thread.join().unwrap();
+        }
+
         // eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
 
-        frame
+        // frame
     }
 
     pub fn normalize_color(pixel_color: Color, pixel_samples: u32) -> Color {
