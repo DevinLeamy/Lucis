@@ -1,6 +1,12 @@
+use std::{
+    thread::{self, JoinHandle},
+    time::Instant,
+};
+
 use common::*;
 use hittable_list::HittableList;
 use ray_tracer::*;
+use scenes::*;
 use sphere::*;
 
 mod common;
@@ -9,117 +15,9 @@ mod hittable_list;
 mod math;
 mod ray;
 mod ray_tracer;
+mod scenes;
 mod sphere;
 mod utils;
-
-fn complex_scene() -> HittableList {
-    let mut world = HittableList::default();
-
-    let ground_material = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(
-        Color::new(0.5, 0.5, 0.5),
-    )));
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(0.0, -1000.0, 0.0),
-        1000.0,
-        ground_material,
-    ))));
-
-    for i in -11..11 {
-        for j in -11..11 {
-            let mat = random_float();
-            let origin = Point::new(
-                i as f64 + 0.9 * random_float(),
-                0.2,
-                j as f64 * random_float(),
-            );
-
-            if (origin - Point::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let material = if mat < 0.8 {
-                    let albedo = Vec3::RAND() * Vec3::RAND();
-                    make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(albedo)))
-                } else if mat < 0.95 {
-                    let albedo = Color::RAND_RANGE(0.5, 1.0);
-                    let fuzz = random_float_in_range(0.0, 0.5);
-
-                    make_shared_material::<Box<dyn Material>>(Box::new(Metal::new(albedo, fuzz)))
-                } else {
-                    make_shared_material::<Box<dyn Material>>(Box::new(Dielectric::new(1.5)))
-                };
-
-                world.add(make_shared_hittable(Box::new(Sphere::new(
-                    origin, 0.2, material,
-                ))))
-            }
-        }
-    }
-
-    let m1 = make_shared_material::<Box<dyn Material>>(Box::new(Dielectric::new(1.5)));
-    let m2 = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(Color::new(
-        0.4, 0.2, 0.1,
-    ))));
-    let m3 = make_shared_material::<Box<dyn Material>>(Box::new(Metal::new(
-        Color::new(0.7, 0.6, 0.5),
-        0.0,
-    )));
-
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(0.0, 1.0, 0.0),
-        1.0,
-        m1,
-    ))));
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(-4.0, 1.0, 0.0),
-        1.0,
-        m2,
-    ))));
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(4.0, 1.0, 0.0),
-        1.0,
-        m3,
-    ))));
-
-    world
-}
-
-pub fn simple_scene() -> HittableList {
-    let mut world = HittableList::default();
-
-    let ground_material = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(
-        Color::new(0.5, 0.5, 0.5),
-    )));
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(0.0, -1000.0, 0.0),
-        1000.0,
-        ground_material,
-    ))));
-
-    let m1 = make_shared_material::<Box<dyn Material>>(Box::new(Dielectric::new(1.5)));
-    let m2 = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(Color::new(
-        0.4, 0.2, 0.1,
-    ))));
-    let m3 = make_shared_material::<Box<dyn Material>>(Box::new(Metal::new(
-        Color::new(0.7, 0.6, 0.5),
-        0.0,
-    )));
-
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(0.0, 1.0, 0.0),
-        1.0,
-        m1,
-    ))));
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(-4.0, 1.0, 0.0),
-        1.0,
-        m2,
-    ))));
-    world.add(make_shared_hittable(Box::new(Sphere::new(
-        Point::new(4.0, 1.0, 0.0),
-        1.0,
-        m3,
-    ))));
-
-    world
-}
 
 fn main() {
     let aspect_ratio = 3.0 / 2.0;
@@ -143,8 +41,66 @@ fn main() {
     let image_width: u32 = 200;
     let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
 
-    println!("P3\n{} {}\n255", image_width, image_height);
+    let mut threads: Vec<JoinHandle<Frame>> = vec![];
+    let thread_count = 8;
 
-    let frame = RayTracer::render(image_width, image_height, camera, simple_scene());
-    frame.write_to_console();
+    let now = Instant::now();
+
+    for i in 0..thread_count {
+        threads.push(thread::spawn(move || {
+            // let frame = RayTracer::render(image_width, image_height, camera, simple_scene());
+            let frame = RayTracer::render(
+                image_width,
+                image_height,
+                camera,
+                complex_not_random_scene(),
+            );
+            eprintln!("Thread [{}] complete", i);
+            frame
+        }));
+    }
+
+    let mut frames: Vec<Frame> = vec![];
+
+    for thread in threads {
+        frames.push(thread.join().unwrap());
+    }
+
+    let mut final_frame: Frame = Frame::new(image_width, image_height);
+
+    for i in 0..image_width {
+        for j in 0..image_height {
+            let mut color = Color::ZEROS();
+
+            for frame in &frames {
+                color += frame.get_color(i, j);
+            }
+
+            final_frame.set_color(
+                i,
+                j,
+                RayTracer::normalize_color(color, RayTracer::SAMPLES_PER_PIXEL * thread_count),
+            );
+        }
+    }
+
+    eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
+
+    final_frame.write_to_console();
 }
+/*
+-- Simple Scene (200px width, Aspect [16/9], 50 SAMPLES, 50 MAX_BOUNCE_DEPTH)
+Threads: Time (s)
+1:       [10.43, 10.52]
+5:       [11.12]
+8:       [11.72, 11.81]
+9:       [13.35]
+10:      [14.21]
+11:      [15.14]
+20:      [26.96] (and it slows down the computer)
+
+-- Complex Scene (200px width, Aspect [16/9], 50 SAMPLES, 50 MAX_BOUNCE_DEPTH)
+Threads: Time (s)
+1:       [213.11]
+8:       [237.16]
+*/

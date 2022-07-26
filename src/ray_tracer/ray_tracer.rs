@@ -15,7 +15,7 @@ use super::{camera::Camera, Frame};
 pub struct RayTracer {}
 
 impl RayTracer {
-    const SAMPLES_PER_PIXEL: u32 = 50;
+    pub const SAMPLES_PER_PIXEL: u32 = (50 / 1) as u32;
     const MAXIMUM_BOUNCE_DEPTH: u32 = 50;
 
     pub fn render(
@@ -28,11 +28,11 @@ impl RayTracer {
         let mut frame = Frame::new(image_width, image_height);
 
         for j in (0..image_height).rev() {
-            eprintln!(
-                "Progress: [{:.2}%] Time Elapsed: [{:.2}s]",
-                ((image_height - j) as f32 / image_height as f32) * 100.0,
-                now.elapsed().as_secs_f32()
-            );
+            // eprintln!(
+            //     "Progress: [{:.2}%] Time Elapsed: [{:.2}s]",
+            //     ((image_height - j) as f32 / image_height as f32) * 100.0,
+            //     now.elapsed().as_secs_f32()
+            // );
             io::stderr().flush();
 
             for i in 0..image_width {
@@ -46,22 +46,23 @@ impl RayTracer {
                     pixel_color += RayTracer::ray_color(&ray, &scene, 0);
                 }
 
-                let normalized_color =
-                    RayTracer::normalize_color(pixel_color, RayTracer::SAMPLES_PER_PIXEL);
+                // let normalized_color =
+                //     RayTracer::normalize_color(pixel_color, RayTracer::SAMPLES_PER_PIXEL);
 
-                frame.set_color(i, j, normalized_color);
+                // frame.set_color(i, j, normalized_color);
+                frame.set_color(i, j, pixel_color);
 
                 // write_color(pixel_color, RayTracer::SAMPLES_PER_PIXEL);
             }
-            println!("");
+            // println!("");
         }
 
-        eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
+        // eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
 
         frame
     }
 
-    fn normalize_color(pixel_color: Color, pixel_samples: u32) -> Color {
+    pub fn normalize_color(pixel_color: Color, pixel_samples: u32) -> Color {
         let scale = 1.0 / (pixel_samples as f64);
         let scaled_color = pixel_color * scale;
 

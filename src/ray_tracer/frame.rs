@@ -19,7 +19,12 @@ impl Frame {
         self.buffer[y as usize][x as usize] = color;
     }
 
+    pub fn get_color(&self, x: u32, y: u32) -> Color {
+        self.buffer[y as usize][x as usize]
+    }
+
     pub fn write_to_console(&self) {
+        println!("P3\n{} {}\n255", self.width, self.height);
         for j in (0..self.height as usize).rev() {
             for i in 0..self.width as usize {
                 println!(

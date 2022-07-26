@@ -7,6 +7,7 @@ use crate::ray::Ray;
 /*
 aggregates a list of Hittable objects
 */
+#[derive(Clone)]
 pub struct HittableList {
     objects: Vec<Rc<RefCell<Box<dyn Hittable>>>>,
 }

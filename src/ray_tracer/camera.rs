@@ -2,6 +2,7 @@ use crate::math::*;
 use crate::ray::Ray;
 use crate::utils::*;
 
+#[derive(Copy, Clone)]
 pub struct Camera {
     aspect_ratio: f64,
     focal_length: f64,
