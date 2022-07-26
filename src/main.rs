@@ -44,52 +44,12 @@ fn main() {
     let image_width: u32 = 200;
     let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
 
-    let mut threads: Vec<JoinHandle<_>> = vec![];
-    let thread_count = 8;
-
-    let now = Instant::now();
-
-    let frame = Arc::new(Mutex::new(Box::new(Frame::new(image_width, image_height))));
-
-    for i in 0..thread_count {
-        let clone = Arc::clone(&frame);
-        threads.push(thread::spawn(move || {
-            // let frame = RayTracer::render(image_width, image_height, camera, simple_scene());
-            RayTracer::render(
-                image_width,
-                image_height,
-                camera,
-                complex_not_random_scene(),
-                i,
-                clone,
-            );
-            eprintln!("Thread [{}] complete", i);
-        }));
-    }
-
-    // let mut frames: Vec<Frame> = vec![];
-
-    for thread in threads {
-        thread.join().unwrap();
-    }
-
-    // for i in 0..image_width {
-    //     for j in 0..image_height {
-    //         let mut color = Color::ZEROS();
-
-    //         for frame in &frames {
-    //             color += frame.get_color(i, j);
-    //         }
-
-    //         final_frame.set_color(
-    //             i,
-    //             j,
-    //             RayTracer::normalize_color(color, RayTracer::SAMPLES_PER_PIXEL * thread_count),
-    //         );
-    //     }
-    // }
-
-    eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
+    let frame = RayTracer::render(
+        image_width,
+        image_height,
+        camera,
+        complex_not_random_scene(),
+    );
 
     frame.lock().unwrap().borrow().write_to_console();
 }

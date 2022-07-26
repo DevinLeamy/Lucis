@@ -23,6 +23,14 @@ impl Frame {
         self.buffer[y as usize][x as usize]
     }
 
+    pub fn width(&self) -> u32 {
+        self.width()
+    }
+
+    pub fn height(&self) -> u32 {
+        self.height()
+    }
+
     pub fn write_to_console(&self) {
         println!("P3\n{} {}\n255", self.width, self.height);
         for j in (0..self.height as usize).rev() {

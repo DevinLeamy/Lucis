@@ -3,6 +3,7 @@ use std::{
     cell::RefCell,
     io::{self, Write},
     sync::{Arc, Mutex},
+    thread::{self, JoinHandle},
     time::Instant,
 };
 
@@ -12,27 +13,26 @@ use crate::{
     hittable_list::HittableList,
     math::Vec3,
     ray::Ray,
+    scenes::{complex_not_random_scene, simple_scene},
 };
 
 use super::{camera::Camera, Frame};
 pub struct RayTracer {}
 
 impl RayTracer {
-    pub const SAMPLES_PER_PIXEL: u32 = (400 / 1) as u32;
+    pub const SAMPLES_PER_PIXEL: u32 = (50 / 1) as u32;
     const MAXIMUM_BOUNCE_DEPTH: u32 = 50;
     const THREAD_COUNT: u32 = 8;
 
-    pub fn render(
-        image_width: u32,
-        image_height: u32,
+    fn tile_render(
+        frame: Arc<Mutex<Box<Frame>>>,
         camera: Camera,
         scene: HittableList,
         thread_id: u32,
-        frame: Arc<Mutex<Box<Frame>>>,
-    ) -> () {
-        let mut threads: Vec<JoinHandle<_>> = vec![];
-        let now = Instant::now();
-        // let mut frame = Frame::new(image_width, image_height);
+    ) {
+        let mut frame = frame.lock().unwrap();
+        let image_width = 200;
+        let image_height = 132;
 
         for j in (0..image_height).rev() {
             // eprintln!(
@@ -61,22 +61,35 @@ impl RayTracer {
                 let normalized_color =
                     RayTracer::normalize_color(pixel_color, RayTracer::SAMPLES_PER_PIXEL);
 
-                frame
-                    .lock()
-                    .unwrap()
-                    .borrow_mut()
-                    .set_color(i, j, normalized_color);
+                frame.borrow_mut().set_color(i, j, normalized_color);
             }
-            // println!("");
+        }
+    }
+
+    pub fn render(
+        image_width: u32,
+        image_height: u32,
+        camera: Camera,
+        scene: HittableList,
+    ) -> Arc<Mutex<Box<Frame>>> {
+        let frame = Arc::new(Mutex::new(Box::new(Frame::new(image_width, image_height))));
+        let mut threads: Vec<JoinHandle<_>> = vec![];
+        let now = Instant::now();
+
+        for thread_id in 0..RayTracer::THREAD_COUNT {
+            let frame_clone = Arc::clone(&frame);
+            threads.push(thread::spawn(move || {
+                RayTracer::tile_render(frame_clone, camera, simple_scene(), thread_id);
+            }));
         }
 
         for thread in threads {
             thread.join().unwrap();
         }
 
-        // eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
+        eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
 
-        // frame
+        frame
     }
 
     pub fn normalize_color(pixel_color: Color, pixel_samples: u32) -> Color {
