@@ -156,6 +156,14 @@ impl ops::MulAssign<f64> for Vec3 {
     }
 }
 
+impl ops::Mul<Vec3> for f64 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: Vec3) -> Vec3 {
+        rhs * self
+    }
+}
+
 impl ops::Mul<Vec3> for Vec3 {
     type Output = Vec3;
 

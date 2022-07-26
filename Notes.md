@@ -67,8 +67,10 @@
 - [ ] Add lights
 - [ ] Render 3D meshes
 - [ ] Render surface textures
+- [ ] Have it run in the browser
 
 ### TODO
 - [ ] Address `CLEAN` annotations
-- [ ] Replace `true`/`false` hit results with `Option`s
+- [x] Replace `true`/`false` hit results with `Option`s
 - [ ] Create a cleaner API to instantiate materials and scene geometry
+- [ ] Give `HitRecord` a constructor so that we don't always need to compute the normal
