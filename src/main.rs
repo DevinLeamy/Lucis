@@ -1,3 +1,4 @@
+// use simple::Window;
 use std::{
     borrow::Borrow,
     cell::RefCell,
@@ -13,6 +14,7 @@ use scenes::*;
 use sphere::*;
 
 mod common;
+mod cuboid;
 mod hittable;
 mod hittable_list;
 mod math;
@@ -25,7 +27,7 @@ mod utils;
 fn main() {
     let aspect_ratio = 3.0 / 2.0;
 
-    let camera_origin = Vec3::new(13.0, 2.0, 3.0);
+    let camera_origin = Vec3::new(13.0, 4.0, 3.0);
     let look_at = Vec3::new(0.0, 0.0, 0.0);
     let world_up = Vec3::new(0.0, 1.0, 0.0);
     let distance_to_focus = 10.0;
@@ -40,8 +42,8 @@ fn main() {
         aperture,
         distance_to_focus,
     );
-
     let image_width: u32 = 200;
+    // let image_width: u32 = 600;
     let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
 
     let frame = RayTracer::render(

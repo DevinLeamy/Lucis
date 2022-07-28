@@ -63,15 +63,17 @@
 
 ### Features
 - [x] Concurrency 
-  - [ ] Only write one frame
+  - [x] Only write one frame
 - [ ] Store images in `jpeg`/`png`/`jpg` 
 - [ ] Add lights
-- [ ] Render 3D meshes
+- [ ] Add squares
 - [ ] Render surface textures
-- [ ] Have it run in the browser
 
 ### TODO
 - [ ] Address `CLEAN` annotations
 - [x] Replace `true`/`false` hit results with `Option`s
 - [ ] Create a cleaner API to instantiate materials and scene geometry
 - [ ] Give `HitRecord` a constructor so that we don't always need to compute the normal
+- [ ] Create scene objects
+- [ ] Create scatter objects
+- [ ] Have it run in the browser

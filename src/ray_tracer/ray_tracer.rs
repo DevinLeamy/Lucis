@@ -31,8 +31,8 @@ impl RayTracer {
         thread_id: u32,
     ) {
         let mut frame = frame.lock().unwrap();
-        let image_width = 200;
-        let image_height = 132;
+        let image_width = frame.width();
+        let image_height = frame.height();
 
         for j in (0..image_height).rev() {
             // eprintln!(
@@ -78,6 +78,7 @@ impl RayTracer {
 
         for thread_id in 0..RayTracer::THREAD_COUNT {
             let frame_clone = Arc::clone(&frame);
+            let scene_clone = scene.clone();
             threads.push(thread::spawn(move || {
                 RayTracer::tile_render(frame_clone, camera, simple_scene(), thread_id);
             }));

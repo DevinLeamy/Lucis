@@ -24,11 +24,11 @@ impl Frame {
     }
 
     pub fn width(&self) -> u32 {
-        self.width()
+        self.width
     }
 
     pub fn height(&self) -> u32 {
-        self.height()
+        self.height
     }
 
     pub fn write_to_console(&self) {
@@ -42,4 +42,16 @@ impl Frame {
             }
         }
     }
+
+    // pub fn display(&self, window: &mut Window) {
+    //     window.clear();
+    //     for i in 0..self.width as usize {
+    //         for j in 0..self.height as usize {
+    //             let color = self.buffer[j][i];
+
+    //             window.set_color(color[0] as u8, color[1] as u8, color[2] as u8, 1);
+    //             window.draw_point(Point::new(i as i32, j as i32));
+    //         }
+    //     }
+    // }
 }
