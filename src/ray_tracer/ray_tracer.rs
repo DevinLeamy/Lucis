@@ -4,7 +4,7 @@ use std::{
     io::{self, Write},
     sync::{Arc, Mutex},
     thread::{self, JoinHandle},
-    time::Instant,
+    // time::Instant,
 };
 
 use crate::{
@@ -74,7 +74,7 @@ impl RayTracer {
     ) -> Arc<Mutex<Box<Frame>>> {
         let frame = Arc::new(Mutex::new(Box::new(Frame::new(image_width, image_height))));
         let mut threads: Vec<JoinHandle<_>> = vec![];
-        let now = Instant::now();
+        // let now = Instant::now();
 
         for thread_id in 0..RayTracer::THREAD_COUNT {
             let frame_clone = Arc::clone(&frame);
@@ -87,7 +87,8 @@ impl RayTracer {
             thread.join().unwrap();
         }
 
-        eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
+        // eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
+        eprintln!("Render complete!");
 
         frame
     }

@@ -6,4 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# random number generation
 rand = "0.8.5"
+getrandom = { version = "0.2", features = ["js"] }
+
+# logging to the console 
+wasm-logger = "0.2.0"
+log = "0.4.6"
+
+# front-end framework
+yew = "0.19.3"
