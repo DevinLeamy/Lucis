@@ -1,5 +1,7 @@
 use std::borrow::Borrow;
+use wasm_bindgen::{prelude::wasm_bindgen, JsCast, JsValue};
 
+use web_sys::HtmlCanvasElement;
 use yew::prelude::*;
 
 use common::*;
@@ -18,7 +20,9 @@ mod scenes;
 mod sphere;
 mod utils;
 
-struct Main {}
+struct Main {
+    canvas_ref: NodeRef,
+}
 
 enum Command {
     Render,
@@ -29,13 +33,16 @@ impl Component for Main {
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
-        Self {}
+        Self {
+            canvas_ref: NodeRef::default(),
+        }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, command: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, command: Self::Message) -> bool {
         match command {
             Command::Render => {
-                // let frame = create_frame();
+                let frame = create_frame();
+                self.render(frame, ctx);
                 log::info!("Created a frame!");
             }
             _ => (),
@@ -58,7 +65,41 @@ impl Component for Main {
                 <button onclick={handle_click}>
                     { "Create frame!" }
                 </button>
+                <div>
+                    <h1>
+                        {"Display"}
+                    </h1>
+                    <canvas ref={self.canvas_ref.clone()} />
+                </div>
             </div>
+        }
+    }
+}
+
+impl Main {
+    fn render(&self, frame: Frame, ctx: &Context<Self>) {
+        let canvas = self.canvas_ref.cast::<HtmlCanvasElement>().unwrap();
+
+        canvas.set_height(frame.height());
+        canvas.set_width(frame.width());
+
+        let context = canvas
+            .get_context("2d")
+            .unwrap()
+            .unwrap()
+            .dyn_into::<web_sys::CanvasRenderingContext2d>()
+            .unwrap();
+
+        for i in 0..canvas.width() {
+            for j in 0..canvas.height() {
+                let color = frame.get_color(i, j);
+                let js_color: JsValue = JsValue::from_str(
+                    format!("rgb({}, {}, {})", color[0], color[1], color[2]).as_str(),
+                );
+
+                context.set_fill_style(&js_color);
+                context.fill_rect(i.into(), (canvas.height() - 1 - j).into(), 1.0, 1.0);
+            }
         }
     }
 }
@@ -82,7 +123,7 @@ fn create_frame() -> Frame {
         distance_to_focus,
     );
 
-    let image_width: u32 = 200;
+    let image_width: u32 = 600;
     let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
 
     let frame = RayTracer::render(
