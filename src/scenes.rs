@@ -1,6 +1,6 @@
 use rand::{prelude::StdRng, SeedableRng};
 
-use crate::*;
+use crate::{cuboid::Triangle, *};
 
 pub fn complex_scene() -> HittableList {
     let mut world = HittableList::default();
@@ -171,6 +171,12 @@ pub fn simple_scene() -> HittableList {
         Point::new(4.0, 1.0, 0.0),
         1.0,
         m3,
+    ))));
+
+    world.add(make_shared_hittable(Box::new(Triangle::new(
+        Point::new(-5.0, 1.0, 0.0),
+        Point::new(3.0, 0.0, 0.0),
+        Point::new(2.0, 3.0, 0.0),
     ))));
 
     world

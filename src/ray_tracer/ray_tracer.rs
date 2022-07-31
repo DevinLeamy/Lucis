@@ -1,10 +1,8 @@
 use std::{
     borrow::BorrowMut,
-    cell::RefCell,
     io::{self, Write},
     sync::{Arc, Mutex},
-    thread::{self, JoinHandle},
-    time::Instant,
+    // time::Instant,
 };
 
 use crate::{
@@ -20,7 +18,7 @@ use super::{camera::Camera, Frame};
 pub struct RayTracer {}
 
 impl RayTracer {
-    pub const SAMPLES_PER_PIXEL: u32 = (50 / 1) as u32;
+    pub const SAMPLES_PER_PIXEL: u32 = 8;
     const MAXIMUM_BOUNCE_DEPTH: u32 = 50;
     const THREAD_COUNT: u32 = 8;
 
@@ -73,22 +71,15 @@ impl RayTracer {
         scene: HittableList,
     ) -> Arc<Mutex<Box<Frame>>> {
         let frame = Arc::new(Mutex::new(Box::new(Frame::new(image_width, image_height))));
-        let mut threads: Vec<JoinHandle<_>> = vec![];
-        let now = Instant::now();
+        // let now = Instant::now();
 
         for thread_id in 0..RayTracer::THREAD_COUNT {
             let frame_clone = Arc::clone(&frame);
-            let scene_clone = scene.clone();
-            threads.push(thread::spawn(move || {
-                RayTracer::tile_render(frame_clone, camera, simple_scene(), thread_id);
-            }));
+            RayTracer::tile_render(frame_clone, camera, simple_scene(), thread_id);
         }
 
-        for thread in threads {
-            thread.join().unwrap();
-        }
-
-        eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
+        // eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
+        eprintln!("Render complete!");
 
         frame
     }
