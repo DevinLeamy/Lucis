@@ -12,6 +12,7 @@ pub struct RayTracerDisplay {
 
 pub enum Signal {
     Render,
+    RenderComplete(Frame),
 }
 
 impl Component for RayTracerDisplay {
@@ -28,17 +29,28 @@ impl Component for RayTracerDisplay {
     fn update(&mut self, ctx: &Context<Self>, signal: Self::Message) -> bool {
         match signal {
             Signal::Render => {
-                let frame = create_frame();
+                log::info!("Requesting a frame!");
+                ctx.link().send_future(async {
+                    let frame = create_frame().await;
+                    Signal::RenderComplete(frame)
+                })
+            }
+            Signal::RenderComplete(frame) => {
                 self.render(frame, ctx);
-                log::info!("Created a frame!");
+                log::info!("Render complete!");
             }
             _ => (),
         }
         true
     }
 
-    fn rendered(&mut self, _ctx: &Context<Self>, first_render: bool) {
+    // fn changed(&mut self, ctx: &Context<Self>) -> bool {
+
+    // }
+
+    fn rendered(&mut self, ctx: &Context<Self>, first_render: bool) {
         if first_render {
+            log::info!("First render");
             let canvas = self.canvas_ref.cast::<HtmlCanvasElement>().unwrap();
 
             canvas.set_height(500u32);
@@ -52,6 +64,7 @@ impl Component for RayTracerDisplay {
                     .dyn_into::<web_sys::CanvasRenderingContext2d>()
                     .unwrap(),
             );
+            ctx.link().send_message(Signal::Render);
         }
     }
 
@@ -97,7 +110,7 @@ impl RayTracerDisplay {
     }
 }
 
-fn create_frame() -> Frame {
+async fn create_frame() -> Frame {
     let camera: Camera = Camera::new(CameraConfig::default());
 
     let image_width: u32 = 400;
