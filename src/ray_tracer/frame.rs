@@ -24,11 +24,11 @@ impl Frame {
     }
 
     pub fn width(&self) -> u32 {
-        self.width()
+        self.width
     }
 
     pub fn height(&self) -> u32 {
-        self.height()
+        self.height
     }
 
     pub fn write_to_console(&self) {

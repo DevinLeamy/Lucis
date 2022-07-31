@@ -1,9 +1,29 @@
 [package]
-name = "beaming"
+name = "Lucis"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+# random number generation
 rand = "0.8.5"
+getrandom = { version = "0.2", features = ["js"] }
+# logging to the console 
+wasm-logger = "0.2.0"
+log = "0.4.6"
+# front-end framework
+yew = "0.19.3"
+# provides bindings for Web APIs
+web-sys = { version = "0.3.59", features = [
+    "HtmlCanvasElement",
+    "CanvasRenderingContext2d"
+]}
+# allows interactions between WASM modules and JavaScript
+wasm-bindgen = "0.2.82"
+
+# Enables support for threaded WebAssembly
+# [unstable]
+# build-std = ['std', 'panic_abort']
+
+# [build]
+# target = "wasm32-unknown-unknown"
+# rustflags = '-Ctarget-feature=+atomics,+bulk-memory'
