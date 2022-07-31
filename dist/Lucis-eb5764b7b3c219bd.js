@@ -211,7 +211,7 @@ function makeClosure(arg0, arg1, dtor, f) {
     return real;
 }
 function __wbg_adapter_24(arg0, arg1, arg2) {
-    wasm._dyn_core__ops__function__Fn__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hff3c68f1b6480029(arg0, arg1, addHeapObject(arg2));
+    wasm._dyn_core__ops__function__Fn__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hfd39d3aec33da056(arg0, arg1, addHeapObject(arg2));
 }
 
 function handleError(f, args) {
@@ -287,15 +287,6 @@ function getImports() {
         const ret = getObject(arg0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_is_object = function(arg0) {
-        const val = getObject(arg0);
-        const ret = typeof(val) === 'object' && val !== null;
-        return ret;
-    };
-    imports.wbg.__wbindgen_is_string = function(arg0) {
-        const ret = typeof(getObject(arg0)) === 'string';
-        return ret;
-    };
     imports.wbg.__wbg_msCrypto_5a86d77a66230f81 = function(arg0) {
         const ret = getObject(arg0).msCrypto;
         return addHeapObject(ret);
@@ -330,6 +321,15 @@ function getImports() {
         const ret = getObject(arg0).node;
         return addHeapObject(ret);
     };
+    imports.wbg.__wbindgen_is_object = function(arg0) {
+        const val = getObject(arg0);
+        const ret = typeof(val) === 'object' && val !== null;
+        return ret;
+    };
+    imports.wbg.__wbindgen_is_string = function(arg0) {
+        const ret = typeof(getObject(arg0)) === 'string';
+        return ret;
+    };
     imports.wbg.__wbindgen_number_get = function(arg0, arg1) {
         const obj = getObject(arg1);
         const ret = typeof(obj) === 'number' ? obj : undefined;
@@ -339,9 +339,6 @@ function getImports() {
     imports.wbg.__wbindgen_number_new = function(arg0) {
         const ret = arg0;
         return addHeapObject(ret);
-    };
-    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
-        takeObject(arg0);
     };
     imports.wbg.__wbg_error_09919627ac0992f5 = function(arg0, arg1) {
         try {
@@ -360,6 +357,9 @@ function getImports() {
         const len0 = WASM_VECTOR_LEN;
         getInt32Memory0()[arg0 / 4 + 1] = len0;
         getInt32Memory0()[arg0 / 4 + 0] = ptr0;
+    };
+    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
+        takeObject(arg0);
     };
     imports.wbg.__wbg_warn_2aa0e7178e1d35f6 = function(arg0, arg1) {
         var v0 = getArrayJsValueFromWasm0(arg0, arg1).slice();
@@ -401,16 +401,8 @@ function getImports() {
     imports.wbg.__wbg_addEventListener_ec92ea1297eefdfc = function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
         getObject(arg0).addEventListener(getStringFromWasm0(arg1, arg2), getObject(arg3), getObject(arg4));
     }, arguments) };
-    imports.wbg.__wbg_width_54a66e74169bb513 = function(arg0) {
-        const ret = getObject(arg0).width;
-        return ret;
-    };
     imports.wbg.__wbg_setwidth_79da97dd2684789d = function(arg0, arg1) {
         getObject(arg0).width = arg1 >>> 0;
-    };
-    imports.wbg.__wbg_height_d4607377aede83c6 = function(arg0) {
-        const ret = getObject(arg0).height;
-        return ret;
     };
     imports.wbg.__wbg_setheight_d1ec9b4faad45a42 = function(arg0, arg1) {
         getObject(arg0).height = arg1 >>> 0;
@@ -595,8 +587,8 @@ function getImports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper2597 = function(arg0, arg1, arg2) {
-        const ret = makeClosure(arg0, arg1, 162, __wbg_adapter_24);
+    imports.wbg.__wbindgen_closure_wrapper1763 = function(arg0, arg1, arg2) {
+        const ret = makeClosure(arg0, arg1, 213, __wbg_adapter_24);
         return addHeapObject(ret);
     };
 
@@ -632,7 +624,7 @@ function initSync(bytes) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('Lucis-d1251e363e4ecec9_bg.wasm', import.meta.url);
+        input = new URL('Lucis-eb5764b7b3c219bd_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 

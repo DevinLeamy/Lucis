@@ -2,9 +2,40 @@ use crate::math::*;
 use crate::ray::Ray;
 use crate::utils::*;
 
+pub struct CameraConfig {
+    /// aspect ratio (horizontal / vertical)
+    pub aspect: f64,
+    /// origin in world coordinates
+    pub origin: Point,
+    /// look at vector
+    pub look_at: Point,
+    /// unit vector for world's vertical axis
+    pub world_up: Vec3,
+    /// distance to "focus"
+    pub focus_dist: f64,
+    /// aperture diameter
+    pub aperture: f64,
+    /// vertical field of view in degrees
+    pub vertical_fov_degrees: f64,
+}
+
+impl CameraConfig {
+    pub fn default() -> CameraConfig {
+        CameraConfig {
+            aspect: 3.0 / 2.0,
+            origin: Point::new(13.0, 2.0, 3.0),
+            look_at: Point::new(0.0, 0.0, 0.0),
+            world_up: Vec3::new(0.0, 1.0, 0.0),
+            focus_dist: 10.0,
+            aperture: 0.1,
+            vertical_fov_degrees: 20.0,
+        }
+    }
+}
+
 #[derive(Copy, Clone)]
 pub struct Camera {
-    aspect_ratio: f64,
+    aspect: f64,
     focal_length: f64,
     origin: Point,
     viewport_height: f64,
@@ -19,36 +50,28 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(
-        origin: Point,
-        look_at: Point,
-        world_up: Vec3,
-        vertical_fov_in_degrees: f64,
-        aspect_ratio: f64,
-        aperture_diameter: f64,
-        focus_distance: f64,
-    ) -> Self {
-        let theta = vertical_fov_in_degrees.to_radians();
+    pub fn new(cfg: CameraConfig) -> Self {
+        let theta = cfg.vertical_fov_degrees.to_radians();
         let height = (theta / 2.0).tan();
 
         let focal_length = 1.0;
         let viewport_height = 2.0 * height;
-        let viewport_width: f64 = viewport_height * aspect_ratio;
+        let viewport_width: f64 = viewport_height * cfg.aspect;
 
-        let target = Vec3::normalized(origin - look_at); // points in the +z
-        let u = Vec3::normalized(Vec3::cross(&world_up, &target)); // horizontal unit vector
+        let target = Vec3::normalized(cfg.origin - cfg.look_at); // points in the +z
+        let u = Vec3::normalized(Vec3::cross(&cfg.world_up, &target)); // horizontal unit vector
         let v = Vec3::normalized(Vec3::cross(&target, &u));
 
-        let horizontal = u * (viewport_width as f64) * focus_distance;
-        let vertical = v * (viewport_height as f64) * focus_distance;
-        let lower_left = origin - horizontal / 2.0 - vertical / 2.0 - target * focus_distance;
+        let horizontal = u * (viewport_width as f64) * cfg.focus_dist;
+        let vertical = v * (viewport_height as f64) * cfg.focus_dist;
+        let lower_left = cfg.origin - horizontal / 2.0 - vertical / 2.0 - target * cfg.focus_dist;
 
-        let lens_radius = aperture_diameter / 2.0;
+        let lens_radius = cfg.aperture / 2.0;
 
         Self {
-            aspect_ratio,
+            aspect: cfg.aspect,
             focal_length,
-            origin,
+            origin: cfg.origin,
             viewport_height,
             viewport_width,
             horizontal,
@@ -63,7 +86,7 @@ impl Camera {
     }
 
     pub fn aspect_ratio(&self) -> f64 {
-        self.aspect_ratio
+        self.aspect
     }
 
     pub fn create_ray(&self, h_offset: f64, v_offset: f64) -> Ray {
