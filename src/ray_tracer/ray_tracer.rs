@@ -22,7 +22,7 @@ pub struct RayTracerConfig {
 impl RayTracerConfig {
     pub fn default() -> RayTracerConfig {
         RayTracerConfig {
-            samples_per_pixel: 50,
+            samples_per_pixel: 8,
             maximum_bounce_depth: 50,
             thread_count: 1,
         }

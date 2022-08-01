@@ -62,18 +62,19 @@
 - This can be determined by taking the dot product of the two vectors
 
 ### Features
-- [x] Concurrency 
-  - [x] Only write one frame
+- [ ] Concurrency 
+- [x] Only write one frame
 - [ ] Store images in `jpeg`/`png`/`jpg` 
 - [ ] Add lights
 - [ ] Add squares
 - [ ] Render surface textures
+- [ ] Allow configuration of ray tracer
 
 ### TODO
 - [ ] Address `CLEAN` annotations
 - [x] Replace `true`/`false` hit results with `Option`s
 - [ ] Create a cleaner API to instantiate materials and scene geometry
-- [ ] Give `HitRecord` a constructor so that we don't always need to compute the normal
+- [x] Give `HitRecord` a constructor so that we don't always need to compute the normal
 - [ ] Create scene objects
 - [ ] Create scatter objects
-- [ ] Have it run in the browser
+- [x] Have it run in the browser

@@ -56,7 +56,7 @@ impl Component for RayTracerDisplay {
     fn rendered(&mut self, ctx: &Context<Self>, first_render: bool) {
         if first_render {
             log::info!("First render");
-            self.initialize_canvas(ctx);
+            self.initialize_canvas();
             ctx.link().send_message(Signal::Render);
         }
     }
@@ -86,7 +86,7 @@ impl Component for RayTracerDisplay {
 }
 
 impl RayTracerDisplay {
-    fn initialize_canvas(&mut self, ctx: &Context<Self>) {
+    fn initialize_canvas(&mut self) {
         let canvas = self.canvas_ref.cast::<HtmlCanvasElement>().unwrap();
 
         canvas.set_height(500u32);
