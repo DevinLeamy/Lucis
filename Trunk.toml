@@ -2,3 +2,6 @@
 target = "index.html"
 dist = "dist"
 public_url = "/"
+
+[serve]
+no_autoreload = true 

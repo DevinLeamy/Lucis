@@ -15,7 +15,7 @@ impl Lambertian {
 
 // CLEAN: update scatter to return Option<Ray>, rather than take in a reference and return true
 impl Material for Lambertian {
-    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<(Color, Ray)> {
+    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<Scatter> {
         let mut scatter_direction = hit_record.normal() + random_unit_vector();
 
         // guard against potential floating point errors
@@ -23,9 +23,12 @@ impl Material for Lambertian {
             scatter_direction = hit_record.normal();
         }
 
-        let bounced_ray = Ray::new(hit_record.point(), scatter_direction);
+        let bounced_ray = Ray::new_instant(hit_record.point(), scatter_direction, ray.time());
         let attenuation = self.albedo;
 
-        Some((attenuation, bounced_ray))
+        Some(Scatter {
+            color: attenuation,
+            ray: bounced_ray,
+        })
     }
 }

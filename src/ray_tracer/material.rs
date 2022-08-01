@@ -8,8 +8,13 @@ use crate::ray::Ray;
 // CLEAN: ideally, we want all materials in ray_tracer::material::...
 pub use crate::ray_tracer::lambertian::*;
 
+pub struct Scatter {
+    pub ray: Ray,
+    pub color: Color,
+}
+
 pub trait Material {
-    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<(Color, Ray)>;
+    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<Scatter>;
 }
 
 pub fn make_shared_material<T>(material: T) -> Rc<RefCell<T>> {

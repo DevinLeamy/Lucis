@@ -1,3 +1,4 @@
+use crate::common::random_float_in_range;
 use crate::math::*;
 use crate::ray::Ray;
 use crate::utils::*;
@@ -17,18 +18,24 @@ pub struct CameraConfig {
     pub aperture: f64,
     /// vertical field of view in degrees
     pub vertical_fov_degrees: f64,
+    /// // shutter open time
+    pub time0: f64,
+    /// shutter close time
+    pub time1: f64,
 }
 
-impl CameraConfig {
-    pub fn default() -> CameraConfig {
+impl Default for CameraConfig {
+    fn default() -> Self {
         CameraConfig {
-            aspect: 3.0 / 2.0,
+            aspect: 16.0 / 9.0,
             origin: Point::new(13.0, 2.0, 3.0),
             look_at: Point::new(0.0, 0.0, 0.0),
             world_up: Vec3::new(0.0, 1.0, 0.0),
             focus_dist: 10.0,
             aperture: 0.1,
             vertical_fov_degrees: 20.0,
+            time0: 0f64,
+            time1: 0f64,
         }
     }
 }
@@ -47,6 +54,10 @@ pub struct Camera {
     target: Vec3,
     u: Vec3,
     v: Vec3,
+    /// shutter open time
+    time0: f64,
+    /// shutter close time
+    time1: f64,
 }
 
 impl Camera {
@@ -82,6 +93,8 @@ impl Camera {
             target,
             u,
             v,
+            time0: cfg.time0,
+            time1: cfg.time1,
         }
     }
 
@@ -93,11 +106,14 @@ impl Camera {
         let lens_sample = sample_unit_disk() * self.lens_radius;
         let offset = self.u * lens_sample.x() + self.v * lens_sample.y();
 
-        Ray::new(
+        let mut ray = Ray::new(
             self.origin + offset,
             self.lower_left + self.horizontal * h_offset + self.vertical * v_offset
                 - self.origin
                 - offset,
-        )
+        );
+        ray.set_time(random_float_in_range(self.time0, self.time1));
+
+        ray
     }
 }

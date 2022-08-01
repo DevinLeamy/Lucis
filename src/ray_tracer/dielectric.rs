@@ -23,7 +23,7 @@ impl Dielectric {
 Dielectric material that refracts all incoming light
 */
 impl Material for Dielectric {
-    fn scatter(&self, ray: &crate::ray::Ray, hit_record: &HitRecord) -> Option<(Color, Ray)> {
+    fn scatter(&self, ray: &crate::ray::Ray, hit_record: &HitRecord) -> Option<Scatter> {
         let attenuation = Color::ONES();
 
         let refractive_ratio = if hit_record.hit_front_face() {
@@ -47,8 +47,9 @@ impl Material for Dielectric {
             refract(&unit_direction, &hit_record.normal(), refractive_ratio)
         };
 
-        let bounced_ray = Ray::new(hit_record.point(), out_direction);
-
-        Some((attenuation, bounced_ray))
+        Some(Scatter {
+            color: attenuation,
+            ray: Ray::new_instant(hit_record.point(), out_direction, ray.time()),
+        })
     }
 }

@@ -1,5 +1,6 @@
 # Sources
 - [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
+- [_The Next Weekend_](https://raytracing.github.io/books/RayTracingTheNextWeek.html)
 - [Fast Ray Tracing](https://uwspace.uwaterloo.ca/bitstream/handle/10012/3947/thesis.pdf)
 # Conventions
 
@@ -62,9 +63,9 @@
 - This can be determined by taking the dot product of the two vectors
 
 ### Features
-- [ ] Concurrency 
+- [ ] WASM concurrency(!!!) 
 - [x] Only write one frame
-- [ ] Store images in `jpeg`/`png`/`jpg` 
+- [ ] Download images in `png` 
 - [ ] Add lights
 - [ ] Add squares
 - [ ] Render surface textures
@@ -72,9 +73,12 @@
 
 ### TODO
 - [ ] Address `CLEAN` annotations
+- [ ] Create wasm and non-wasm builds that can be interchanged via a flag
 - [x] Replace `true`/`false` hit results with `Option`s
 - [ ] Create a cleaner API to instantiate materials and scene geometry
 - [x] Give `HitRecord` a constructor so that we don't always need to compute the normal
 - [ ] Create scene objects
 - [ ] Create scatter objects
 - [x] Have it run in the browser
+
+### (2.1) Motion Blur

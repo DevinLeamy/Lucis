@@ -23,6 +23,8 @@ pub fn complex_scene() -> HittableList {
                 j as f64 * random_float(),
             );
 
+            let center2 = origin + Vec3::new(0f64, random_float_in_range(0f64, 0.5), 0f64);
+
             if (origin - Point::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 let material = if mat < 0.8 {
                     let albedo = Vec3::RAND() * Vec3::RAND();
@@ -36,8 +38,8 @@ pub fn complex_scene() -> HittableList {
                     make_shared_material::<Box<dyn Material>>(Box::new(Dielectric::new(1.5)))
                 };
 
-                world.add(make_shared_hittable(Box::new(Sphere::new(
-                    origin, 0.2, material,
+                world.add(make_shared_hittable(Box::new(MovingSphere::new(
+                    origin, center2, 0.0, 1.0, 0.2, material,
                 ))))
             }
         }

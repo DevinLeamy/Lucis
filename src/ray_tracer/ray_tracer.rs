@@ -1,10 +1,4 @@
-use crate::{
-    common::{color::Color, random_float, INFINITY},
-    hittable::Hittable,
-    hittable_list::HittableList,
-    math::Vec3,
-    ray::Ray,
-};
+use crate::common::*;
 
 use super::{camera::Camera, Frame};
 pub struct RayTracer {
@@ -22,7 +16,7 @@ pub struct RayTracerConfig {
 impl RayTracerConfig {
     pub fn default() -> RayTracerConfig {
         RayTracerConfig {
-            samples_per_pixel: 8,
+            samples_per_pixel: 20,
             maximum_bounce_depth: 50,
             thread_count: 1,
         }
@@ -133,14 +127,14 @@ impl RayTracer {
             a unit sphere tangent to point of intersection. Then determine
             the color obtained from the resulting bounced ray
             */
-            if let Some((attenuation, bounced_ray)) = hit_record
+            if let Some(scatter) = hit_record
                 .clone()
                 .material()
                 .unwrap()
                 .borrow()
                 .scatter(ray, &hit_record)
             {
-                attenuation * self.ray_color(&bounced_ray, world, bounce_depth + 1)
+                scatter.color * self.ray_color(&scatter.ray, world, bounce_depth + 1)
             } else {
                 Color::ZEROS()
             }
