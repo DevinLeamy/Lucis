@@ -7,14 +7,21 @@ use std::rc::Rc;
 
 #[derive(Clone, Default)]
 pub struct HitRecord {
+    /// point of intersection
     pub point: Point,
+    /// surface normal of the intersected surface (always opposes the direction of the ray)
     pub normal: Vec3,
+    /// time of the ray's intersection
     pub t: f64,
+    /// material of the intersected surface
     pub material: Option<Rc<RefCell<Box<dyn Material>>>>,
+    /// did the ray hit the outer face of the surface?
     pub hit_front_face: bool,
 }
 
 impl HitRecord {
+    // TODO: add a constructor and have this called in the constructor
+    // TODO: make fields private
     pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: &Vec3) {
         /*
         if the vectors point in opposite directions (dot < 0), the ray must be

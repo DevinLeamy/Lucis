@@ -1,6 +1,5 @@
 use crate::*;
 
-use std::borrow::Borrow;
 use wasm_bindgen::{JsCast, JsValue};
 
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
@@ -12,6 +11,7 @@ pub struct RayTracerDisplay {
 
 pub enum Signal {
     Render,
+    RenderComplete(Frame),
 }
 
 impl Component for RayTracerDisplay {
@@ -28,30 +28,26 @@ impl Component for RayTracerDisplay {
     fn update(&mut self, ctx: &Context<Self>, signal: Self::Message) -> bool {
         match signal {
             Signal::Render => {
-                let frame = create_frame();
+                log::info!("Requesting a frame!");
+                ctx.link().send_future(async {
+                    let frame = create_frame().await;
+                    Signal::RenderComplete(frame)
+                })
+            }
+            Signal::RenderComplete(frame) => {
                 self.render(frame, ctx);
-                log::info!("Created a frame!");
+                log::info!("Render complete!");
             }
             _ => (),
         }
         true
     }
 
-    fn rendered(&mut self, _ctx: &Context<Self>, first_render: bool) {
+    fn rendered(&mut self, ctx: &Context<Self>, first_render: bool) {
         if first_render {
-            let canvas = self.canvas_ref.cast::<HtmlCanvasElement>().unwrap();
-
-            canvas.set_height(500u32);
-            canvas.set_width(600u32);
-
-            self.canvas = Some(
-                canvas
-                    .get_context("2d")
-                    .unwrap()
-                    .unwrap()
-                    .dyn_into::<web_sys::CanvasRenderingContext2d>()
-                    .unwrap(),
-            );
+            log::info!("First render");
+            self.initialize_canvas(ctx);
+            ctx.link().send_message(Signal::Render);
         }
     }
 
@@ -80,6 +76,21 @@ impl Component for RayTracerDisplay {
 }
 
 impl RayTracerDisplay {
+    fn initialize_canvas(&mut self, ctx: &Context<Self>) {
+        let canvas = self.canvas_ref.cast::<HtmlCanvasElement>().unwrap();
+
+        canvas.set_height(500u32);
+        canvas.set_width(600u32);
+
+        self.canvas = Some(
+            canvas
+                .get_context("2d")
+                .unwrap()
+                .unwrap()
+                .dyn_into::<web_sys::CanvasRenderingContext2d>()
+                .unwrap(),
+        );
+    }
     fn render(&mut self, frame: Frame, ctx: &Context<Self>) {
         let canvas = self.canvas.as_ref().unwrap();
 
@@ -97,27 +108,15 @@ impl RayTracerDisplay {
     }
 }
 
-fn create_frame() -> Frame {
-    let camera: Camera = Camera::new(CameraConfig::default());
-
-    let image_width: u32 = 600;
-    let image_height: u32 = (image_width as f64 / camera.aspect_ratio()) as u32;
-
-    let frame = RayTracer::render(
-        image_width,
-        image_height,
+async fn create_frame() -> Frame {
+    let camera = Camera::new(CameraConfig::default());
+    let image_width = 400;
+    let image_height = (image_width as f64 / camera.aspect_ratio()) as u32;
+    let mut ray_tracer = RayTracer::new(
+        RayTracerConfig::default(),
         camera,
-        complex_not_random_scene(),
+        Frame::new(image_width, image_height),
     );
 
-    frame.lock().unwrap().borrow().write_to_console();
-    let mut frame_clone: Frame = Frame::new(image_width, image_height);
-
-    for i in 0..image_width {
-        for j in 0..image_height {
-            frame_clone.set_color(i, j, frame.lock().unwrap().borrow().get_color(i, j));
-        }
-    }
-
-    frame_clone
+    ray_tracer.render(&simple_scene())
 }

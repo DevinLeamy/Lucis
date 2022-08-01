@@ -9,6 +9,7 @@ use sphere::*;
 
 mod common;
 mod components;
+mod cuboid;
 mod hittable;
 mod hittable_list;
 mod math;

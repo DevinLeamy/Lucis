@@ -1,5 +1,6 @@
 use crate::common::Color;
 
+#[derive(Clone)]
 pub struct Frame {
     width: u32,
     height: u32,
@@ -31,6 +32,14 @@ impl Frame {
         self.height
     }
 
+    pub fn clear(&mut self) {
+        for row in self.buffer.iter_mut() {
+            for color in row.iter_mut() {
+                *color = Color::ZEROS();
+            }
+        }
+    }
+
     pub fn write_to_console(&self) {
         println!("P3\n{} {}\n255", self.width, self.height);
         for j in (0..self.height as usize).rev() {
@@ -42,4 +51,16 @@ impl Frame {
             }
         }
     }
+
+    // pub fn display(&self, window: &mut Window) {
+    //     window.clear();
+    //     for i in 0..self.width as usize {
+    //         for j in 0..self.height as usize {
+    //             let color = self.buffer[j][i];
+
+    //             window.set_color(color[0] as u8, color[1] as u8, color[2] as u8, 1);
+    //             window.draw_point(Point::new(i as i32, j as i32));
+    //         }
+    //     }
+    // }
 }

@@ -1,91 +1,105 @@
-use std::{
-    borrow::BorrowMut,
-    io::{self, Write},
-    sync::{Arc, Mutex},
-    // time::Instant,
-};
-
 use crate::{
     common::{color::Color, random_float, INFINITY},
     hittable::Hittable,
     hittable_list::HittableList,
     math::Vec3,
     ray::Ray,
-    scenes::{complex_not_random_scene, simple_scene},
 };
 
 use super::{camera::Camera, Frame};
-pub struct RayTracer {}
+pub struct RayTracer {
+    config: RayTracerConfig,
+    camera: Camera,
+    frame: Frame,
+}
+
+pub struct RayTracerConfig {
+    samples_per_pixel: u32,
+    maximum_bounce_depth: u32,
+    thread_count: u32,
+}
+
+impl RayTracerConfig {
+    pub fn default() -> RayTracerConfig {
+        RayTracerConfig {
+            samples_per_pixel: 8,
+            maximum_bounce_depth: 50,
+            thread_count: 1,
+        }
+    }
+}
 
 impl RayTracer {
-    pub const SAMPLES_PER_PIXEL: u32 = 8;
-    const MAXIMUM_BOUNCE_DEPTH: u32 = 50;
-    const THREAD_COUNT: u32 = 8;
+    pub fn new(config: RayTracerConfig, camera: Camera, frame: Frame) -> RayTracer {
+        RayTracer {
+            config,
+            camera,
+            frame,
+        }
+    }
 
-    fn tile_render(
-        frame: Arc<Mutex<Box<Frame>>>,
-        camera: Camera,
-        scene: HittableList,
-        thread_id: u32,
-    ) {
-        let mut frame = frame.lock().unwrap();
-        let image_width = frame.width();
-        let image_height = frame.height();
+    pub fn set_camera(&mut self, camera: Camera) {
+        self.camera = camera;
+    }
+
+    pub fn set_frame(&mut self, frame: Frame) {
+        self.frame = frame;
+    }
+
+    pub fn set_config(&mut self, config: RayTracerConfig) {
+        self.config = config;
+    }
+
+    fn tile_render(&mut self, scene: &HittableList, thread_id: u32) {
+        let image_width = self.frame.width();
+        let image_height = self.frame.height();
 
         for j in (0..image_height).rev() {
-            // eprintln!(
-            //     "Progress: [{:.2}%] Time Elapsed: [{:.2}s]",
-            //     ((image_height - j) as f32 / image_height as f32) * 100.0,
-            //     now.elapsed().as_secs_f32()
-            // );
-            io::stderr().flush();
-
             for i in 0..image_width {
                 let tile_id = j * image_height + image_width;
-                if tile_id % RayTracer::THREAD_COUNT != thread_id {
+                if tile_id % self.config.thread_count != thread_id {
                     continue;
                 }
-
-                let mut pixel_color = Color::ZEROS();
-
-                for _ in 0..RayTracer::SAMPLES_PER_PIXEL {
-                    let u = (i as f64 + random_float()) / ((image_width - 1) as f64); // pixel x coordinate
-                    let v = (j as f64 + random_float()) / ((image_height - 1) as f64); // pixel y coordinate
-
-                    let ray = camera.create_ray(u, v);
-                    pixel_color += RayTracer::ray_color(&ray, &scene, 0);
-                }
-
-                let normalized_color =
-                    RayTracer::normalize_color(pixel_color, RayTracer::SAMPLES_PER_PIXEL);
-
-                frame.borrow_mut().set_color(i, j, normalized_color);
+                self.color_pixel(i, j, scene);
             }
         }
     }
 
-    pub fn render(
-        image_width: u32,
-        image_height: u32,
-        camera: Camera,
-        scene: HittableList,
-    ) -> Arc<Mutex<Box<Frame>>> {
-        let frame = Arc::new(Mutex::new(Box::new(Frame::new(image_width, image_height))));
-        // let now = Instant::now();
-
-        for thread_id in 0..RayTracer::THREAD_COUNT {
-            let frame_clone = Arc::clone(&frame);
-            RayTracer::tile_render(frame_clone, camera, simple_scene(), thread_id);
-        }
-
-        // eprintln!("Render complete [{:.2}s]", now.elapsed().as_secs_f32());
-        eprintln!("Render complete!");
-
-        frame
+    fn frame_to_world(&self, x: f64, y: f64) -> (f64, f64) {
+        (
+            x / (self.frame.width() - 1) as f64,
+            y / (self.frame.height() - 1) as f64,
+        )
     }
 
-    pub fn normalize_color(pixel_color: Color, pixel_samples: u32) -> Color {
-        let scale = 1.0 / (pixel_samples as f64);
+    fn color_pixel(&mut self, x: u32, y: u32, scene: &HittableList) {
+        let pixel_color = (0..self.config.samples_per_pixel)
+            .map(|_| {
+                let (u, v) =
+                    self.frame_to_world(x as f64 + random_float(), y as f64 + random_float());
+                let ray = self.camera.create_ray(u, v);
+                self.ray_color(&ray, &scene, 0)
+            })
+            .fold(Color::ZEROS(), |color, new_color| color + new_color);
+
+        self.frame
+            .set_color(x, y, self.normalize_color(pixel_color));
+    }
+
+    pub fn render(&mut self, scene: &HittableList) -> Frame {
+        self.frame.clear();
+
+        for thread_id in 0..self.config.thread_count {
+            self.tile_render(scene, thread_id);
+        }
+
+        eprintln!("Render complete!");
+
+        self.frame.clone()
+    }
+
+    pub fn normalize_color(&self, pixel_color: Color) -> Color {
+        let scale = 1.0 / (self.config.samples_per_pixel as f64);
         let scaled_color = pixel_color * scale;
 
         let gamma2_corrected = Vec3::new(
@@ -107,8 +121,8 @@ impl RayTracer {
         (c * 255.0).floor() as i32
     }
 
-    fn ray_color(ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
-        if bounce_depth == RayTracer::MAXIMUM_BOUNCE_DEPTH {
+    fn ray_color(&self, ray: &Ray, world: &HittableList, bounce_depth: u32) -> Color {
+        if bounce_depth == self.config.maximum_bounce_depth {
             return Color::ZEROS();
         }
 
@@ -126,7 +140,7 @@ impl RayTracer {
                 .borrow()
                 .scatter(ray, &hit_record)
             {
-                attenuation * RayTracer::ray_color(&bounced_ray, world, bounce_depth + 1)
+                attenuation * self.ray_color(&bounced_ray, world, bounce_depth + 1)
             } else {
                 Color::ZEROS()
             }
