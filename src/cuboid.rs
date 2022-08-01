@@ -43,7 +43,6 @@ impl Triangle {
         let normal = self.normal;
         let d = self.compute_d();
 
-        // TODO: denominator may be zero!
         let t = -(Vec3::dot(&normal, &ray.origin()) + d) / Vec3::dot(&normal, &ray.direction());
 
         t
@@ -108,14 +107,7 @@ impl Hittable for Triangle {
         ))));
 
         if self.contains_point(plane_intersection) {
-            let mut record = HitRecord {
-                point: plane_intersection,
-                normal,
-                t,
-                material: Some(m2),
-                hit_front_face: false, // TODO: not sure
-            };
-            record.set_face_normal(&ray, &normal);
+            let record = HitRecord::new(ray, normal, t, Some(m2));
             Some(record)
         } else {
             None

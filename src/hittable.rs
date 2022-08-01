@@ -8,31 +8,57 @@ use std::rc::Rc;
 #[derive(Clone, Default)]
 pub struct HitRecord {
     /// point of intersection
-    pub point: Point,
+    point: Point,
     /// surface normal of the intersected surface (always opposes the direction of the ray)
-    pub normal: Vec3,
+    normal: Vec3,
     /// time of the ray's intersection
-    pub t: f64,
+    t: f64,
     /// material of the intersected surface
-    pub material: Option<Rc<RefCell<Box<dyn Material>>>>,
+    material: Option<Rc<RefCell<Box<dyn Material>>>>,
     /// did the ray hit the outer face of the surface?
-    pub hit_front_face: bool,
+    hit_front_face: bool,
 }
 
 impl HitRecord {
-    // TODO: add a constructor and have this called in the constructor
-    // TODO: make fields private
-    pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: &Vec3) {
-        /*
-        if the vectors point in opposite directions (dot < 0), the ray must be
-        coming from outside of the object.
-        */
-        self.hit_front_face = Vec3::dot(&ray.direction(), outward_normal) < 0.0;
-        self.normal = if self.hit_front_face {
-            outward_normal.clone()
-        } else {
-            -outward_normal.clone()
-        };
+    pub fn new(
+        ray: &Ray,
+        outward_normal: Vec3,
+        t: f64,
+        material: Option<Rc<RefCell<Box<dyn Material>>>>,
+    ) -> HitRecord {
+        let hit_front_face = Vec3::dot(&ray.direction(), &outward_normal) < 0.0;
+
+        HitRecord {
+            point: ray.position_at(t),
+            t,
+            material,
+            hit_front_face,
+            normal: if hit_front_face {
+                outward_normal.clone()
+            } else {
+                -outward_normal.clone()
+            },
+        }
+    }
+
+    pub fn material(&self) -> Option<Rc<RefCell<Box<dyn Material>>>> {
+        self.material.clone()
+    }
+
+    pub fn point(&self) -> Point {
+        self.point
+    }
+
+    pub fn normal(&self) -> Vec3 {
+        self.normal
+    }
+
+    pub fn hit_front_face(&self) -> bool {
+        self.hit_front_face
+    }
+
+    pub fn t(&self) -> f64 {
+        self.t
     }
 }
 

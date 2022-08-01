@@ -22,7 +22,7 @@ pub struct RayTracerConfig {
 impl RayTracerConfig {
     pub fn default() -> RayTracerConfig {
         RayTracerConfig {
-            samples_per_pixel: 8,
+            samples_per_pixel: 50,
             maximum_bounce_depth: 50,
             thread_count: 1,
         }
@@ -135,7 +135,7 @@ impl RayTracer {
             */
             if let Some((attenuation, bounced_ray)) = hit_record
                 .clone()
-                .material
+                .material()
                 .unwrap()
                 .borrow()
                 .scatter(ray, &hit_record)

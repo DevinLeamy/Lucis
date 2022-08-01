@@ -26,7 +26,7 @@ impl Material for Dielectric {
     fn scatter(&self, ray: &crate::ray::Ray, hit_record: &HitRecord) -> Option<(Color, Ray)> {
         let attenuation = Color::ONES();
 
-        let refractive_ratio = if hit_record.hit_front_face {
+        let refractive_ratio = if hit_record.hit_front_face() {
             1.0 / self.refractive_index
         } else {
             self.refractive_index
@@ -34,7 +34,7 @@ impl Material for Dielectric {
 
         let unit_direction = Vec3::normalized(ray.direction());
 
-        let cos_theta = f64::min(Vec3::dot(&-unit_direction, &hit_record.normal), 1.0);
+        let cos_theta = f64::min(Vec3::dot(&-unit_direction, &hit_record.normal()), 1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = refractive_ratio * sin_theta > 1.0;
@@ -42,12 +42,12 @@ impl Material for Dielectric {
         let out_direction = if cannot_refract
             || Dielectric::reflectance(cos_theta, refractive_ratio) > random_float()
         {
-            reflect(&unit_direction, &hit_record.normal)
+            reflect(&unit_direction, &hit_record.normal())
         } else {
-            refract(&unit_direction, &hit_record.normal, refractive_ratio)
+            refract(&unit_direction, &hit_record.normal(), refractive_ratio)
         };
 
-        let bounced_ray = Ray::new(hit_record.point, out_direction);
+        let bounced_ray = Ray::new(hit_record.point(), out_direction);
 
         Some((attenuation, bounced_ray))
     }

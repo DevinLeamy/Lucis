@@ -7,6 +7,7 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 pub struct RayTracerDisplay {
     canvas_ref: NodeRef,
     canvas: Option<CanvasRenderingContext2d>,
+    ray_tracer: RayTracer,
 }
 
 pub enum Signal {
@@ -19,9 +20,18 @@ impl Component for RayTracerDisplay {
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
+        let camera = Camera::new(CameraConfig::default());
+        let image_width = 400;
+        let image_height = (image_width as f64 / camera.aspect_ratio()) as u32;
+
         Self {
             canvas_ref: NodeRef::default(),
             canvas: None,
+            ray_tracer: RayTracer::new(
+                RayTracerConfig::default(),
+                camera,
+                Frame::new(image_width, image_height),
+            ),
         }
     }
 
@@ -29,8 +39,8 @@ impl Component for RayTracerDisplay {
         match signal {
             Signal::Render => {
                 log::info!("Requesting a frame!");
-                ctx.link().send_future(async {
-                    let frame = create_frame().await;
+                ctx.link().send_message({
+                    let frame = self.ray_tracer.render(&simple_scene());
                     Signal::RenderComplete(frame)
                 })
             }
@@ -106,17 +116,4 @@ impl RayTracerDisplay {
             }
         }
     }
-}
-
-async fn create_frame() -> Frame {
-    let camera = Camera::new(CameraConfig::default());
-    let image_width = 400;
-    let image_height = (image_width as f64 / camera.aspect_ratio()) as u32;
-    let mut ray_tracer = RayTracer::new(
-        RayTracerConfig::default(),
-        camera,
-        Frame::new(image_width, image_height),
-    );
-
-    ray_tracer.render(&simple_scene())
 }

@@ -45,7 +45,7 @@ impl Hittable for HittableList {
             closest hit
             */
             if let Some(hit) = hittable.borrow().hit(ray, t_min, closest_hit) {
-                closest_hit = hit.t;
+                closest_hit = hit.t();
                 maybe_hit = Some(hit);
             }
         }
