@@ -113,7 +113,7 @@ impl Hittable for Triangle {
                 normal,
                 t,
                 material: Some(m2),
-                hit_front_face: true, // TODO: not sure
+                hit_front_face: false, // TODO: not sure
             };
             record.set_face_normal(&ray, &normal);
             Some(record)

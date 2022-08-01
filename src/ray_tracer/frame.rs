@@ -1,5 +1,6 @@
 use crate::common::Color;
 
+#[derive(Clone)]
 pub struct Frame {
     width: u32,
     height: u32,
@@ -29,6 +30,14 @@ impl Frame {
 
     pub fn height(&self) -> u32 {
         self.height
+    }
+
+    pub fn clear(&mut self) {
+        for row in self.buffer.iter_mut() {
+            for color in row.iter_mut() {
+                *color = Color::ZEROS();
+            }
+        }
     }
 
     pub fn write_to_console(&self) {
