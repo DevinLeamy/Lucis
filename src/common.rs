@@ -8,6 +8,7 @@ pub use crate::hittable_list::*;
 pub use crate::math::*;
 pub use crate::ray::*;
 pub use crate::ray_tracer::*;
+pub use crate::sphere::*;
 pub use crate::utils::*;
 pub use std::f64::consts::PI;
 

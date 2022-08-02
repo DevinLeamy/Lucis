@@ -97,4 +97,4 @@ Consequently, to check if a ray "misses" the scene we can simply check for this 
 checking for intersections will all of the objects in the scene individually. This is the bases for bounding volume 
 hierarchies: use a bounding volume to check if _any_ collision is possible with the objets it bounds.
 
-
+### 2.3.8
