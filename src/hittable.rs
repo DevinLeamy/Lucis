@@ -1,9 +1,4 @@
-use crate::math::Vec3;
-use crate::ray::Ray;
-use crate::ray_tracer::Material;
-use crate::utils::Point;
-use std::cell::RefCell;
-use std::rc::Rc;
+use crate::common::*;
 
 #[derive(Clone, Default)]
 pub struct HitRecord {
@@ -63,5 +58,8 @@ impl HitRecord {
 }
 
 pub trait Hittable {
+    /// determine whether the hittable was hit by a ray during a time interval
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    /// construct a bounding box around an object over a given interval
+    fn bounding_bound(&self, time0: f64, time1: f64) -> Option<AABB>;
 }

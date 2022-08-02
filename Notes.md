@@ -73,6 +73,7 @@
 
 ### TODO
 - [ ] Address `CLEAN` annotations
+- [ ] Create an `Interval` object to host `start`/`end` times and enforce that `start < end`
 - [ ] Create wasm and non-wasm builds that can be interchanged via a flag
 - [x] Replace `true`/`false` hit results with `Option`s
 - [ ] Create a cleaner API to instantiate materials and scene geometry
@@ -81,4 +82,19 @@
 - [ ] Create scatter objects
 - [x] Have it run in the browser
 
-### (2.1) Motion Blur
+### (2.2) Motion Blur
+
+We can emulate motion blur by spawning every ray as a random instant in time `t` between the opening and closing 
+of the cameras `aperture` and then making the objects move. Naturally, objects will intersect rays spawned at 
+different times and, therefore, if they are moving we will get the impression of motion blur.
+
+### (2.3) Bounding Volume Hierarchies
+
+Consider bounding all of the objects in the scene by one large bounding volume. If any object in the  
+scene intersect a ray, we know that the object must intersect this larger bounding volume. Similarly, we
+know that if the ray doesn't intersect the bounding volume the ray doesn't intersect any objects in the scene.
+Consequently, to check if a ray "misses" the scene we can simply check for this one intersection, rather than 
+checking for intersections will all of the objects in the scene individually. This is the bases for bounding volume 
+hierarchies: use a bounding volume to check if _any_ collision is possible with the objets it bounds.
+
+

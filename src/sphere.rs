@@ -1,11 +1,4 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
-use crate::hittable::{HitRecord, Hittable};
-use crate::math::Vec3;
-use crate::ray::Ray;
-use crate::ray_tracer::Material;
-use crate::utils::Point;
+use crate::common::*;
 
 pub struct Sphere {
     center: Point,
@@ -55,6 +48,12 @@ impl Hittable for Sphere {
             let hit_record = HitRecord::new(ray, outer_normal, root, Some(self.material.clone()));
             Some(hit_record)
         }
+    }
+
+    fn bounding_bound(&self, time0: f64, time1: f64) -> Option<crate::common::AABB> {
+        let min = self.center - Vec3::ONES() * self.radius;
+        let max = self.center + Vec3::ONES() * self.radius;
+        Some(AABB::new(min, max))
     }
 }
 

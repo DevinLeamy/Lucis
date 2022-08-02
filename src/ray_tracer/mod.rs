@@ -1,3 +1,5 @@
+pub use aabb::*;
+pub use bvh::*;
 pub use camera::*;
 pub use dielectric::*;
 pub use frame::*;
@@ -7,6 +9,8 @@ pub use metal::*;
 pub use moving_sphere::*;
 pub use ray_tracer::*;
 
+mod aabb;
+mod bvh;
 pub mod camera;
 mod dielectric;
 pub mod frame;

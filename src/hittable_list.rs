@@ -1,8 +1,4 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
-use crate::hittable::{HitRecord, Hittable};
-use crate::ray::Ray;
+use crate::common::*;
 
 /*
 aggregates a list of Hittable objects
@@ -51,5 +47,23 @@ impl Hittable for HittableList {
         }
 
         maybe_hit
+    }
+
+    fn bounding_bound(&self, time0: f64, time1: f64) -> Option<crate::common::AABB> {
+        let mut enclosing_box = None;
+
+        for object in self.objects.iter() {
+            let maybe_aabb = object.as_ref().borrow().bounding_bound(time0, time1);
+
+            if let Some(bounding_box) = maybe_aabb {
+                enclosing_box = if enclosing_box.is_none() {
+                    Some(bounding_box)
+                } else {
+                    Some(AABB::bound_aabbs(&enclosing_box.unwrap(), &bounding_box))
+                }
+            };
+        }
+
+        enclosing_box
     }
 }

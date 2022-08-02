@@ -73,4 +73,23 @@ impl Hittable for MovingSphere {
             Some(hit_record)
         }
     }
+
+    fn bounding_bound(&self, time0: f64, time1: f64) -> Option<AABB> {
+        /*
+        Construct the bounding boxes for the sphere in its
+        initial and final positions and then create a
+        bounding box surrounding both boxes.
+        */
+        let box0 = AABB::new(
+            self.center(time0) - Vec3::ONES() * self.radius,
+            self.center(time0) + Vec3::ONES() * self.radius,
+        );
+
+        let box1 = AABB::new(
+            self.center(time1) - Vec3::ONES() * self.radius,
+            self.center(time1) + Vec3::ONES() * self.radius,
+        );
+
+        Some(AABB::bound_aabbs(&box0, &box1))
+    }
 }

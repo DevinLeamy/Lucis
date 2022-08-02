@@ -1,6 +1,5 @@
 use crate::common::*;
 
-use super::{camera::Camera, Frame};
 pub struct RayTracer {
     config: RayTracerConfig,
     camera: Camera,

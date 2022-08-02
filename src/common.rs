@@ -20,3 +20,32 @@ pub fn random_float() -> f64 {
 pub fn random_float_in_range(min: f64, max: f64) -> f64 {
     min + (max - min) * random_float()
 }
+
+pub struct Interval {
+    /// start of an interval
+    t0: f64,
+    /// end of an interval
+    t1: f64,
+}
+
+impl Interval {
+    pub fn new(start: f64, end: f64) -> Interval {
+        assert!(start <= end);
+        Interval { t0: start, t1: end }
+    }
+
+    // pub fn overlap(i1: Interval, i2: Interval) -> bool {}
+}
+pub struct IntervalV3 {
+    /// start of an interval
+    t0: Vec3,
+    /// end of an interval
+    t1: Vec3,
+}
+
+impl IntervalV3 {
+    pub fn IntervalV3(start: Vec3, end: Vec3) -> IntervalV3 {
+        assert!(start[0] <= end[0] && start[1] <= end[1] && start[2] <= end[2]);
+        IntervalV3 { t0: start, t1: end }
+    }
+}
