@@ -1,5 +1,6 @@
 use crate::common::*;
 
+#[derive(Clone)]
 pub struct AABB {
     minimum: Point,
     maximum: Point,
@@ -21,7 +22,7 @@ impl AABB {
     }
 
     /// check for collisions, using the slab method
-    fn hit(&self, ray: &Ray, mut t_min: f64, mut t_max: f64) -> bool {
+    pub fn hit(&self, ray: &Ray, mut t_min: f64, mut t_max: f64) -> bool {
         for i in 0..3 as usize {
             let (t0, t1) = if ray.direction()[i] == 0f64 {
                 /*
@@ -63,5 +64,10 @@ impl AABB {
         }
 
         AABB::new(min, max)
+    }
+
+    /// check if box0 compares strickly less than box1 on a given axis based on their minimum value
+    pub fn compare(box0: &AABB, box1: &AABB, axis: u32) -> bool {
+        box0.min()[axis as usize] < box1.min()[axis as usize]
     }
 }

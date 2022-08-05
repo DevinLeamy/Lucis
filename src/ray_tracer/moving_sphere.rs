@@ -74,7 +74,7 @@ impl Hittable for MovingSphere {
         }
     }
 
-    fn bounding_bound(&self, time0: f64, time1: f64) -> Option<AABB> {
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<AABB> {
         /*
         Construct the bounding boxes for the sphere in its
         initial and final positions and then create a

@@ -1,7 +1,7 @@
 use crate::*;
 use wasm_bindgen::{JsCast, JsValue};
 
-use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement};
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
 pub struct RayTracerDisplay {
     canvas_ref: NodeRef,

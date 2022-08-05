@@ -50,7 +50,7 @@ impl Hittable for Sphere {
         }
     }
 
-    fn bounding_bound(&self, time0: f64, time1: f64) -> Option<crate::common::AABB> {
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<crate::common::AABB> {
         let min = self.center - Vec3::ONES() * self.radius;
         let max = self.center + Vec3::ONES() * self.radius;
         Some(AABB::new(min, max))

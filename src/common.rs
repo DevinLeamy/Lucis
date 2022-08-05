@@ -1,5 +1,7 @@
 pub use rand::*;
 pub use std::cell::RefCell;
+use std::ops::Add;
+use std::ops::Sub;
 pub use std::rc::Rc;
 
 pub use crate::components::*;
@@ -20,6 +22,10 @@ pub fn random_float() -> f64 {
 
 pub fn random_float_in_range(min: f64, max: f64) -> f64 {
     min + (max - min) * random_float()
+}
+
+pub fn random_natural(min: u32, max: u32) -> u32 {
+    ((min + (max - min)) as f64 * random_float()) as u32
 }
 
 pub struct Interval {

@@ -26,6 +26,10 @@ impl HittableList {
     pub fn add(&mut self, object: Rc<RefCell<Box<dyn Hittable>>>) {
         self.objects.push(object);
     }
+
+    pub fn objects(&self) -> &Vec<Rc<RefCell<Box<dyn Hittable>>>> {
+        &self.objects
+    }
 }
 
 impl Hittable for HittableList {
@@ -49,11 +53,11 @@ impl Hittable for HittableList {
         maybe_hit
     }
 
-    fn bounding_bound(&self, time0: f64, time1: f64) -> Option<crate::common::AABB> {
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<crate::common::AABB> {
         let mut enclosing_box = None;
 
         for object in self.objects.iter() {
-            let maybe_aabb = object.as_ref().borrow().bounding_bound(time0, time1);
+            let maybe_aabb = object.as_ref().borrow().bounding_box(time0, time1);
 
             if let Some(bounding_box) = maybe_aabb {
                 enclosing_box = if enclosing_box.is_none() {
