@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 
 use crate::core::*;
 
@@ -61,7 +60,7 @@ impl TextureMap for RSphere {
     Compute texture coordinates for a point on the surface of a unit sphere 
     */
     fn map(&self, p: &Point) -> TextureCoord {
-        let theta = -p.y().acos();
+        let theta = (-p.y()).acos();
         let phi = f64::atan2(-p.z(), p.x()) + PI;
 
         TextureCoord {

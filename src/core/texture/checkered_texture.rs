@@ -22,18 +22,13 @@ impl CheckeredTexture {
 }
 
 impl Texture for CheckeredTexture {
-    fn value(&self, t: &TextureCoord) -> Color {
-        let row = (t.u * 10f64) as i32;
-        let col = (t.v * 10f64) as i32;
+    fn value(&self, uv: &TextureCoord, p: &Point) -> Color {
+        let sines = (10f64 * p.x()).sin() * (10f64 * p.y()).sin() * (10f64 * p.z()).sin();
 
-        log::info!("{} {}", t.u, t.v);
-        let tile = row * 10 + col;
-        // let sines = (10f64 * t.u).sin() * (10f64 * t.v).sin();
-
-        if tile % 2 == 1 {
-            self.odd.as_ref().as_ref().value(t)
+        if sines < 0.0 {
+            self.odd.as_ref().as_ref().value(uv, p)
         } else {
-            self.even.as_ref().as_ref().value(t)
+            self.even.as_ref().as_ref().value(uv, p)
         }
     }
 }

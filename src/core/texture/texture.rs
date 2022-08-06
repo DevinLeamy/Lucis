@@ -1,7 +1,7 @@
 use crate::core::*;
 
 pub trait Texture {
-    fn value(&self, point: &TextureCoord) -> Color;
+    fn value(&self, uv: &TextureCoord, point: &Point) -> Color;
 }
 
 #[derive(Clone, Copy)]
@@ -31,7 +31,7 @@ impl SolidTexture {
 }
 
 impl Texture for SolidTexture {
-    fn value(&self, t: &TextureCoord) -> Color {
+    fn value(&self, _uv: &TextureCoord, _p: &Point) -> Color {
         self.color
     }
 }
