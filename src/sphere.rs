@@ -43,9 +43,18 @@ impl Hittable for Sphere {
                 }
             }
 
-            let outer_normal = (ray.position_at(root) - self.center) / self.radius;
+            let intersection_point = ray.position_at(root);
 
-            let hit_record = HitRecord::new(ray, outer_normal, root, Some(self.material.clone()));
+            let outer_normal = (intersection_point - self.center) / self.radius;
+            let t_coord = self.map(&outer_normal);
+
+            let hit_record = HitRecord::new(
+                ray,
+                outer_normal,
+                root,
+                Some(self.material.clone()),
+                Some(t_coord),
+            );
             Some(hit_record)
         }
     }
@@ -54,6 +63,18 @@ impl Hittable for Sphere {
         let min = self.center - Vec3::ONES() * self.radius;
         let max = self.center + Vec3::ONES() * self.radius;
         Some(AABB::new(min, max))
+    }
+}
+
+impl TextureMap for Sphere {
+    fn map(&self, p: &Point) -> TextureCoord {
+        let theta = -p.y().acos();
+        let phi = f64::atan2(-p.z(), p.x()) + PI;
+
+        TextureCoord {
+            u: phi / (2f64 * PI),
+            v: theta / PI,
+        }
     }
 }
 

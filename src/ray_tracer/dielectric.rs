@@ -48,7 +48,7 @@ impl Material for Dielectric {
         };
 
         Some(Scatter {
-            color: attenuation,
+            texture: attenuation,
             ray: Ray::new_instant(hit_record.point(), out_direction, ray.time()),
         })
     }

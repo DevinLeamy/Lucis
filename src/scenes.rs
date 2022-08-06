@@ -139,9 +139,14 @@ pub fn complex_not_random_scene() -> HittableList {
 pub fn simple_scene() -> HittableList {
     let mut world = HittableList::default();
 
-    let ground_material = make_shared_material::<Box<dyn Material>>(Box::new(Lambertian::new(
-        Color::new(0.5, 0.5, 0.5),
-    )));
+    let checker = CheckeredTexture::from_colors(
+        &Color::new(0.2f64, 0.8f64, 0.2f64),
+        &Color::new(0.2f64, 0.8f64, 0.2f64),
+    );
+
+    let ground_material = make_shared_material::<Box<dyn Material>>(Box::new(
+        Lambertian::from_texture(Rc::new(Box::new(checker))),
+    ));
     world.add(make_shared_hittable(Box::new(Sphere::new(
         Point::new(0.0, -1000.0, 0.0),
         1000.0,

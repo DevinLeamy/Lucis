@@ -68,8 +68,15 @@ impl Hittable for MovingSphere {
             }
 
             let outer_normal = (ray.position_at(root) - center) / self.radius;
+            let t_coord = self.map(&outer_normal);
 
-            let hit_record = HitRecord::new(ray, outer_normal, root, Some(self.material.clone()));
+            let hit_record = HitRecord::new(
+                ray,
+                outer_normal,
+                root,
+                Some(self.material.clone()),
+                Some(t_coord),
+            );
             Some(hit_record)
         }
     }
@@ -91,5 +98,17 @@ impl Hittable for MovingSphere {
         );
 
         Some(AABB::bound_aabbs(&box0, &box1))
+    }
+}
+
+impl TextureMap for MovingSphere {
+    fn map(&self, p: &Point) -> TextureCoord {
+        let theta = -p.y().acos();
+        let phi = f64::atan2(-p.z(), p.x()) + PI;
+
+        TextureCoord {
+            u: phi / (2f64 * PI),
+            v: theta / PI,
+        }
     }
 }

@@ -1,15 +1,20 @@
-use super::material::*;
 use crate::common::*;
-use crate::hittable::HitRecord;
-use crate::ray::Ray;
 
 pub struct Lambertian {
-    albedo: Color,
+    albedo: Rc<Box<dyn Texture>>,
 }
 
 impl Lambertian {
     pub fn new(albedo: Color) -> Self {
-        Lambertian { albedo }
+        Lambertian::from_color(&albedo)
+    }
+
+    pub fn from_color(albedo: &Color) -> Lambertian {
+        Lambertian::from_texture(Rc::new(Box::new(SolidTexture::new(*albedo))))
+    }
+
+    pub fn from_texture(texture: Rc<Box<dyn Texture>>) -> Lambertian {
+        Lambertian::from_texture(Rc::clone(&texture))
     }
 }
 
@@ -27,7 +32,7 @@ impl Material for Lambertian {
         let attenuation = self.albedo;
 
         Some(Scatter {
-            color: attenuation,
+            texture: attenuation,
             ray: bounced_ray,
         })
     }

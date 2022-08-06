@@ -12,6 +12,8 @@ pub struct HitRecord {
     material: Option<Rc<RefCell<Box<dyn Material>>>>,
     /// did the ray hit the outer face of the surface?
     hit_front_face: bool,
+    /// texture coordinates
+    t_coord: Option<TextureCoord>,
 }
 
 impl HitRecord {
@@ -20,6 +22,7 @@ impl HitRecord {
         outward_normal: Vec3,
         t: f64,
         material: Option<Rc<RefCell<Box<dyn Material>>>>,
+        texture_coord: Option<TextureCoord>,
     ) -> HitRecord {
         let hit_front_face = Vec3::dot(&ray.direction(), &outward_normal) < 0.0;
 
@@ -33,6 +36,7 @@ impl HitRecord {
             } else {
                 -outward_normal.clone()
             },
+            t_coord: texture_coord,
         }
     }
 

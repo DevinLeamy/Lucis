@@ -1,16 +1,8 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
-use crate::common::Color;
-use crate::hittable::*;
-use crate::ray::Ray;
-
-// CLEAN: ideally, we want all materials in ray_tracer::material::...
-pub use crate::ray_tracer::lambertian::*;
+use crate::common::*;
 
 pub struct Scatter {
     pub ray: Ray,
-    pub color: Color,
+    pub texture: Rc<Box<dyn Texture>>,
 }
 
 pub trait Material {

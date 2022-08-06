@@ -8,6 +8,7 @@ pub use material::*;
 pub use metal::*;
 pub use moving_sphere::*;
 pub use ray_tracer::*;
+pub use texture::*;
 
 mod aabb;
 mod bvh;
@@ -19,3 +20,4 @@ pub mod material;
 mod metal;
 mod moving_sphere;
 mod ray_tracer;
+pub mod texture;
