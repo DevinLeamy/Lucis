@@ -31,55 +31,90 @@ macro_rules! shared_mptr {
     };
 }
 
-pub fn texture_scene() -> HittableList {
-    let checker = CheckeredTexture::from_colors(
-        &Color::new(0.5f64, 1f64, 0.5f64),
-        &Color::new(0.0f64, 0.5f64, 0.5f64),
-    );
+pub struct Scene; 
+impl Scene {
+    pub fn two_spheres() -> HittableList {
+        let mut world = HittableList::default();
 
-    let mut world = HittableList::default();
+        let checker: Rc<Box<dyn Texture>> = shared_ptr!(CheckeredTexture::from_colors(
+            &Color::new(0.2f64, 0.8f64, 0.2f64),
+            &Color::new(0.7f64, 0.2f64, 0.9f64),
+        ));
 
-    let ground_material: Rc<Box<dyn Material>> = Rc::new(Box::new(
-        Lambertian::from_texture(Rc::new(Box::new(checker))),
-    ));
+        let mat: Rc<Box<dyn Material>> = shared_ptr!(Lambertian::from_texture(checker));
 
-    world.add(Rc::new(RefCell::new(Box::new(RSphere::from_sphere(
-        Sphere::new(Point::new(0.0, -1000.0, 0.0), 1000.0),
-        ground_material,
-    )))));
+        world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(0.0, -10.0, 0.0), 10.0), mat.clone())));
+        world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(0.0, 10.0, 0.0), 10.0), mat.clone())));
+    
+        world 
+    }
 
-    world
+    pub fn perlin_spheres() -> HittableList {
+        let mut world = HittableList::default();
+
+        let perlin: Rc<Box<dyn Texture>> = shared_ptr!(PerlinTexture::new());
+        let mat: Rc<Box<dyn Material>> = shared_ptr!(Lambertian::from_texture(perlin));
+    
+        world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(0.0, -1000.0, 0.0), 1000.0), mat.clone())));
+        world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(0.0, 2.0, 0.0), 2.0), mat.clone())));
+    
+        world 
+    }
+
+    pub fn texture() -> HittableList {
+        let checker = CheckeredTexture::from_colors(
+            &Color::new(0.5f64, 1f64, 0.5f64),
+            &Color::new(0.0f64, 0.5f64, 0.5f64),
+        );
+    
+        let mut world = HittableList::default();
+    
+        let ground_material: Rc<Box<dyn Material>> = Rc::new(Box::new(
+            Lambertian::from_texture(Rc::new(Box::new(checker))),
+        ));
+    
+        world.add(Rc::new(RefCell::new(Box::new(RSphere::from_sphere(
+            Sphere::new(Point::new(0.0, -1000.0, 0.0), 1000.0),
+            ground_material,
+        )))));
+    
+        world
+    }
+
+    pub fn single_sphere() -> HittableList {
+        let mut world = HittableList::default();
+    
+        let gnd: Rc<Box<dyn Material>> = shared_ptr!(Lambertian::from_color(&Pallet::RED));
+    
+        world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::ZEROS(), 10.0), gnd)));
+    
+        world
+    }
+    
+    pub fn simple() -> HittableList {
+        let mut world = HittableList::default();
+    
+        let checker: Rc<Box<dyn Texture>> = shared_ptr!(CheckeredTexture::from_colors(
+            &Color::new(0.2f64, 0.8f64, 0.2f64),
+            &Color::new(0.7f64, 0.2f64, 0.9f64),
+        ));
+    
+        let gnd: Rc<Box<dyn Material>> = shared_ptr!(Lambertian::from_texture(checker));
+    
+        world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(0.0, -1000.0, 0.0), 1000.0), gnd)));
+    
+        let m1: Rc<Box<dyn Material>> = shared_ptr!(Dielectric::new(1.5));
+        let m2: Rc<Box<dyn Material>> = shared_ptr!(Lambertian::new(Pallet::C1)); 
+        let m3: Rc<Box<dyn Material>> = shared_ptr!(Metal::new(Pallet::C2, 0.0)); 
+    
+        world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(0.0, 1.0, 0.0), 1.0), m1)));
+        world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(-4.0, 1.0, 0.0), 1.0), m2)));
+        world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(4.0, 1.0, 0.0), 1.0), m3)));
+    
+        world
+    }
+    
 }
 
-pub fn single_sphere() -> HittableList {
-    let mut world = HittableList::default();
 
-    let gnd: Rc<Box<dyn Material>> = shared_ptr!(Lambertian::from_color(&Pallet::RED));
 
-    world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::ZEROS(), 10.0), gnd)));
-
-    world
-}
-
-pub fn simple_scene() -> HittableList {
-    let mut world = HittableList::default();
-
-    let checker: Rc<Box<dyn Texture>> = shared_ptr!(CheckeredTexture::from_colors(
-        &Color::new(0.2f64, 0.8f64, 0.2f64),
-        &Color::new(0.7f64, 0.2f64, 0.9f64),
-    ));
-
-    let gnd: Rc<Box<dyn Material>> = shared_ptr!(Lambertian::from_texture(checker));
-
-    world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(0.0, -1000.0, 0.0), 1000.0), gnd)));
-
-    let m1: Rc<Box<dyn Material>> = shared_ptr!(Dielectric::new(1.5));
-    let m2: Rc<Box<dyn Material>> = shared_ptr!(Lambertian::new(Pallet::C1)); 
-    let m3: Rc<Box<dyn Material>> = shared_ptr!(Metal::new(Pallet::C2, 0.0)); 
-
-    world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(0.0, 1.0, 0.0), 1.0), m1)));
-    world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(-4.0, 1.0, 0.0), 1.0), m2)));
-    world.add(shared_mptr!(RSphere::from_sphere(Sphere::new(Point::new(4.0, 1.0, 0.0), 1.0), m3)));
-
-    world
-}

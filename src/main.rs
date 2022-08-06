@@ -2,14 +2,13 @@ use yew::prelude::*;
 
 use components::RayTracerDisplay;
 pub use worlds::*;
-// use scenes::*;
 
 mod components;
 mod cuboid;
 mod math;
 mod utils;
 mod core;
-// mod scenes;
+mod perlin;
 mod worlds;
 
 #[function_component(App)]

@@ -52,10 +52,7 @@ impl Component for RayTracerDisplay {
             Signal::Render => {
                 log::info!("Requesting a frame!");
                 ctx.link().send_message({
-                    // let frame = self.ray_tracer.render(&complex_scene());
-                    let frame = self.ray_tracer.render(&simple_scene());
-                    // let frame = self.ray_tracer.render(&texture_scene());
-                    // let frame = self.ray_tracer.render(&single_sphere());
+                    let frame = self.ray_tracer.render(&Scene::perlin_spheres());
 
                     Signal::RenderComplete(frame)
                 })
