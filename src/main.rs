@@ -1,11 +1,12 @@
-use yew::prelude::*;
+pub use wasm_bindgen_rayon::init_thread_pool;
 
-use common::*;
 use components::RayTracerDisplay;
-use hittable_list::HittableList;
 use ray_tracer::*;
 use scenes::*;
-use sphere::*;
+use yew::prelude::*;
+
+use std::thread;
+pub use wasm_bindgen_rayon::init_thread_pool;
 
 mod common;
 mod components;
@@ -31,7 +32,24 @@ fn app() -> Html {
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
-    yew::start_app::<App>();
+
+    log::info!("HERE");
+    log::info!("Sum ({})", sum(&[5, 6, 7]));
+
+    // let mut threads = vec![];
+
+    // for i in 0..5 {
+    //     threads.push(thread::spawn(move || log::info!("Thread: {}", i)));
+    // }
+
+    // for thread in threads {
+    //     let _res = thread.join();
+    // }
+    // yew::start_app::<App>();
+}
+#[wasm_bindgen]
+pub fn sum(numbers: &[i32]) -> i32 {
+    numbers.par_iter().sum()
 }
 /*
 -- Simple Scene (200px width, Aspect [16/9], 50 SAMPLES, 50 MAX_BOUNCE_DEPTH)
