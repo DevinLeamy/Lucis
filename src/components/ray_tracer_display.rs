@@ -1,7 +1,9 @@
-use crate::*;
+use crate::core::*;
+use crate::worlds::*;
 use wasm_bindgen::{JsCast, JsValue};
 
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
+use yew::*;
 
 pub struct RayTracerDisplay {
     canvas_ref: NodeRef,
@@ -28,7 +30,7 @@ impl Component for RayTracerDisplay {
             time1: 1.0,
             ..CameraConfig::default()
         });
-        let image_width = 300;
+        let image_width = 200;
         let image_height = (image_width as f64 / camera.aspect_ratio()) as u32;
 
         Self {
@@ -51,7 +53,10 @@ impl Component for RayTracerDisplay {
                 log::info!("Requesting a frame!");
                 ctx.link().send_message({
                     // let frame = self.ray_tracer.render(&complex_scene());
-                    let frame = self.ray_tracer.render(&simple_scene());
+                    // let frame = self.ray_tracer.render(&simple_scene());
+                    let frame = self.ray_tracer.render(&texture_scene());
+                    // let frame = self.ray_tracer.render(&single_sphere());
+
                     Signal::RenderComplete(frame)
                 })
             }

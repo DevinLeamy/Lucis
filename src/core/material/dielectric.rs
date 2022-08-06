@@ -1,6 +1,4 @@
-use crate::{common::*, hittable::HitRecord, ray::Ray};
-
-use super::Material;
+use crate::core::*;
 
 pub struct Dielectric {
     refractive_index: f64,
@@ -23,7 +21,7 @@ impl Dielectric {
 Dielectric material that refracts all incoming light
 */
 impl Material for Dielectric {
-    fn scatter(&self, ray: &crate::ray::Ray, hit_record: &HitRecord) -> Option<Scatter> {
+    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<Scatter> {
         let attenuation = Color::ONES();
 
         let refractive_ratio = if hit_record.hit_front_face() {
@@ -48,7 +46,7 @@ impl Material for Dielectric {
         };
 
         Some(Scatter {
-            texture: attenuation,
+            color: attenuation,
             ray: Ray::new_instant(hit_record.point(), out_direction, ray.time()),
         })
     }

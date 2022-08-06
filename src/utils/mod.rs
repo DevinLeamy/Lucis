@@ -1,5 +1,7 @@
 pub use color::*;
 pub use point::*;
+pub use other::*;
 
-pub mod color;
-pub mod point;
+mod color;
+mod point;
+mod other;

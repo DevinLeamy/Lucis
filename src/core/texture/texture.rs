@@ -1,10 +1,10 @@
-use crate::common::*;
+use crate::core::*;
 
 pub trait Texture {
     fn value(&self, point: &TextureCoord) -> Color;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct TextureCoord {
     pub u: f64,
     pub v: f64,

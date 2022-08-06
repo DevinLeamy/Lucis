@@ -1,4 +1,4 @@
-use crate::common::{random_float, random_float_in_range};
+use crate::core::{random_float, random_float_in_range};
 use std::ops;
 
 #[derive(Debug, Copy, Clone, PartialEq, Default)]

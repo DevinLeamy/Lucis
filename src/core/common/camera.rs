@@ -1,4 +1,4 @@
-use crate::common::*;
+use crate::core::*;
 
 pub struct CameraConfig {
     /// aspect ratio (horizontal / vertical)
@@ -25,7 +25,7 @@ impl Default for CameraConfig {
     fn default() -> Self {
         CameraConfig {
             aspect: 16.0 / 9.0,
-            origin: Point::new(13.0, 2.0, 3.0),
+            origin: Point::new(0.0, 10.0, 40.0),
             look_at: Point::new(0.0, 0.0, 0.0),
             world_up: Vec3::new(0.0, 1.0, 0.0),
             focus_dist: 10.0,

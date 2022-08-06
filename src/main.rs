@@ -1,23 +1,16 @@
 use yew::prelude::*;
 
-use common::*;
 use components::RayTracerDisplay;
-use hittable_list::HittableList;
-use ray_tracer::*;
-use scenes::*;
-use sphere::*;
+pub use worlds::*;
+// use scenes::*;
 
-mod common;
 mod components;
 mod cuboid;
-mod hittable;
-mod hittable_list;
 mod math;
-mod ray;
-mod ray_tracer;
-mod scenes;
-mod sphere;
 mod utils;
+mod core;
+// mod scenes;
+mod worlds;
 
 #[function_component(App)]
 fn app() -> Html {

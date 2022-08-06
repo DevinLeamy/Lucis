@@ -1,6 +1,6 @@
 pub use vec3::*;
 
-use crate::common::random_float_in_range;
+use crate::core::random_float_in_range;
 
 pub mod vec3;
 

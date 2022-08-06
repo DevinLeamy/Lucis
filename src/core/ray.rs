@@ -1,5 +1,4 @@
-use crate::math::Vec3;
-use crate::utils::point::*;
+use crate::core::*;
 
 #[derive(Default)]
 pub struct Ray {

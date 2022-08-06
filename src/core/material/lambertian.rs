@@ -1,4 +1,4 @@
-use crate::common::*;
+use crate::core::*;
 
 pub struct Lambertian {
     albedo: Rc<Box<dyn Texture>>,
@@ -14,7 +14,9 @@ impl Lambertian {
     }
 
     pub fn from_texture(texture: Rc<Box<dyn Texture>>) -> Lambertian {
-        Lambertian::from_texture(Rc::clone(&texture))
+        Lambertian {
+            albedo: Rc::clone(&texture),
+        }
     }
 }
 
@@ -29,10 +31,9 @@ impl Material for Lambertian {
         }
 
         let bounced_ray = Ray::new_instant(hit_record.point(), scatter_direction, ray.time());
-        let attenuation = self.albedo;
 
         Some(Scatter {
-            texture: attenuation,
+            color: self.albedo.value(&hit_record.uv()),
             ray: bounced_ray,
         })
     }
