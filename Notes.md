@@ -9,6 +9,8 @@
 - `+x`: to the right
 - `+y`: up
 - `+z`: out of the screen (towards you) 
+- **Texture Coordinates:**
+  - u, v range in [0, 1] where (0, 0) maps to the bottom-left corner of the texture
 
 ### Surface Normals
 - Always point in the opposite direction of the incident ray

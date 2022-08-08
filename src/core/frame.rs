@@ -1,4 +1,4 @@
-use crate::common::Color;
+use crate::core::Color;
 
 #[derive(Clone)]
 pub struct Frame {

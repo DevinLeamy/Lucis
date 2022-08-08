@@ -1,4 +1,4 @@
-use crate::common::*;
+use crate::core::*;
 
 pub struct CameraConfig {
     /// aspect ratio (horizontal / vertical)

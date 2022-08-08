@@ -4,4 +4,4 @@ Cargo.lock
 Notes.md
 *.ppm
 *.png
-.DS_Store
+/server

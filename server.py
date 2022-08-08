@@ -5,20 +5,7 @@ import sys
 PORT = 8000
 DIRECTORY = "dist"
 
-# CLEAN: extension_map might be useless
-Handler = SimpleHTTPRequestHandler
-Handler.extensions_map={
-    '.manifest': 'text/cache-manifest',
-	'.html': 'text/html',
-    '.png': 'image/png',
-	'.jpg': 'image/jpg',
-	'.svg':	'image/svg+xml',
-	'.css':	'text/css',
-	'.js':	'application/x-javascript',
-	'': 'application/octet-stream', # Default
-}
-
-class RequestHandler(Handler):
+class RequestHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
 

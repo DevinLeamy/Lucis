@@ -1,4 +1,4 @@
-use crate::common::*;
+use crate::core::*;
 
 #[derive(Clone, Default)]
 pub struct HitRecord {
@@ -9,9 +9,11 @@ pub struct HitRecord {
     /// time of the ray's intersection
     t: f64,
     /// material of the intersected surface
-    material: Option<Rc<RefCell<Box<dyn Material>>>>,
+    material: Option<Rc<Box<dyn Material>>>,
     /// did the ray hit the outer face of the surface?
     hit_front_face: bool,
+    /// texture coordinates
+    t_coord: Option<TextureCoord>,
 }
 
 impl HitRecord {
@@ -19,7 +21,8 @@ impl HitRecord {
         ray: &Ray,
         outward_normal: Vec3,
         t: f64,
-        material: Option<Rc<RefCell<Box<dyn Material>>>>,
+        material: Option<Rc<Box<dyn Material>>>,
+        texture_coord: Option<TextureCoord>,
     ) -> HitRecord {
         let hit_front_face = Vec3::dot(&ray.direction(), &outward_normal) < 0.0;
 
@@ -33,10 +36,11 @@ impl HitRecord {
             } else {
                 -outward_normal.clone()
             },
+            t_coord: texture_coord,
         }
     }
 
-    pub fn material(&self) -> Option<Rc<RefCell<Box<dyn Material>>>> {
+    pub fn material(&self) -> Option<Rc<Box<dyn Material>>> {
         self.material.clone()
     }
 
@@ -55,11 +59,13 @@ impl HitRecord {
     pub fn t(&self) -> f64 {
         self.t
     }
+
+    pub fn uv(&self) -> TextureCoord {
+        self.t_coord.unwrap()
+    }
 }
 
-pub trait Hittable {
-    /// determine whether the hittable was hit by a ray during a time interval
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
-    /// construct a bounding box around an object over a given interval
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<AABB>;
-}
+// pub trait Hittable<T: Boundable> {
+//     /// determine whether the hittable was hit by a ray during a time interval
+//     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+// }

@@ -1,4 +1,6 @@
-use crate::common::*;
+use std::borrow::Borrow;
+
+use crate::core::*;
 
 pub struct RayTracer {
     config: RayTracerConfig,
@@ -120,7 +122,7 @@ impl RayTracer {
         }
 
         // 0.001 used to avoid "shadow acne"
-        if let Some(hit_record) = world.hit(ray, 0.01, INFINITY) {
+        if let Some(hit_record) = world.hit(ray, Interval { min: 0.01, max: INFINITY }) {
             /*
             Compute a target point for the bounced ray by picking a random point inside
             a unit sphere tangent to point of intersection. Then determine
@@ -130,7 +132,6 @@ impl RayTracer {
                 .clone()
                 .material()
                 .unwrap()
-                .borrow()
                 .scatter(ray, &hit_record)
             {
                 scatter.color * self.ray_color(&scatter.ray, world, bounce_depth + 1)
