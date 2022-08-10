@@ -81,16 +81,17 @@ impl RayTracer {
             .set_color(x, y, self.normalize_color(pixel_color));
     }
 
-    pub fn render(&mut self, scene: &HittableList) -> Frame {// , worker_pool: WorkerPool) -> Frame {
-        self.frame.clear();
+    pub fn render(&mut self, scene: &HittableList, pool: &WorkerPool) -> Frame {
+        // self.frame.clear();
 
-        for thread_id in 0..self.config.thread_count {
-            self.tile_render(scene, thread_id);
-        }
+        // for thread_id in 0..self.config.thread_count {
+        //     self.tile_render(scene, thread_id);
+        // }
 
-        eprintln!("Render complete!");
+        // eprintln!("Render complete!");
 
-        self.frame.clone()
+        // self.frame.clone()
+        todo!()
     }
 
     pub fn normalize_color(&self, pixel_color: Color) -> Color {

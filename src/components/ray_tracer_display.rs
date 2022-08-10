@@ -7,7 +7,14 @@ use wasm_bindgen::{JsCast, JsValue};
 use web_sys::console::log_1;
 
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
-use yew::*;
+use std::rc::Rc;
+use yew::prelude::*;
+use yewdux::prelude::*;
+
+#[derive(Default, PartialEq, Store)]
+pub struct FrameStore {
+    frame: i32,
+}
 
 pub struct RayTracerDisplay {
     canvas_ref: NodeRef,
@@ -16,12 +23,16 @@ pub struct RayTracerDisplay {
     render: Option<Frame>,
     canvas_width: u32,
     canvas_height: u32,
+    frame_store: Rc<FrameStore>,
+    dispatch: Dispatch<FrameStore>,
+
 }
 
 pub enum Signal {
     Render,
     RenderComplete(Frame),
     Download,
+    UpdateFrame(Rc<FrameStore>),
 }
 
 impl Component for RayTracerDisplay {
@@ -34,9 +45,11 @@ impl Component for RayTracerDisplay {
             time1: 1.0,
             ..CameraConfig::default()
         });
-        // log_1(&format!("Worker Pool Size: {}", ctx.props().pool.as_ref().unwrap().size()).into());
         let image_width = 400;
         let image_height = (image_width as f64 / camera.aspect_ratio()) as u32;
+
+        let frame_update_callback = ctx.link().callback(Signal::UpdateFrame);
+        let dispatch = Dispatch::<FrameStore>::subscribe(frame_update_callback);
 
         Self {
             canvas_ref: NodeRef::default(),
@@ -49,25 +62,22 @@ impl Component for RayTracerDisplay {
             render: None,
             canvas_width: image_width,
             canvas_height: image_height,
+            frame_store: dispatch.get(),
+            dispatch
         }
     }
 
     fn update(&mut self, ctx: &Context<Self>, signal: Self::Message) -> bool {
         match signal {
-            Signal::Render => {
-                log::info!("Requesting a frame!");
-                ctx.link().send_message({
-                    let frame = self.ray_tracer.render(&Scene::perlin_spheres());
-
-                    Signal::RenderComplete(frame)
-                })
-            }
             Signal::RenderComplete(frame) => {
                 self.render(frame, ctx);
                 log::info!("Render complete!");
             }
             Signal::Download => {
                 self.download_render();
+            }
+            Signal::UpdateFrame(frame_store) => {
+                self.frame_store = frame_store;
             }
             _ => (),
         }
@@ -79,23 +89,20 @@ impl Component for RayTracerDisplay {
             self.initialize_canvas();
         }
     }
+    
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let link = ctx.link();
-
-        let request_render = link.callback(|_| {
-            log::info!("Requesting a frame");
-            Signal::Render
-        });
 
         let request_download = link.callback(|_| {
             log::info!("Requesting download");
             Signal::Download
         });
 
+
         html! {
             <div>
-                <button id="create_frame_btn" onclick={request_render}>
+                <button id="create_frame_btn">
                     { "Create frame!" }
                 </button>
                 <div>
@@ -107,6 +114,9 @@ impl Component for RayTracerDisplay {
                 <button onclick={request_download}>
                     { "Download Image" }
                 </button>
+                <h1>
+                    {&format!("Frame: {}", self.frame_store.frame)}
+                </h1>
             </div>
         }
     }
@@ -177,6 +187,25 @@ impl RayTracerDisplay {
                 log::info!("There is no frame to download");
             }
         }
+    }
+}
+
+#[wasm_bindgen]
+struct RequestEmitter { }
+
+#[allow(dead_code)]
+#[allow(unused_variables)]
+#[wasm_bindgen]
+impl RequestEmitter {
+    #[wasm_bindgen(constructor)] 
+    pub fn new() -> Result<RequestEmitter, JsValue> {
+        Ok(RequestEmitter {})
+    }
+
+    pub fn send_request(self, pool: &WorkerPool) {
+        log_1(&pool.size().into());
+        let dispatch = Dispatch::<FrameStore>::new();
+        dispatch.set(FrameStore { frame: pool.size() as i32 });
     }
 }
 

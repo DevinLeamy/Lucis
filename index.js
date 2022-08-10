@@ -9,7 +9,7 @@ function loadWasm() {
         .catch(console.error)
 }
 loadWasm();
-const { WorkerPool, Renderer } = wasm_bindgen;
+const { WorkerPool, RequestEmitter } = wasm_bindgen;
 let threadCount = navigator.hardwareConcurrency;
 
 function main(wasm) {
@@ -18,19 +18,22 @@ function main(wasm) {
 
     mod.launch_yew();
 
-    createFrameButton = document.getElementById("create_frame_btn")
-    createFrameButton.onclick = render
+    setInterval(() => {
+        createFrameButton = document.getElementById("create_frame_btn")
+        if (createFrameButton != null) {
+            createFrameButton.onclick = render
+        }
+    }, 100);
+
 }
 
 let mod = null; // wasm module 
 let pool = null; // web worker pool 
 
 function render() {
-    // console.log("(JS) Registered click")
-    mod.test_on_click()
     console.log("(JS)", pool)
-    let renderer = new Renderer();
-    renderer.test_pass_workers(pool)
+    let requestEmitter = new RequestEmitter();
+    requestEmitter.send_request(pool)
 }
 
 
