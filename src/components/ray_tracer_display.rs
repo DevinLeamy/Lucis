@@ -1,6 +1,10 @@
 use crate::core::*;
+use crate::pool::WorkerPool;
 use crate::worlds::*;
+use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::{JsCast, JsValue};
+
+use web_sys::console::log_1;
 
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use yew::*;
@@ -22,14 +26,15 @@ pub enum Signal {
 
 impl Component for RayTracerDisplay {
     type Message = Signal;
-    type Properties = ();
+    type Properties = (); // Props;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         let camera = Camera::new(CameraConfig {
             time0: 0.0,
             time1: 1.0,
             ..CameraConfig::default()
         });
+        // log_1(&format!("Worker Pool Size: {}", ctx.props().pool.as_ref().unwrap().size()).into());
         let image_width = 400;
         let image_height = (image_width as f64 / camera.aspect_ratio()) as u32;
 
@@ -71,9 +76,7 @@ impl Component for RayTracerDisplay {
 
     fn rendered(&mut self, ctx: &Context<Self>, first_render: bool) {
         if first_render {
-            log::info!("First render");
             self.initialize_canvas();
-            ctx.link().send_message(Signal::Render);
         }
     }
 
@@ -92,11 +95,11 @@ impl Component for RayTracerDisplay {
 
         html! {
             <div>
-                <button onclick={request_render}>
+                <button id="create_frame_btn" onclick={request_render}>
                     { "Create frame!" }
                 </button>
                 <div>
-                    <h1>
+                    <h1 class="display">
                         {"Display"}
                     </h1>
                     <canvas ref={self.canvas_ref.clone()} />
@@ -176,3 +179,15 @@ impl RayTracerDisplay {
         }
     }
 }
+
+/*
+When the user clicks the "Render" button we
+need to be able to pass a WorkerPool (that was initialized in
+JavaScript) to the RayTracer's render method.
+
+Options:
+1. We pass a worker pool created during initialization, store it, and then retrieve it.
+2. We trigger an event that causes the JavaScript to call a render method that 
+   takes in a WorkerPool as input.
+
+*/
