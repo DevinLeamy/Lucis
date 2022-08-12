@@ -72,6 +72,9 @@ impl Color {
             Color::to_u8(color.blue),
         ) 
     }
+
+    pub fn white() -> Color { Color::new(1.0, 1.0, 1.0) }
+    pub fn black() -> Color { Color::new(0.0, 0.0, 0.0) }
 }
 
 impl Default for Color {
@@ -83,6 +86,18 @@ impl Default for Color {
 impl From<Vec3> for Color {
     fn from(v: Vec3) -> Self {
         Color::new(v[0], v[1], v[2])
+    }
+}
+
+impl std::ops::Mul<Color> for Color {
+    type Output = Color;
+
+    fn mul(self, rhs: Color) -> Color {
+        Color {
+            red: self.red * rhs.red,
+            green: self.green * rhs.green,
+            blue: self.blue * rhs.blue,
+        }
     }
 }
 

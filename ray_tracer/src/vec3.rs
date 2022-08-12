@@ -2,19 +2,15 @@ use std::ops;
 use crate::utils::{random_float};
 
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
+#[readonly::make]
 pub struct Vec3 {
-    x: f64,
-    y: f64,
-    z: f64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self { Self { x, y, z } }
-    pub fn x(&self) -> f64 { self.x }
-    pub fn y(&self) -> f64 { self.y }
-    pub fn z(&self) -> f64 { self.z }
-
-
     pub fn ones() -> Self { Self { x: 1f64, y: 1f64, z: 1f64, } }
     pub fn zeros() -> Self { Self { x: 0f64, y: 0f64, z: 0f64, } }
 
@@ -26,14 +22,9 @@ impl Vec3 {
         }
     }
 
-    pub fn normalize(self) -> Vec3 {
-        Vec3::normalized(self)
-    }
-
-
-    pub fn length(&self) -> f64 {
-        self.length_squared().sqrt()
-    }
+    pub fn normalized(v: Vec3) -> Vec3 { v / v.length() }
+    pub fn normalize(self) -> Vec3 { Vec3::normalized(self) }
+    pub fn length(&self) -> f64 { self.length_squared().sqrt() }
 
     pub fn length_squared(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
@@ -51,9 +42,6 @@ impl Vec3 {
         )
     }
 
-    pub fn normalized(v: Vec3) -> Vec3 {
-        v / v.length()
-    }
 
     pub fn near_zero(&self) -> bool {
         let tolerance = 1e-8;
@@ -116,9 +104,9 @@ impl ops::Div<f64> for Vec3 {
 
 impl ops::MulAssign for Vec3 {
     fn mul_assign(&mut self, rhs: Self) {
-        self.x *= rhs.x();
-        self.y *= rhs.y();
-        self.z *= rhs.z();
+        self.x *= rhs.x;
+        self.y *= rhs.y;
+        self.z *= rhs.z;
     }
 }
 
@@ -156,9 +144,9 @@ impl ops::Mul<f64> for Vec3 {
 
 impl ops::SubAssign for Vec3 {
     fn sub_assign(&mut self, rhs: Self) {
-        self.x -= rhs.x();
-        self.y -= rhs.y();
-        self.z -= rhs.z();
+        self.x -= rhs.x;
+        self.y -= rhs.y;
+        self.z -= rhs.z;
     }
 }
 
@@ -172,9 +160,9 @@ impl ops::Sub for Vec3 {
 
 impl ops::AddAssign for Vec3 {
     fn add_assign(&mut self, rhs: Self) {
-        self.x += rhs.x();
-        self.y += rhs.y();
-        self.z += rhs.z();
+        self.x += rhs.x;
+        self.y += rhs.y;
+        self.z += rhs.z;
     }
 }
 

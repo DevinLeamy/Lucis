@@ -88,14 +88,25 @@ impl Camera {
 
     pub fn create_ray(&self, h_offset: f64, v_offset: f64) -> Ray {
         // note sure what this is supposed to do
-        let lens_sample = sample_unit_disk() * self.lens_radius;
-        let offset = self.u * lens_sample.x() + self.v * lens_sample.y();
+        // let lens_sample = Vecsample_unit_disk() * self.lens_radius;
+        // let offset = self.u * lens_sample.x() + self.v * lens_sample.y();
 
+        // Ray::new(
+        //     self.origin + offset,
+        //     self.lower_left + self.horizontal * h_offset + self.vertical * v_offset
+        //         - self.origin
+        //         - offset,
+        // )
+
+        let offset = Vec3::zeros();
+        
         Ray::new(
             self.origin + offset,
-            self.lower_left + self.horizontal * h_offset + self.vertical * v_offset
-                - self.origin
-                - offset,
+            self.lower_left
+            + self.horizontal * h_offset
+            + self.vertical * v_offset
+            - self.origin
+            - offset
         )
     }
 }

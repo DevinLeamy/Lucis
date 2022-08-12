@@ -8,5 +8,7 @@ pub mod camera;
 pub mod shape;
 pub mod aabb;
 pub mod collisions;
+pub mod material;
+pub mod texture;
 
 
