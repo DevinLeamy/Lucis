@@ -1,5 +1,8 @@
 use std::borrow::Borrow;
 
+use futures::channel::oneshot::{self, Receiver};
+use wasm_bindgen::JsValue;
+
 use crate::{core::*, pool::WorkerPool};
 
 pub struct RayTracer {
@@ -67,7 +70,7 @@ impl RayTracer {
         )
     }
 
-    fn color_pixel(&mut self, x: u32, y: u32, scene: &HittableList) {
+    fn color_pixel(&mut self, x: u32, y: u32, scene: &HittableList) -> Color {
         let pixel_color = (0..self.config.samples_per_pixel)
             .map(|_| {
                 let (u, v) =
@@ -79,19 +82,52 @@ impl RayTracer {
 
         self.frame
             .set_color(x, y, self.normalize_color(pixel_color));
+        
+        self.normalize_color(pixel_color)
+
     }
 
-    pub fn render(&mut self, scene: &HittableList, pool: &WorkerPool) -> Frame {
-        // self.frame.clear();
+    pub fn render(&mut self, scene: &HittableList, pool: &WorkerPool) -> Result<Receiver<Vec<Vec3>>, JsValue> {
+        self.frame.clear();
 
-        // for thread_id in 0..self.config.thread_count {
-        //     self.tile_render(scene, thread_id);
-        // }
+        let result = 5;
 
-        // eprintln!("Render complete!");
+        let thread_pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(pool.size())
+            .spawn_handler(|thread| {
+                let error = pool.run(|| thread.run()).unwrap();
+                Ok(error)
+            })
+            .build()
+            .unwrap();
+        
+        let (sender, receiver) = oneshot::channel();
 
-        // self.frame.clone()
-        todo!()
+        let width = self.frame.width();
+        let height = self.frame.height();
+        let pixels = width * height; 
+        let mut frame = vec![Color::ZEROS(); pixels as usize];
+
+        pool.run(move || {
+            thread_pool.install(|| {
+                // frame
+                //     .iter_mut()
+                //     .enumerate()
+                //     .for_each(|(i, color)| {
+                //         let y = i as u32 / width; 
+                //         let x = i as u32 % width;
+
+                //         self.color_pixel(x, y, scene);
+                //     });
+
+            });
+            drop(sender.send(frame));
+        })?;
+
+
+        eprintln!("Render complete!");
+
+        Ok(receiver)
     }
 
     pub fn normalize_color(&self, pixel_color: Color) -> Color {
