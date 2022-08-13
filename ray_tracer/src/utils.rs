@@ -5,6 +5,29 @@ pub fn random_float() -> f64 {
     thread_rng().gen()
 }
 
+pub fn random_range(min: f64, max: f64) -> f64 {
+    random_float() * (max - min) + min
+}
+
+pub fn sample_unit_sphere() -> Vec3 {
+    loop {
+        let sample = Vec3::new(
+            random_range(-1.0, 1.0),
+            random_range(-1.0, 1.0),
+            random_range(-1.0, 1.0),
+        );
+
+        if sample.length_squared() < 1.0 {
+            // sample is inside unit sphere
+            return sample;
+        }
+    }
+}
+
+pub fn random_unit_vector() -> Vec3 {
+    Vec3::normalized(sample_unit_sphere())
+}
+
 pub fn reflect(incident: Vec3, normal: Vec3) -> Vec3 {
     /*
     We take the incident vector, v, and compute the
@@ -18,10 +41,7 @@ pub fn reflect(incident: Vec3, normal: Vec3) -> Vec3 {
 }
 
 pub fn refract(incident: Vec3, normal: Vec3, ref_ratio: f64) -> Vec3 {
-    let cos = f64::min(
-        Vec3::dot(-incident, normal) / (incident.length() * normal.length()),
-        1.0,
-    );
+    let cos = f64::min(Vec3::dot(-incident, normal), 1.0);
     // compute the perpendicular and parallel components 
     let ref_perp = (incident + normal * cos) * ref_ratio;
     let ref_par = normal * -(1.0 - ref_perp.length_squared()).abs().sqrt();

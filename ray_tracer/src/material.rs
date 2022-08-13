@@ -1,6 +1,7 @@
-use crate::collisions::{CollisionRecord};
+use crate::collisions::{CollisionRecord, Face};
 use crate::image::Color;
 use crate::ray::Ray;
+use crate::utils::{reflect, random_unit_vector, sample_unit_sphere};
 use crate::vec3::Vec3;
 
 pub struct CollisionResult {
@@ -16,7 +17,8 @@ pub trait Material {
 #[derive(Copy, Clone)]
 pub enum MaterialType {
     Lambertian(Lambertian), 
-    Dielectric(Dielectric)
+    Dielectric(Dielectric),
+    Metal(Metal)
 }
 
 #[derive(Copy, Clone)]
@@ -31,11 +33,11 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn resolve(&self, ray: Ray, collision: CollisionRecord) -> CollisionResult {
-        let mut bounce_dir = collision.normal + Vec3::random().normalize();
+    fn resolve(&self, _ray: Ray, collision: CollisionRecord) -> CollisionResult {
+        let mut bounce_dir = collision.normal() + random_unit_vector(); 
 
         if bounce_dir.near_zero() {
-            bounce_dir = collision.normal;
+            bounce_dir = collision.normal();
         }
 
         CollisionResult {
@@ -68,26 +70,23 @@ impl Dielectric {
 
 impl Material for Dielectric {
     fn resolve(&self, ray: Ray, collision: CollisionRecord) -> CollisionResult {
-        let ref_ratio = 1.0 / self.ref_index;
+        let ref_ratio = match collision.face {
+            Face::Outer => 1.0 / self.ref_index,
+            Face::Inner => self.ref_index
+        };
 
-        // let refractive_ratio = if hit_record.hit_front_face() {
-        //     1.0 / self.refractive_index
-        // } else {
-        //     self.refractive_index
-        // };
-
-        let cos = f64::min(Vec3::dot(-ray.direction, collision.normal), 1.0);
+        let cos = f64::min(Vec3::dot(-ray.direction, collision.normal()), 1.0);
         let sin = (1.0 - cos * cos).sqrt();
 
-        let cannot_refract = ref_ratio * sin > 1.0;
+        let must_reflect = ref_ratio * sin > 1.0;
         let veto_refract = Dielectric::reflectance(cos, ref_ratio) > crate::utils::random_float(); 
 
-        let reflect = cannot_refract || veto_refract;
+        let reflect = must_reflect || veto_refract;
 
         CollisionResult {
             reflected_ray: match reflect { 
-                true  => ray.reflect(collision.normal, collision.point),
-                false => ray.refract(collision.normal, collision.point, ref_ratio)
+                true  => ray.reflect(collision.normal(), collision.point),
+                false => ray.refract(collision.normal(), collision.point, ref_ratio)
             },
             color: Color::new(1.0, 1.0, 1.0),
         }
@@ -98,3 +97,48 @@ impl Material for Dielectric {
     }
 }
 
+#[derive(Copy, Clone)]
+pub struct Metal {
+    color: Color,
+    fuzz: f64,
+}
+
+impl Metal {
+    pub fn new(color: Color, fuzz: f64) -> Self {
+        Metal { color, fuzz }
+    }
+}
+
+impl Material for Metal {
+    fn resolve(&self, ray: Ray, collision: CollisionRecord) -> CollisionResult {
+        let ref_ray_dir = reflect(ray.direction, collision.normal());
+        let ref_ray = Ray::new(
+            collision.point,
+            /*
+            add fuzziness to reflection by perturbing the reflected
+            ray by selecting a target point inside a sphere of radius (fuzz)
+            centered at the non-perturbed rays target
+            */
+            ref_ray_dir + sample_unit_sphere() * self.fuzz
+        );
+
+        match collision.face {
+            Face::Outer => {
+                CollisionResult {
+                    color: self.color,
+                    reflected_ray: ref_ray,
+                }
+    
+            }
+            // ray cannot escape
+            Face::Inner => CollisionResult {
+                color: Color::black(),
+                reflected_ray: ref_ray,
+            } 
+        }
+    }
+
+    fn as_mat(self) -> Box<dyn Material> {
+        Box::new(self)
+    }
+}

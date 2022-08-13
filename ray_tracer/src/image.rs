@@ -1,28 +1,30 @@
+use std::fmt::Display;
+
 use crate::vec3::Vec3;
 
 pub struct Image {
-    width: u32,
     height: u32,
+    width: u32,
     /// buffer[i][j] => row(i) col(j)
     /// buffer[0][0] = top left
-    buffer: Vec<Vec<Color>>,
+    buffer: Vec<Vec<ColorU8>>,
 }
 
 impl Image {
-    pub fn new(frame_width: u32, frame_height: u32) -> Image {
+    pub fn new(rows: u32, cols: u32) -> Image {
         Image {
-            width: frame_width,
-            height: frame_height,
-            buffer: vec![vec![Color::default(); frame_width as usize]; frame_height as usize],
+            height: rows,
+            width: cols,
+            buffer: vec![vec![ColorU8::black(); cols as usize]; rows as usize],
         }
     }
 
-    pub fn set_color(&mut self, x: u32, y: u32, color: Color) {
-        self.buffer[y as usize][x as usize] = color;
+    pub fn set_color(&mut self, row: u32, col: u32, color: ColorU8) {
+        self.buffer[row as usize][col as usize] = color;
     }
 
-    pub fn get_color(&self, x: u32, y: u32) -> Color {
-        self.buffer[y as usize][x as usize]
+    pub fn get_color(&self, row: u32, col: u32) -> ColorU8 {
+        self.buffer[row as usize][col as usize]
     }
 
     pub fn width(&self) -> u32 { self.width }
@@ -30,30 +32,62 @@ impl Image {
 
     pub fn clear(&mut self) {
         for color in self.buffer.iter_mut().flatten() {
-            *color = Color::default();
+            *color = ColorU8::black();
         }
    }
 }
 
-trait WritePPM {
+pub trait WritePPM {
     fn write_as_ppm(&self) -> ();
 }
 
 impl WritePPM for Image {
     fn write_as_ppm(&self) -> () {
         println!("P3\n{} {}\n255", self.width, self.height);
-        for color in self.buffer.iter().flatten() {
-            Color::display_as_u8(*color);
+
+        for i in (0..self.height).rev() {
+            for j in 0..self.width {
+                println!("{}", self.get_color(i, j));
+            }
         }
     }
 }
 
+#[readonly::make]
+#[derive(Copy, Clone)]
+pub struct ColorU8 {
+    pub red: u8,
+    pub green: u8,
+    pub blue: u8,
+}
+
+impl ColorU8 {
+    pub fn black() -> ColorU8 { ColorU8 { red: 0, blue: 0, green: 0 } }
+}
+
+impl Display for ColorU8 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&format!("{} {} {}", self.red, self.green, self.blue))
+    }
+}
+
+impl From<Color> for ColorU8 {
+    fn from(color: Color) -> Self {
+        ColorU8 {
+            red: Color::to_u8(color.red),
+            green: Color::to_u8(color.green),
+            blue: Color::to_u8(color.blue),
+        }
+    }
+} 
+
 #[derive(Copy, Clone)]
 pub struct Color {
-    red: f64,
-    green: f64,
-    blue: f64 
+    pub red: f64,
+    pub green: f64,
+    pub blue: f64 
 }
+
 
 impl Color {
     pub fn new(red: f64, green: f64, blue: f64) -> Color {
@@ -64,13 +98,12 @@ impl Color {
         (channel * 255f64) as u8
     }
 
-    pub fn display_as_u8(color: Color) {
-        println!(
-            "{} {} {}",
-            Color::to_u8(color.red),
-            Color::to_u8(color.green),
-            Color::to_u8(color.blue),
-        ) 
+    pub fn gamma_corrected(&self) -> Color {
+        Color {
+            red: self.red.sqrt(),
+            blue: self.blue.sqrt(),
+            green: self.green.sqrt(),
+        } 
     }
 
     pub fn white() -> Color { Color::new(1.0, 1.0, 1.0) }
@@ -98,6 +131,22 @@ impl std::ops::Mul<Color> for Color {
             green: self.green * rhs.green,
             blue: self.blue * rhs.blue,
         }
+    }
+}
+
+impl std::ops::AddAssign for Color {
+    fn add_assign(&mut self, rhs: Self) {
+        self.red += rhs.red;
+        self.green += rhs.green;
+        self.blue += rhs.blue;
+    }
+}
+
+impl std::ops::Add for Color {
+    type Output = Color;
+
+    fn add(self, rhs: Self) -> Self {
+        Color::new(self.red + rhs.red, self.green + rhs.green, self.blue + rhs.blue)
     }
 }
 

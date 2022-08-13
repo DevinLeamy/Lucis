@@ -87,47 +87,16 @@ impl RayTracer {
 
     }
 
-    pub fn render(&mut self, scene: &HittableList, pool: &WorkerPool) -> Result<Receiver<Vec<Vec3>>, JsValue> {
+    pub fn render(&mut self, scene: &HittableList, pool: &WorkerPool) -> Frame {
         self.frame.clear();
 
-        let result = 5;
-
-        let thread_pool = rayon::ThreadPoolBuilder::new()
-            .num_threads(pool.size())
-            .spawn_handler(|thread| {
-                let error = pool.run(|| thread.run()).unwrap();
-                Ok(error)
-            })
-            .build()
-            .unwrap();
-        
-        let (sender, receiver) = oneshot::channel();
-
-        let width = self.frame.width();
-        let height = self.frame.height();
-        let pixels = width * height; 
-        let mut frame = vec![Color::ZEROS(); pixels as usize];
-
-        pool.run(move || {
-            thread_pool.install(|| {
-                // frame
-                //     .iter_mut()
-                //     .enumerate()
-                //     .for_each(|(i, color)| {
-                //         let y = i as u32 / width; 
-                //         let x = i as u32 % width;
-
-                //         self.color_pixel(x, y, scene);
-                //     });
-
-            });
-            drop(sender.send(frame));
-        })?;
-
+        for thread_id in 0..self.config.thread_count {
+            self.tile_render(scene, thread_id);
+        }
 
         eprintln!("Render complete!");
 
-        Ok(receiver)
+        self.frame.clone()
     }
 
     pub fn normalize_color(&self, pixel_color: Color) -> Color {

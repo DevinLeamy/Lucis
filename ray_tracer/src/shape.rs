@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use crate::collisions::{CollisionRecord, Collidable};
+use crate::collisions::{CollisionRecord, Collidable, collision_face};
 use crate::vec3::Vec3;
 use crate::aabb::{AABB, Boundable};
 use crate::ray::Ray;
@@ -85,23 +85,19 @@ impl SurfaceNormal for Sphere {
 impl Collidable for Sphere {
     fn collide(&self, ray: Ray) -> Option<CollisionRecord> {
         let intersection_time = match self.intersections(ray) {
-            Some((r1, r2)) => {
-                f64::max(r1, r2)
-                // if interval.contains(r1) { r1 } 
-                // else if interval.contains(r2) { r2 } 
-                // else { return None; }
-            }
+            Some((r1, r2)) => f64::min(r1, r2),
             _ => return None,
         };
 
         let intersection_point = ray.position_at(intersection_time);
-        let normal = self.surface_normal(intersection_point);
+        let s_normal = self.surface_normal(intersection_point);
 
         Some(CollisionRecord {
-            point: ray.position_at(intersection_time),
-            normal,
+            point: intersection_point, 
+            s_normal,
             t: intersection_time,
-            uv: self.map(normal)
+            uv: self.map(s_normal),
+            face: collision_face(ray.direction, s_normal)
         })
     }
 }
