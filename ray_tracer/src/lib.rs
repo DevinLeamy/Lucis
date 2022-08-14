@@ -1,3 +1,13 @@
+pub use vec3::*;
+pub use image::*;
+pub use renderer::*;
+pub use scene::*;
+pub use camera::*;
+pub use shape::*;
+pub use material::*;
+pub use texture::*;
+pub use pool::{WorkerPool};
+
 pub mod vec3;
 pub mod ray;
 pub mod utils;
@@ -11,5 +21,6 @@ pub mod collisions;
 pub mod material;
 pub mod texture;
 pub mod perlin;
+pub mod pool;
 
 

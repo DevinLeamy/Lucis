@@ -1,21 +1,27 @@
 [package]
-name = "ray_tracer"
+name = "Lucis"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "ray_tracer"
-path = "src/lib.rs"
+crate-type = ["cdylib"]
 
 [dependencies]
+ray_tracer = { path = "ray_tracer" }
+
 rand = "0.8.5"
-readonly = "0.2.2"
-rayon = "1.5"
-
-
-# wasm dependencies
-js-sys = "0.3.59"
+getrandom = { version = "0.2", features = ["js"] }
+wasm-logger = "0.2.0"
+log = "0.4.6"
+yew = { git = "https://github.com/yewstack/yew.git", features = ["csr"] }
 wasm-bindgen = "0.2.82"
+instant = { version = "0.1", features = ["stdweb", "wasm-bindgen"] }
+rayon = "1.5"
+futures = "0.3.21"
+wasm-bindgen-futures = "0.4.32"
+js-sys = "0.3.59"
+yewdux = { git = "https://github.com/intendednull/yewdux.git" }
+
 
 [dependencies.web-sys]
 version = "0.3.59"
@@ -35,3 +41,4 @@ features = [
     'DedicatedWorkerGlobalScope',
     'MessageEvent',
 ]
+
