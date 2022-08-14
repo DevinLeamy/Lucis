@@ -1,3 +1,5 @@
+use std::sync::Mutex;
+
 use crate::camera::Camera;
 use crate::collisions::{CollisionRecord, Collidable};
 use crate::material::{MaterialType, Material};
@@ -7,6 +9,7 @@ use crate::scene::{Scene};
 use crate::shape::{ShapeType, SurfaceNormal, TextureMap};
 use crate::utils::random_float;
 use crate::vec3::Vec3;
+use rayon::prelude::*;
 
 const MAX_BOUNCE_DEPTH: u32 = 50;
 const SAMPLES_PER_PIXEL: u32 = 300;
@@ -62,7 +65,11 @@ impl Render for RayTracer {
 
         let pixels = width * height;
 
-        for i in 0..pixels {
+        let indices = (0..pixels).collect::<Vec<u32>>();
+
+        let mut colors = vec![];
+
+        indices.par_iter().map(|i| {
             let row = i / width;
             let col = i % width;
 
@@ -89,8 +96,15 @@ impl Render for RayTracer {
                 acc_color.blue / SAMPLES_PER_PIXEL as f64,
             ).gamma_corrected(); 
 
-            image.set_color(row, col, ColorU8::from(normalized));
-        }
+            normalized
+        }).collect_into_vec(&mut colors);
+
+        indices.iter().for_each(|i| {
+            let row = i / width;
+            let col = i % width;
+            
+            image.set_color(row, col, ColorU8::from(colors[*i as usize]))
+        });
 
         image
     }

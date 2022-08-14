@@ -21,7 +21,7 @@ impl Default for CameraConfig {
         CameraConfig {
             aspect: 16.0 / 9.0,
             // origin: Vec3::new(13.0, 3.0, 3.0),
-            origin: Vec3::new(1.5, 3.0, 4.0),
+            origin: Vec3::new(3.0, 3.0, 4.0),
             look_at: Vec3::new(0.0, 1.0, 0.1),
             world_up: Vec3::new(0.0, 1.0, 0.0),
             focus_dist: 10.0,
