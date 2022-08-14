@@ -1,7 +1,10 @@
 use std::fmt::Display;
 
+use serde::{Deserialize, Serialize};
+
 use crate::vec3::Vec3;
 
+#[derive(Serialize, Deserialize)]
 pub struct Image {
     height: u32,
     width: u32,
@@ -54,7 +57,7 @@ impl WritePPM for Image {
 }
 
 #[readonly::make]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct ColorU8 {
     pub red: u8,
     pub green: u8,

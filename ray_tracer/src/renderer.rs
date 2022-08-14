@@ -8,11 +8,16 @@ use crate::shape::{ShapeType};
 use crate::utils::random_float;
 use crate::pool::WorkerPool;
 
+use futures::Future;
+use js_sys::Promise;
 use rayon::prelude::*;
+use futures::channel::oneshot;
+use wasm_bindgen::JsValue;
+use wasm_bindgen_futures::future_to_promise;
 
 
 const MAX_BOUNCE_DEPTH: u32 = 50;
-const SAMPLES_PER_PIXEL: u32 = 300;
+const SAMPLES_PER_PIXEL: u32 = 100;
 const MIN_INTERSECTION_T: f64 = 0.001;
 
 pub trait Render {
@@ -110,53 +115,74 @@ impl Render for RayTracer {
     }
 }
 impl RayTracer {
-    pub fn render_scene_wasm(scene: &Scene, camera: Camera, width: u32, height: u32, pool: &WorkerPool) -> Image {
-        let mut image = Image::new(height, width); 
-
+    pub fn render_scene_wasm(scene: Scene, camera: Camera, width: u32, height: u32, pool: &WorkerPool) -> Result<Promise, JsValue> {
         let pixels = width * height;
-
         let indices = (0..pixels).collect::<Vec<u32>>();
-
         let mut colors = vec![Color::black(); pixels as usize];
 
-        // indices.par_iter().map(|i| {
-        //     let row = i / width;
-        //     let col = i % width;
+        let thread_pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(pool.size())
+            .spawn_handler(|thread| Ok(pool.run(|| thread.run()).unwrap()))
+            .build()
+            .unwrap();
+        
+        let (sender, receiver) = oneshot::channel();
 
-        //     let mut acc_color = Color::black();
+        pool.run(move || {
+            thread_pool.install(|| {
+                indices.par_iter().map(|i| {
+                    let row = i / width;
+                    let col = i % width;
+        
+                    let mut acc_color = Color::black();
+        
+                    for _ in 0..SAMPLES_PER_PIXEL {
+                        let row_s = row as f64 + random_float();
+                        let col_s = col as f64 + random_float();
+        
+                        // convert pixel coordinate to world coordinates
+                        let world_x = col_s / (width - 1) as f64;
+                        let world_y = row_s / (height - 1) as f64; 
+        
+                        let ray = camera.create_ray(world_x, world_y);
+        
+                        let color = RayTracer::compute_ray_color(&scene, ray, 0);
+        
+                        acc_color += color; 
+                    }
+        
+                    let normalized = Color::new(
+                        acc_color.red / SAMPLES_PER_PIXEL as f64,
+                        acc_color.green / SAMPLES_PER_PIXEL as f64,
+                        acc_color.blue / SAMPLES_PER_PIXEL as f64,
+                    ).gamma_corrected(); 
+        
+                    normalized
+                }).collect_into_vec(&mut colors);
+            });
 
-        //     for _ in 0..SAMPLES_PER_PIXEL {
-        //         let row_s = row as f64 + random_float();
-        //         let col_s = col as f64 + random_float();
+            drop(sender.send(colors));
+        })?;
 
-        //         // convert pixel coordinate to world coordinates
-        //         let world_x = col_s / (width - 1) as f64;
-        //         let world_y = row_s / (height - 1) as f64; 
+        let render_complete = async move {
+            match receiver.await {
+                Ok(colors) => { 
+                    let mut image = Image::new(height, width); 
+                    let indices = (0..pixels).collect::<Vec<u32>>();
+                    indices.iter().for_each(|i| {
+                        let row = i / width;
+                        let col = i % width;
+                        
+                        image.set_color(row, col, ColorU8::from(colors[*i as usize]))
+                    });
+                    web_sys::console::log_1(&JsValue::from("Render complete"));
+                    Ok(JsValue::from_serde(&image).unwrap())
+                },
+                Err(_) => Err(JsValue::undefined())
+            }
+        };
 
-        //         let ray = camera.create_ray(world_x, world_y);
-
-        //         let color = RayTracer::compute_ray_color(scene, ray, 0);
-
-        //         acc_color += color; 
-        //     }
-
-        //     let normalized = Color::new(
-        //         acc_color.red / SAMPLES_PER_PIXEL as f64,
-        //         acc_color.green / SAMPLES_PER_PIXEL as f64,
-        //         acc_color.blue / SAMPLES_PER_PIXEL as f64,
-        //     ).gamma_corrected(); 
-
-        //     normalized
-        // }).collect_into_vec(&mut colors);
-
-        indices.iter().for_each(|i| {
-            let row = i / width;
-            let col = i % width;
-            
-            image.set_color(row, col, ColorU8::from(colors[*i as usize]))
-        });
-
-        image
+        Ok(wasm_bindgen_futures::future_to_promise(render_complete))
     }
-
 }
+

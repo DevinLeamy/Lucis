@@ -1,3 +1,4 @@
+use js_sys::Promise;
 use ray_tracer::{Scene, RayTracer, Image, Camera, WorkerPool};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::{JsCast, JsValue};
@@ -8,6 +9,9 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use std::rc::Rc;
 use yew::prelude::*;
 use yewdux::prelude::*;
+
+const CANVAS_WIDTH: u32 = 600;
+const CANVAS_HEIGHT: u32 = (600.0 / (16.0 / 9.0)) as u32;
 
 #[derive(Default, Store)]
 pub struct FrameStore {
@@ -23,9 +27,8 @@ impl PartialEq for FrameStore {
 pub struct RayTracerDisplay {
     canvas_ref: NodeRef,
     canvas: Option<CanvasRenderingContext2d>,
-    render: Option<Image>,
-    canvas_width: u32,
-    canvas_height: u32,
+    // canvas_width: u32,
+    // canvas_height: u32,
     frame_store: Rc<FrameStore>,
     dispatch: Dispatch<FrameStore>,
 
@@ -33,7 +36,7 @@ pub struct RayTracerDisplay {
 
 pub enum Signal {
     Render,
-    RenderComplete(Image),
+    RenderComplete,
     Download,
     UpdateFrame(Rc<FrameStore>),
 }
@@ -43,19 +46,12 @@ impl Component for RayTracerDisplay {
     type Properties = (); // Props;
 
     fn create(ctx: &Context<Self>) -> Self {
-        let camera = Camera::default();
-        let image_width = 400;
-        let image_height = (image_width as f64 / camera.aspect()) as u32;
-
         let frame_update_callback = ctx.link().callback(Signal::UpdateFrame);
         let dispatch = Dispatch::<FrameStore>::subscribe(frame_update_callback);
 
         Self {
             canvas_ref: NodeRef::default(),
             canvas: None,
-            render: None,
-            canvas_width: image_width,
-            canvas_height: image_height,
             frame_store: dispatch.get(),
             dispatch
         }
@@ -63,8 +59,7 @@ impl Component for RayTracerDisplay {
 
     fn update(&mut self, ctx: &Context<Self>, signal: Self::Message) -> bool {
         match signal {
-            Signal::RenderComplete(frame) => {
-                // self.render(frame, ctx);
+            Signal::RenderComplete => {
                 log::info!("Render complete!");
             }
             Signal::Download => {
@@ -123,8 +118,8 @@ impl RayTracerDisplay {
     fn initialize_canvas(&mut self) {
         let canvas = self.canvas_ref.cast::<HtmlCanvasElement>().unwrap();
 
-        canvas.set_height(self.canvas_height);
-        canvas.set_width(self.canvas_width);
+        canvas.set_height(CANVAS_HEIGHT);
+        canvas.set_width(CANVAS_WIDTH);
 
         self.canvas = Some(
             canvas
@@ -139,19 +134,17 @@ impl RayTracerDisplay {
         let canvas = self.canvas.as_ref().unwrap();
         let frame = self.frame_store.frame.as_ref().unwrap();
 
-        for i in 0..self.canvas_width {
-            for j in 0..self.canvas_height {
+        for i in 0..CANVAS_HEIGHT {
+            for j in 0..CANVAS_WIDTH {
                 let color = frame.get_color(i, j);
                 let js_color: JsValue = JsValue::from_str(
                     format!("rgb({}, {}, {})", color.red, color.green, color.blue).as_str(),
                 );
 
                 canvas.set_fill_style(&js_color);
-                canvas.fill_rect(i.into(), (self.canvas_height - 1 - j).into(), 1.0, 1.0);
+                canvas.fill_rect(j.into(), (CANVAS_HEIGHT - 1 - i).into(), 1.0, 1.0);
             }
         }
-
-        // self.render = Some(frame)
     }
 
     fn get_canvas_image(&self) -> String {
@@ -176,15 +169,15 @@ impl RayTracerDisplay {
     }
 
     fn download_render(&self) {
-        // match &self.render {
-        //     Some(_) => {
-        //         let canvas_image = self.get_canvas_image();
-        //         self.download_image(canvas_image)
-        //     }
-        //     None => {
-        //         log::info!("There is no frame to download");
-        //     }
-        // }
+        match &self.frame_store.as_ref().frame {
+            Some(_) => {
+                let canvas_image = self.get_canvas_image();
+                self.download_image(canvas_image)
+            }
+            None => {
+                log::info!("There is no frame to download");
+            }
+        }
     }
 }
 
@@ -200,12 +193,16 @@ impl RequestEmitter {
         Ok(RequestEmitter {})
     }
 
-    pub fn send_request(self, pool: &WorkerPool) {
+    pub fn send_request(&self, pool: &WorkerPool) -> Result<Promise, JsValue> {
         log_1(&pool.size().into());
+
+        RayTracer::render_scene_wasm(Scene::materials(), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
+    }
+    #[wasm_bindgen]
+    pub fn display_image(&self, image: &JsValue) {
         let dispatch = Dispatch::<FrameStore>::new();
-
-        let image = RayTracer::render_scene_wasm(&Scene::simple(), Camera::default(), 400, 400, pool);
-        dispatch.set(FrameStore { frame: Some(image) });
-
+        dispatch.set(FrameStore { frame: Some(image.into_serde().unwrap()) });
     }
 }
+
+

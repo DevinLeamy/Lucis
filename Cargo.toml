@@ -33,12 +33,5 @@ features = [
     "Document",
     "Node",
     "HtmlAnchorElement",
-
-    # pool.rs
-    'Navigator',
-    'Window',
-    'Worker',
-    'DedicatedWorkerGlobalScope',
-    'MessageEvent',
 ]
 

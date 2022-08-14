@@ -30,10 +30,11 @@ function main(wasm) {
 let mod = null; // wasm module 
 let pool = null; // web worker pool 
 
-function render() {
+async function render() {
     console.log("(JS)", pool)
     let requestEmitter = new RequestEmitter();
-    requestEmitter.send_request(pool)
+    let wasm_image = await requestEmitter.send_request(pool)
+    requestEmitter.display_image(wasm_image)
 }
 
 
