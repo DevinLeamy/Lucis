@@ -15,6 +15,7 @@ pub mod aabb;
 pub mod collisions;
 pub mod material;
 pub mod texture;
+pub mod perlin;
 
 fn main() {
     let scene = Scene::materials();   

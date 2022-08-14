@@ -9,6 +9,10 @@ pub fn random_range(min: f64, max: f64) -> f64 {
     random_float() * (max - min) + min
 }
 
+pub fn u32_random_range(min: u32, max: u32) -> u32 {
+    (random_float() * ((max - min) + min) as f64) as u32
+}
+
 pub fn sample_unit_sphere() -> Vec3 {
     loop {
         let sample = Vec3::new(

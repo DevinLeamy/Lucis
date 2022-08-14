@@ -1,6 +1,7 @@
 use crate::collisions::{CollisionRecord, Face};
 use crate::image::Color;
 use crate::ray::Ray;
+use crate::texture::{TextureType, Texture};
 use crate::utils::{reflect, random_unit_vector, sample_unit_sphere};
 use crate::vec3::Vec3;
 
@@ -11,24 +12,33 @@ pub struct CollisionResult {
 
 pub trait Material {
     fn resolve(&self, ray: Ray, collision: CollisionRecord) -> CollisionResult;
-    fn as_mat(self) -> Box<dyn Material>;
 }
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub enum MaterialType {
     Lambertian(Lambertian), 
     Dielectric(Dielectric),
     Metal(Metal)
 }
 
-#[derive(Copy, Clone)]
+impl Material for MaterialType {
+    fn resolve(&self, ray: Ray, collision: CollisionRecord) -> CollisionResult {
+        match self {
+            MaterialType::Dielectric(m) => m.resolve(ray, collision),
+            MaterialType::Lambertian(m) => m.resolve(ray, collision),
+            MaterialType::Metal(m)      => m.resolve(ray, collision),
+        }
+    }
+} 
+
+#[derive(Clone)]
 pub struct Lambertian {
-    color: Color
+    texture: TextureType 
 }
 
 impl Lambertian {
-    pub fn new(color: Color) -> Lambertian {
-        Lambertian { color }
+    pub fn new(texture: TextureType) -> Lambertian {
+        Lambertian { texture }
     }
 }
 
@@ -42,12 +52,8 @@ impl Material for Lambertian {
 
         CollisionResult {
             reflected_ray: Ray::new(collision.point, bounce_dir),
-            color: self.color
+            color: self.texture.value(collision.uv, collision.point)
         }
-    }
-
-    fn as_mat(self) -> Box<dyn Material> {
-        Box::new(self) 
     }
 }
 
@@ -91,21 +97,17 @@ impl Material for Dielectric {
             color: Color::new(1.0, 1.0, 1.0),
         }
     }
-
-    fn as_mat(self) -> Box<dyn Material> {
-        Box::new(self)
-    }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct Metal {
-    color: Color,
+    texture: TextureType,
     fuzz: f64,
 }
 
 impl Metal {
-    pub fn new(color: Color, fuzz: f64) -> Self {
-        Metal { color, fuzz }
+    pub fn new(texture: TextureType, fuzz: f64) -> Self {
+        Metal { texture, fuzz }
     }
 }
 
@@ -125,7 +127,7 @@ impl Material for Metal {
         match collision.face {
             Face::Outer => {
                 CollisionResult {
-                    color: self.color,
+                    color: self.texture.value(collision.uv, collision.point),
                     reflected_ray: ref_ray,
                 }
     
@@ -136,9 +138,5 @@ impl Material for Metal {
                 reflected_ray: ref_ray,
             } 
         }
-    }
-
-    fn as_mat(self) -> Box<dyn Material> {
-        Box::new(self)
     }
 }

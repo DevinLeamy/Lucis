@@ -40,7 +40,7 @@ impl RayTracer {
                 // the ray collides earlier
                 if MIN_INTERSECTION_T < record.t && record.t < c_t { 
                     c_t = record.t;
-                    c_material = Some(element.material);
+                    c_material = Some(element.material.clone());
                     c_record = Some(record)
                 } 
             };
@@ -50,11 +50,7 @@ impl RayTracer {
             return Color::white();
         }
 
-        let result = match c_material.unwrap() {
-            MaterialType::Dielectric(m) => m.resolve(ray, c_record.unwrap()),
-            MaterialType::Lambertian(m) => m.resolve(ray, c_record.unwrap()),
-            MaterialType::Metal(m) => m.resolve(ray, c_record.unwrap()),
-        };
+        let result = c_material.unwrap().resolve(ray, c_record.unwrap());
 
         result.color * RayTracer::compute_ray_color(scene, result.reflected_ray, bounce_depth + 1)
     }
