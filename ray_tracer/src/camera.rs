@@ -69,6 +69,7 @@ impl Camera {
     }
 
     pub fn aspect(&self) -> f64 { self.aspect }
+    pub fn origin(&self) -> Vec3 {self.origin }
 
     pub fn create_ray(&self, h_offset: f64, v_offset: f64) -> Ray {
         Ray::new(

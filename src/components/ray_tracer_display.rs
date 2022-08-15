@@ -10,8 +10,18 @@ use std::rc::Rc;
 use yew::prelude::*;
 use yewdux::prelude::*;
 
-const CANVAS_WIDTH: u32 = 600;
-const CANVAS_HEIGHT: u32 = (600.0 / (16.0 / 9.0)) as u32;
+use instant::Instant;
+
+const CANVAS_WIDTH: u32 = 1000;
+const CANVAS_HEIGHT: u32 = (CANVAS_WIDTH as f64 / (16.0 / 9.0)) as u32;
+
+
+#[derive(Debug)]
+pub enum RenderStatus {
+    Complete(Instant, Instant),
+    Rendering(Instant),
+    Idle,
+}
 
 #[derive(Default, Store)]
 pub struct FrameStore {
@@ -37,8 +47,8 @@ pub struct RayTracerDisplay {
     frame_store: Rc<FrameStore>,
     frame_dispatch: Dispatch<FrameStore>,
     camera_store: Rc<CameraStore>,
-    camera_dispatch: Dispatch<CameraStore>
-
+    camera_dispatch: Dispatch<CameraStore>,
+    render_status: RenderStatus,
 }
 
 pub enum Signal {
@@ -66,6 +76,7 @@ impl Component for RayTracerDisplay {
             frame_dispatch,
             camera_store: camera_dispatch.get(),
             camera_dispatch,
+            render_status: RenderStatus::Idle,
         }
     }
 
@@ -73,14 +84,14 @@ impl Component for RayTracerDisplay {
         match signal {
             Signal::Render => {
                 log_1(&JsValue::from("Requesting Render"));
+                self.render_status = RenderStatus::Rendering(Instant::now());
                 self.request_render();
             }
             Signal::RenderComplete => {
-                log::info!("Render complete!");
-                if self.frame_store.as_ref().frame.is_some() {
-                    self.render(ctx);
+                if let RenderStatus::Rendering(start_time) = self.render_status {
+                    self.render_status = RenderStatus::Complete(start_time, Instant::now());
+                    log::info!("Render complete!");
                 }
- 
             }
             Signal::Download => {
                 self.download_render();
@@ -94,7 +105,6 @@ impl Component for RayTracerDisplay {
             }
             Signal::OnCameraUpdate(camera_store) => {
                 self.camera_store = camera_store;
-                // self.request_render();
             }
             _ => (),
         }
@@ -106,7 +116,6 @@ impl Component for RayTracerDisplay {
             self.initialize_canvas();
         }
     }
-    
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let link = ctx.link();
@@ -120,37 +129,57 @@ impl Component for RayTracerDisplay {
             Signal::Render
         });
 
+        let increase_y = link.callback(|_| {
+            RayTracerDisplay::translate_camera(Vec3::new(0.0, 0.5, 0.0));
+            Signal::Render
+        });
+
+        let decrease_y = link.callback(|_: MouseEvent| {
+            RayTracerDisplay::translate_camera(Vec3::new(0.0, -0.5, 0.0));
+            Signal::Render
+        });
+
         let increase_x = link.callback(|_| {
-            log_1(&JsValue::from("Increase X"));
-            let dispatch = Dispatch::<CameraStore>::new();
-            let mut camera: Camera = dispatch.get().camera; 
-
-            camera.translate(Vec3::new(0.5, 0.0, 0.0));
-
-            dispatch.set(CameraStore { camera });
-
+            RayTracerDisplay::translate_camera(Vec3::new(0.5, 0.0, 0.0));
             Signal::Render
         });
 
-        let decrease_x = link.callback(|_| {
-            log_1(&JsValue::from("Decrease X"));
-            let dispatch = Dispatch::<CameraStore>::new();
-            let mut camera: Camera = dispatch.get().camera; 
-
-            camera.translate(Vec3::new(-0.5, 0.0, 0.0));
-
-            dispatch.set(CameraStore { camera });
-
+        let decrease_x = link.callback(|_: MouseEvent| {
+            RayTracerDisplay::translate_camera(Vec3::new(-0.5, 0.0, 0.0));
             Signal::Render
         });
+
+        let increase_z = link.callback(|_| {
+            RayTracerDisplay::translate_camera(Vec3::new(0.0, 0.0, 0.5));
+            Signal::Render
+        });
+
+        let decrease_z = link.callback(|_: MouseEvent| {
+            RayTracerDisplay::translate_camera(Vec3::new(-0.5, 0.0, -0.5));
+            Signal::Render
+        });
+
+        let dispatch = Dispatch::<CameraStore>::new();
+        let camera = dispatch.get().camera; 
 
         html! {
             <div>
                 <button id="create_frame_btn">
                     { "Hook" }
                 </button>
-                <button onclick={increase_x}>{"+"}</button>
-                <button onclick={decrease_x}>{"-"}</button>
+                <h5>{format!("Origin: {:?}", camera.origin())}</h5>
+                <div>
+                    <button onclick={increase_x}>{"+x"}</button>
+                    <button onclick={decrease_x}>{"-x"}</button>
+                </div>
+                <div>
+                    <button onclick={increase_y}>{"+y"}</button>
+                    <button onclick={decrease_y}>{"-y"}</button>
+                </div>
+                <div>
+                    <button onclick={increase_z}>{"+z"}</button>
+                    <button onclick={decrease_z}>{"-z"}</button>
+                </div>
                 <button onclick={request_render}>
                     { "Render" }
                 </button>
@@ -163,13 +192,29 @@ impl Component for RayTracerDisplay {
                 <button onclick={request_download}>
                     { "Download Image" }
                 </button>
-                
+                <h5>{format!("{:?}", match self.render_status {
+                    RenderStatus::Rendering(_)     => "Rendering".to_string(),
+                    RenderStatus::Complete(t0, t1) => {
+                        let elapsed = t1.duration_since(t0);
+                        format!("{:?}", elapsed)
+                    },
+                    RenderStatus::Idle             => "".to_string()
+                })}</h5>
             </div>
         }
     }
 }
 
 impl RayTracerDisplay {
+    fn translate_camera(translation: Vec3) {
+        log_1(&JsValue::from("Decrease X"));
+        let dispatch = Dispatch::<CameraStore>::new();
+        let mut camera: Camera = dispatch.get().camera; 
+
+        camera.translate(translation);
+
+        dispatch.set(CameraStore { camera }); 
+    }
     fn initialize_canvas(&mut self) {
         let canvas = self.canvas_ref.cast::<HtmlCanvasElement>().unwrap();
 
@@ -197,7 +242,7 @@ impl RayTracerDisplay {
         let _res = render_btn.onclick().unwrap().call0(&JsValue::undefined());
     }
 
-    fn render(&mut self, _ctx: &Context<Self>) {
+    fn render(&mut self, ctx: &Context<Self>) {
         let canvas = self.canvas.as_ref().unwrap();
         let frame = self.frame_store.frame.as_ref().unwrap();
 
@@ -212,6 +257,8 @@ impl RayTracerDisplay {
                 canvas.fill_rect(j.into(), (CANVAS_HEIGHT - 1 - i).into(), 1.0, 1.0);
             }
         }
+
+        ctx.link().send_message(Signal::RenderComplete);
     }
 
     fn get_canvas_image(&self) -> String {
