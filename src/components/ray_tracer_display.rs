@@ -27,8 +27,6 @@ impl PartialEq for FrameStore {
 pub struct RayTracerDisplay {
     canvas_ref: NodeRef,
     canvas: Option<CanvasRenderingContext2d>,
-    // canvas_width: u32,
-    // canvas_height: u32,
     frame_store: Rc<FrameStore>,
     dispatch: Dispatch<FrameStore>,
 
@@ -43,7 +41,7 @@ pub enum Signal {
 
 impl Component for RayTracerDisplay {
     type Message = Signal;
-    type Properties = (); // Props;
+    type Properties = (); 
 
     fn create(ctx: &Context<Self>) -> Self {
         let frame_update_callback = ctx.link().callback(Signal::UpdateFrame);
@@ -59,6 +57,10 @@ impl Component for RayTracerDisplay {
 
     fn update(&mut self, ctx: &Context<Self>, signal: Self::Message) -> bool {
         match signal {
+            Signal::Render => {
+                log_1(&JsValue::from("Requesting Render"));
+                self.request_render();
+            }
             Signal::RenderComplete => {
                 log::info!("Render complete!");
             }
@@ -67,7 +69,7 @@ impl Component for RayTracerDisplay {
             }
             Signal::UpdateFrame(frame_store) => {
                 self.frame_store = frame_store;
-                if (self.frame_store.as_ref().frame.is_some()) {
+                if self.frame_store.as_ref().frame.is_some() {
                     self.render(ctx);
                 }
             }
@@ -91,11 +93,18 @@ impl Component for RayTracerDisplay {
             Signal::Download
         });
 
+        let request_render = link.callback(|_| {
+            Signal::Render
+        });
+
 
         html! {
             <div>
                 <button id="create_frame_btn">
-                    { "Create frame!" }
+                    { "Hook" }
+                </button>
+                <button onclick={request_render}>
+                    { "Render" }
                 </button>
                 <div>
                     <h1 class="display">
@@ -106,9 +115,7 @@ impl Component for RayTracerDisplay {
                 <button onclick={request_download}>
                     { "Download Image" }
                 </button>
-                // <h1>
-                //     {&format!("Frame: {}", self.frame_store.frame)}
-                // </h1>
+                
             </div>
         }
     }
@@ -130,6 +137,18 @@ impl RayTracerDisplay {
                 .unwrap(),
         );
     }
+
+    fn request_render(&self) {
+        let window = web_sys::window().expect("no global `window` exists");
+        let document = window.document().expect("should have a document on window");
+        let render_btn = document
+            .get_element_by_id("create_frame_btn")
+            .unwrap()
+            .dyn_into::<web_sys::HtmlButtonElement>()
+            .unwrap();
+        let _res = render_btn.onclick().unwrap().call0(&JsValue::undefined());
+    }
+
     fn render(&mut self, _ctx: &Context<Self>) {
         let canvas = self.canvas.as_ref().unwrap();
         let frame = self.frame_store.frame.as_ref().unwrap();
@@ -182,7 +201,7 @@ impl RayTracerDisplay {
 }
 
 #[wasm_bindgen]
-struct RequestEmitter { }
+pub struct RequestEmitter { }
 
 #[allow(dead_code)]
 #[allow(unused_variables)]
@@ -193,12 +212,13 @@ impl RequestEmitter {
         Ok(RequestEmitter {})
     }
 
+    /// request an image to the rendered
+    /// returns a callback to the resulting, serialized, image
     pub fn send_request(&self, pool: &WorkerPool) -> Result<Promise, JsValue> {
-        log_1(&pool.size().into());
-
         RayTracer::render_scene_wasm(Scene::materials(), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
-    #[wasm_bindgen]
+
+    /// display a serialized image 
     pub fn display_image(&self, image: &JsValue) {
         let dispatch = Dispatch::<FrameStore>::new();
         dispatch.set(FrameStore { frame: Some(image.into_serde().unwrap()) });

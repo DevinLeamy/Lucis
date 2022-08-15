@@ -6,7 +6,7 @@ pub use camera::*;
 pub use shape::*;
 pub use material::*;
 pub use texture::*;
-pub use pool::{WorkerPool};
+pub use pool::WorkerPool;
 
 pub mod vec3;
 pub mod ray;

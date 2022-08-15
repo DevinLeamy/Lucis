@@ -33,5 +33,6 @@ features = [
     "Document",
     "Node",
     "HtmlAnchorElement",
+    "HtmlButtonElement"
 ]
 

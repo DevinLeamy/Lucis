@@ -21,7 +21,7 @@ function main(wasm) {
     setInterval(() => {
         createFrameButton = document.getElementById("create_frame_btn")
         if (createFrameButton != null) {
-            createFrameButton.onclick = render
+            createFrameButton.onclick = js_render
         }
     }, 100);
 
@@ -30,11 +30,11 @@ function main(wasm) {
 let mod = null; // wasm module 
 let pool = null; // web worker pool 
 
-async function render() {
+function js_render() {
     console.log("(JS)", pool)
     let requestEmitter = new RequestEmitter();
-    let wasm_image = await requestEmitter.send_request(pool)
-    requestEmitter.display_image(wasm_image)
+    requestEmitter.send_request(pool)
+        .then(wasm_image => {
+            requestEmitter.display_image(wasm_image)
+        })
 }
-
-
