@@ -64,6 +64,10 @@ impl Camera {
         }
     }
 
+    pub fn translate(&mut self, translation: Vec3) {
+        self.origin += translation;
+    }
+
     pub fn aspect(&self) -> f64 { self.aspect }
 
     pub fn create_ray(&self, h_offset: f64, v_offset: f64) -> Ray {

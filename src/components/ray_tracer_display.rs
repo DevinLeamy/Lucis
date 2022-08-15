@@ -1,5 +1,5 @@
 use js_sys::Promise;
-use ray_tracer::{Scene, RayTracer, Image, Camera, WorkerPool};
+use ray_tracer::{Scene, RayTracer, Image, Camera, WorkerPool, Vec3};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::{JsCast, JsValue};
 
@@ -19,16 +19,25 @@ pub struct FrameStore {
 }
 
 impl PartialEq for FrameStore {
-    fn eq(&self, other: &Self) -> bool {
-        false
-    }
+    fn eq(&self, _: &Self) -> bool { false }
+}
+
+#[derive(Default, Store)]
+pub struct CameraStore {
+    camera: Camera 
+}
+
+impl PartialEq for CameraStore {
+    fn eq(&self, _: &Self) -> bool { false }
 }
 
 pub struct RayTracerDisplay {
     canvas_ref: NodeRef,
     canvas: Option<CanvasRenderingContext2d>,
     frame_store: Rc<FrameStore>,
-    dispatch: Dispatch<FrameStore>,
+    frame_dispatch: Dispatch<FrameStore>,
+    camera_store: Rc<CameraStore>,
+    camera_dispatch: Dispatch<CameraStore>
 
 }
 
@@ -37,6 +46,7 @@ pub enum Signal {
     RenderComplete,
     Download,
     UpdateFrame(Rc<FrameStore>),
+    OnCameraUpdate(Rc<CameraStore>),
 }
 
 impl Component for RayTracerDisplay {
@@ -45,13 +55,17 @@ impl Component for RayTracerDisplay {
 
     fn create(ctx: &Context<Self>) -> Self {
         let frame_update_callback = ctx.link().callback(Signal::UpdateFrame);
-        let dispatch = Dispatch::<FrameStore>::subscribe(frame_update_callback);
+        let camera_update_callback = ctx.link().callback(Signal::OnCameraUpdate);
+        let frame_dispatch = Dispatch::<FrameStore>::subscribe(frame_update_callback);
+        let camera_dispatch = Dispatch::<CameraStore>::subscribe(camera_update_callback);
 
         Self {
             canvas_ref: NodeRef::default(),
             canvas: None,
-            frame_store: dispatch.get(),
-            dispatch
+            frame_store: frame_dispatch.get(),
+            frame_dispatch,
+            camera_store: camera_dispatch.get(),
+            camera_dispatch,
         }
     }
 
@@ -63,15 +77,24 @@ impl Component for RayTracerDisplay {
             }
             Signal::RenderComplete => {
                 log::info!("Render complete!");
+                if self.frame_store.as_ref().frame.is_some() {
+                    self.render(ctx);
+                }
+ 
             }
             Signal::Download => {
                 self.download_render();
             }
             Signal::UpdateFrame(frame_store) => {
+                log::info!("Update frame!");
                 self.frame_store = frame_store;
                 if self.frame_store.as_ref().frame.is_some() {
                     self.render(ctx);
                 }
+            }
+            Signal::OnCameraUpdate(camera_store) => {
+                self.camera_store = camera_store;
+                // self.request_render();
             }
             _ => (),
         }
@@ -97,12 +120,37 @@ impl Component for RayTracerDisplay {
             Signal::Render
         });
 
+        let increase_x = link.callback(|_| {
+            log_1(&JsValue::from("Increase X"));
+            let dispatch = Dispatch::<CameraStore>::new();
+            let mut camera: Camera = dispatch.get().camera; 
+
+            camera.translate(Vec3::new(0.5, 0.0, 0.0));
+
+            dispatch.set(CameraStore { camera });
+
+            Signal::Render
+        });
+
+        let decrease_x = link.callback(|_| {
+            log_1(&JsValue::from("Decrease X"));
+            let dispatch = Dispatch::<CameraStore>::new();
+            let mut camera: Camera = dispatch.get().camera; 
+
+            camera.translate(Vec3::new(-0.5, 0.0, 0.0));
+
+            dispatch.set(CameraStore { camera });
+
+            Signal::Render
+        });
 
         html! {
             <div>
                 <button id="create_frame_btn">
                     { "Hook" }
                 </button>
+                <button onclick={increase_x}>{"+"}</button>
+                <button onclick={decrease_x}>{"-"}</button>
                 <button onclick={request_render}>
                     { "Render" }
                 </button>
@@ -215,7 +263,8 @@ impl RequestEmitter {
     /// request an image to the rendered
     /// returns a callback to the resulting, serialized, image
     pub fn send_request(&self, pool: &WorkerPool) -> Result<Promise, JsValue> {
-        RayTracer::render_scene_wasm(Scene::materials(), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
+        let camera: Camera = Dispatch::<CameraStore>::new().get().camera;
+        RayTracer::render_scene_wasm(Scene::materials(), camera, CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
     /// display a serialized image 
