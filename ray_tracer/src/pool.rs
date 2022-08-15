@@ -15,17 +15,18 @@ use wasm_bindgen::JsCast;
 use web_sys::{DedicatedWorkerGlobalScope, MessageEvent};
 use web_sys::{ErrorEvent, Event, Worker};
 
-macro_rules! console_log {
-    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
-}
-
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
     #[wasm_bindgen(js_namespace = console, js_name = log)]
     fn logv(x: &JsValue);
+} 
+
+macro_rules! console_log {
+    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
 }
+
 
 #[wasm_bindgen]
 pub struct WorkerPool {
@@ -206,6 +207,10 @@ impl WorkerPool {
         let worker = self.execute(f)?;
         self.reclaim_on_message(worker);
         Ok(())
+    }
+
+    pub fn size(&self) -> usize {
+        self.state.workers.borrow().len()
     }
 }
 

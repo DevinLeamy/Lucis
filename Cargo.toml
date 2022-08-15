@@ -7,17 +7,22 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
+ray_tracer = { path = "ray_tracer" }
+rayon = "1.5"
 rand = "0.8.5"
+futures = "0.3.21"
+# wasm
 getrandom = { version = "0.2", features = ["js"] }
 wasm-logger = "0.2.0"
 log = "0.4.6"
-yew = "0.19.3"
 wasm-bindgen = "0.2.82"
 instant = { version = "0.1", features = ["stdweb", "wasm-bindgen"] }
-rayon = "1.5"
-futures = "0.3.21"
 wasm-bindgen-futures = "0.4.32"
 js-sys = "0.3.59"
+# yew
+yew = { git = "https://github.com/yewstack/yew.git", features = ["csr"] }
+yewdux = { git = "https://github.com/intendednull/yewdux.git" }
+# material-yew = { git = "https://github.com/hamza1311/material-yew.git", features = ["full"] }
 
 
 [dependencies.web-sys]
@@ -30,12 +35,6 @@ features = [
     "Document",
     "Node",
     "HtmlAnchorElement",
-
-    # pool.rs
-    'Navigator',
-    'Window',
-    'Worker',
-    'DedicatedWorkerGlobalScope',
-    'MessageEvent',
+    "HtmlButtonElement"
 ]
 

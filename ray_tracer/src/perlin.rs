@@ -1,5 +1,7 @@
-use crate::{utils::Point, core::random_float};
+use crate::vec3::Vec3;
+use crate::utils::{random_float, u32_random_range};
 
+#[derive(Clone)]
 pub struct Perlin {
     x: Box<[u32; Perlin::POINT_COUNT as usize]>,
     y: Box<[u32; Perlin::POINT_COUNT as usize]>,
@@ -23,10 +25,10 @@ impl Perlin {
         }
     }
 
-    pub fn noise(&self, p: &Point) -> f64 {
-        let i = (4f64 * p.x()) as i32 & 255;
-        let j = (4f64 * p.y()) as i32 & 255;
-        let k = (4f64 * p.z()) as i32 & 255;
+    pub fn noise(&self, p: Vec3) -> f64 {
+        let i = (4f64 * p.x) as i32 & 255;
+        let j = (4f64 * p.y) as i32 & 255;
+        let k = (4f64 * p.z) as i32 & 255;
 
         self.randoms[(self.x[i as usize] ^ self.y[j as usize] ^ self.z[k as usize]) as usize]
     }
@@ -48,7 +50,7 @@ impl Perlin {
     */
     fn permute(p: &mut Box<[u32; Perlin::POINT_COUNT as usize]>, n: u32) {
         for i in (0..n as usize).rev() {
-            let target = crate::utils::random_natural(0, i as u32);
+            let target = u32_random_range(0, i as u32);
             let temp = p[i]; 
             p[i] = p[target as usize];
             p[target as usize] = temp;
