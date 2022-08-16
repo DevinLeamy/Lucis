@@ -37,6 +37,28 @@ pub struct CameraStore {
     camera: Camera 
 }
 
+
+enum CanvasClickState {
+    Clicked(i32, i32),
+    Idle,
+}
+
+impl Default for CanvasClickState {
+    fn default() -> Self {
+       CanvasClickState::Idle 
+    }
+}
+
+
+#[derive(Default, Store)]
+pub struct CanvasClickStore {
+    click_state: CanvasClickState
+}
+
+impl PartialEq for CanvasClickStore {
+    fn eq(&self, _: &Self) -> bool { false }
+}
+
 impl PartialEq for CameraStore {
     fn eq(&self, _: &Self) -> bool { false }
 }
