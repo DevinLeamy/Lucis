@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 pub use vec3::*;
 pub use image::*;
 pub use renderer::*;

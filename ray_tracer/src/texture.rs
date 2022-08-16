@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::shape::UV;
 use crate::image::Color;
 use crate::vec3::Vec3;
@@ -70,12 +72,12 @@ impl From<Color> for TextureType {
 
 #[derive(Clone)]
 pub struct PerlinTexture {
-    noise_gen: Perlin
+    noise_gen: Arc<Box<Perlin>>
 }
 
 impl PerlinTexture {
     pub fn new() -> PerlinTexture {
-        PerlinTexture { noise_gen: Perlin::new() }
+        PerlinTexture { noise_gen: Arc::new(Box::new(Perlin::new())) }
     }
 }
 

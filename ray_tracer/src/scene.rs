@@ -101,7 +101,12 @@ impl Scene {
                     id: ElementId::new(),
                     material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(-1.0, 0.5, -1.0), 0.5))
-                }
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
+                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0))
+                },
             ]
         }
     }

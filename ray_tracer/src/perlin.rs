@@ -1,7 +1,10 @@
 use crate::vec3::Vec3;
-use crate::utils::{random_float, u32_random_range, t_lerp, t_lerp2};
+use crate::utils::{random_float, u32_random_range, t_lerp};
 
-#[derive(Clone)]
+lazy_static! {
+    static ref NOISE_GEN: Box<Perlin> = Box::new(Perlin::new());
+}
+
 pub struct Perlin {
     x: Box<[u32; Perlin::POINT_COUNT as usize]>,
     y: Box<[u32; Perlin::POINT_COUNT as usize]>,
@@ -41,6 +44,11 @@ impl Perlin {
         let u = p.x - p.x.floor();
         let v = p.y - p.y.floor();
         let w = p.z - p.z.floor();
+
+        // Hermitian Smoothing
+        let u = u * u * (3.0 - 2.0 * u);
+        let v = v * v * (3.0 - 2.0 * v);
+        let w = w * w * (3.0 - 2.0 * w);
 
         let i = p.x.floor() as i32;
         let j = p.y.floor() as i32;
