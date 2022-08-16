@@ -1,6 +1,6 @@
-use js_sys::Promise;
+use js_sys::{Promise, Function};
 use ray_tracer::{Scene, RayTracer, Image, Camera, WorkerPool, Vec3};
-use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::prelude::{wasm_bindgen, Closure};
 use wasm_bindgen::{JsCast, JsValue};
 
 use web_sys::console::log_1;
@@ -45,8 +45,10 @@ pub struct RayTracerDisplay {
     canvas_ref: NodeRef,
     canvas: Option<CanvasRenderingContext2d>,
     frame_store: Rc<FrameStore>,
+    #[allow(dead_code)]
     frame_dispatch: Dispatch<FrameStore>,
     camera_store: Rc<CameraStore>,
+    #[allow(dead_code)]
     camera_dispatch: Dispatch<CameraStore>,
     render_status: RenderStatus,
 }
@@ -57,6 +59,7 @@ pub enum Signal {
     Download,
     UpdateFrame(Rc<FrameStore>),
     OnCameraUpdate(Rc<CameraStore>),
+    OnCanvasClick(i32, i32),
 }
 
 impl Component for RayTracerDisplay {
@@ -106,6 +109,9 @@ impl Component for RayTracerDisplay {
             Signal::OnCameraUpdate(camera_store) => {
                 self.camera_store = camera_store;
             }
+            Signal::OnCanvasClick(x, y) => {
+                log("CLICKED".to_string());
+            }
             _ => (),
         }
         true
@@ -113,7 +119,7 @@ impl Component for RayTracerDisplay {
 
     fn rendered(&mut self, _ctx: &Context<Self>, first_render: bool) {
         if first_render {
-            self.initialize_canvas();
+            self.initialize_canvas(_ctx);
         }
     }
 
@@ -205,6 +211,10 @@ impl Component for RayTracerDisplay {
     }
 }
 
+fn log(s: String) {
+    log_1(&JsValue::from(s));
+}
+
 impl RayTracerDisplay {
     fn translate_camera(translation: Vec3) {
         log_1(&JsValue::from("Decrease X"));
@@ -215,11 +225,18 @@ impl RayTracerDisplay {
 
         dispatch.set(CameraStore { camera }); 
     }
-    fn initialize_canvas(&mut self) {
+    fn initialize_canvas(&mut self, context: &Context<Self>) {
         let canvas = self.canvas_ref.cast::<HtmlCanvasElement>().unwrap();
 
         canvas.set_height(CANVAS_HEIGHT);
         canvas.set_width(CANVAS_WIDTH);
+
+        let on_canvas_click = Closure::<dyn FnMut(_)>::new(move |event: web_sys::MouseEvent| {
+            log(format!("{} {}", event.offset_x(), event.offset_y()));
+            // context.link().send_message(Signal::OnCanvasClick(event.offset_x(), event.offset_y()));
+        });
+        canvas.add_event_listener_with_callback("mousedown", on_canvas_click.as_ref().unchecked_ref()).unwrap();
+        on_canvas_click.forget();
 
         self.canvas = Some(
             canvas
@@ -230,6 +247,7 @@ impl RayTracerDisplay {
                 .unwrap(),
         );
     }
+
 
     fn request_render(&self) {
         let window = web_sys::window().expect("no global `window` exists");
