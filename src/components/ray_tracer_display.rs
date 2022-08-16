@@ -72,6 +72,8 @@ pub struct RayTracerDisplay {
     camera_store: Rc<CameraStore>,
     #[allow(dead_code)]
     camera_dispatch: Dispatch<CameraStore>,
+    #[allow(dead_code)]
+    canvas_dispatch: Dispatch<CanvasClickStore>,
     render_status: RenderStatus,
 }
 
@@ -81,7 +83,7 @@ pub enum Signal {
     Download,
     UpdateFrame(Rc<FrameStore>),
     OnCameraUpdate(Rc<CameraStore>),
-    OnCanvasClick(i32, i32),
+    OnCanvasClick(Rc<CanvasClickStore>),
 }
 
 impl Component for RayTracerDisplay {
@@ -91,8 +93,10 @@ impl Component for RayTracerDisplay {
     fn create(ctx: &Context<Self>) -> Self {
         let frame_update_callback = ctx.link().callback(Signal::UpdateFrame);
         let camera_update_callback = ctx.link().callback(Signal::OnCameraUpdate);
+        let canvas_update_callback = ctx.link().callback(Signal::OnCanvasClick);
         let frame_dispatch = Dispatch::<FrameStore>::subscribe(frame_update_callback);
         let camera_dispatch = Dispatch::<CameraStore>::subscribe(camera_update_callback);
+        let canvas_dispatch = Dispatch::<CanvasClickStore>::subscribe(canvas_update_callback);
 
         Self {
             canvas_ref: NodeRef::default(),
@@ -102,6 +106,7 @@ impl Component for RayTracerDisplay {
             camera_store: camera_dispatch.get(),
             camera_dispatch,
             render_status: RenderStatus::Idle,
+            canvas_dispatch
         }
     }
 
@@ -131,7 +136,8 @@ impl Component for RayTracerDisplay {
             Signal::OnCameraUpdate(camera_store) => {
                 self.camera_store = camera_store;
             }
-            Signal::OnCanvasClick(x, y) => {
+            Signal::OnCanvasClick(canvas_store) => {
+                // self.canvas_store = canvas_store;
                 log("CLICKED".to_string());
             }
             _ => (),
@@ -141,7 +147,7 @@ impl Component for RayTracerDisplay {
 
     fn rendered(&mut self, _ctx: &Context<Self>, first_render: bool) {
         if first_render {
-            self.initialize_canvas(_ctx);
+            self.initialize_canvas();
         }
     }
 
@@ -247,7 +253,7 @@ impl RayTracerDisplay {
 
         dispatch.set(CameraStore { camera }); 
     }
-    fn initialize_canvas(&mut self, context: &Context<Self>) {
+    fn initialize_canvas(&mut self) {
         let canvas = self.canvas_ref.cast::<HtmlCanvasElement>().unwrap();
 
         canvas.set_height(CANVAS_HEIGHT);
@@ -255,7 +261,10 @@ impl RayTracerDisplay {
 
         let on_canvas_click = Closure::<dyn FnMut(_)>::new(move |event: web_sys::MouseEvent| {
             log(format!("{} {}", event.offset_x(), event.offset_y()));
-            // context.link().send_message(Signal::OnCanvasClick(event.offset_x(), event.offset_y()));
+            let dispatch = Dispatch::<CanvasClickStore>::new();
+            dispatch.set(CanvasClickStore {
+                click_state: CanvasClickState::Clicked(event.offset_x(), event.offset_y())
+            });
         });
         canvas.add_event_listener_with_callback("mousedown", on_canvas_click.as_ref().unchecked_ref()).unwrap();
         on_canvas_click.forget();
