@@ -1,9 +1,9 @@
 use components::RayTracerDisplay;
 use wasm_bindgen::prelude::wasm_bindgen;
-use web_sys::console::log_1;
 use yew::prelude::*;
 
-mod components;
+pub mod components;
+pub mod utils;
 
 #[function_component(App)]
 fn app() -> Html {

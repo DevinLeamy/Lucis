@@ -1,3 +1,4 @@
+use crate::{Element, ElementId};
 use crate::camera::Camera;
 use crate::collisions::{CollisionRecord, Collidable};
 use crate::material::{MaterialType, Material};
@@ -29,35 +30,13 @@ impl RayTracer {
             return Color::black();
         }
 
-        let mut c_record: Option<CollisionRecord> = None;
-        let mut c_t = f64::MAX;
-        let mut c_material: Option<MaterialType> = None; 
+        if let Some((element, record)) = RayTracer::compute_collision(scene, ray) {
+            let result = element.material.resolve(ray, record);
 
-        scene.objects.iter().for_each(|element| {
-            let shape = element.shape;
-
-            let collidable = match shape {
-                ShapeType::Sphere(sphere) => sphere
-            };
-            
-            if let Some(record) = collidable.collide(ray) {
-                // update the collision record if 
-                // the ray collides earlier
-                if MIN_INTERSECTION_T < record.t && record.t < c_t { 
-                    c_t = record.t;
-                    c_material = Some(element.material.clone());
-                    c_record = Some(record)
-                } 
-            };
-        });
-
-        if c_material.is_none() {
+            result.color * RayTracer::compute_ray_color(scene, result.reflected_ray, bounce_depth + 1)
+        } else {
             return Color::white();
         }
-
-        let result = c_material.unwrap().resolve(ray, c_record.unwrap());
-
-        result.color * RayTracer::compute_ray_color(scene, result.reflected_ray, bounce_depth + 1)
     }
 }
 
@@ -180,6 +159,39 @@ impl RayTracer {
         };
 
         Ok(wasm_bindgen_futures::future_to_promise(render_complete))
+    }
+}
+
+impl RayTracer {
+    fn compute_collision(scene: &Scene, ray: Ray) -> Option<(Element, CollisionRecord)> {
+        let mut c_record: Option<CollisionRecord> = None;
+        let mut c_t = f64::MAX;
+        let mut c_element: Option<Element> = None;
+
+        scene.objects.iter().for_each(|element| {
+            if let Some(record) = element.collide(ray) {
+                // update the collision record if 
+                // the ray collides earlier
+                if MIN_INTERSECTION_T < record.t && record.t < c_t { 
+                    c_t = record.t;
+                    c_record = Some(record);
+                    c_element= Some(element.clone());
+                } 
+            };
+        });
+
+        if c_element.is_none() {
+            return None
+        }
+
+        Some((c_element.unwrap(), c_record.unwrap()))
+    } 
+
+    pub fn compute_collision_element(scene: &Scene, ray: Ray) -> Option<Element> {
+        match RayTracer::compute_collision(scene, ray) {
+            Some((element, _)) => Some(element),
+            None               => None
+        }
     }
 }
 
