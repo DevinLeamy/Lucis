@@ -72,21 +72,46 @@ impl From<Color> for TextureType {
 
 #[derive(Clone)]
 pub struct PerlinTexture {
+    scale: f64,
     noise_gen: Arc<Box<Perlin>>
 }
 
 impl PerlinTexture {
     pub fn new() -> PerlinTexture {
-        PerlinTexture { noise_gen: Arc::new(Box::new(Perlin::new())) }
+        PerlinTexture::new_scaled(1.0)
+    }
+
+    pub fn new_scaled(scale: f64) -> PerlinTexture {
+        PerlinTexture { 
+            noise_gen: Arc::new(Box::new(Perlin::new())),
+            scale
+        }
     }
 }
 
 impl Texture for PerlinTexture {
+    // fn value(&self, _uv: UV, point: Vec3) -> Color {
+    //     // TODO: make depth configurable
+    //     let depth = 7;
+
+    //     Color::new(
+    //       0.5 * self.noise_gen.turbulence(point * self.scale, depth),   
+    //       0.5 * self.noise_gen.turbulence(point * self.scale, depth),   
+    //       0.5 * self.noise_gen.turbulence(point * self.scale, depth),   
+    //     )
+    // }
     fn value(&self, _uv: UV, point: Vec3) -> Color {
+        // TODO: make depth configurable
+        let depth = 7;
+
+        let noise_manip = |noise: f64| {
+            0.5 * (1.0 + f64::sin(self.scale * point.z + 10.0 * noise))
+        };
+
         Color::new(
-          self.noise_gen.smooth_noise(point),   
-          self.noise_gen.smooth_noise(point),   
-          self.noise_gen.smooth_noise(point),   
+            noise_manip(self.noise_gen.turbulence(point, depth)),
+            noise_manip(self.noise_gen.turbulence(point, depth)),
+            noise_manip(self.noise_gen.turbulence(point, depth)),
         )
     }
 }

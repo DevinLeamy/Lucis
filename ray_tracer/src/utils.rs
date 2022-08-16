@@ -76,16 +76,23 @@ pub fn t_lerp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
     c
 }
 
-pub fn t_lerp2(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+pub fn perlin_t_lerp(c: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
     let mut acc = 0f64;
+
+    // Hermitian Smoothing
+    let uu = u * u * (3.0 - 2.0 * u);
+    let vv = v * v * (3.0 - 2.0 * v);
+    let ww = w * w * (3.0 - 2.0 * w);
 
     for i in 0..=1 {
         for j in 0..=1 {
             for k in 0..=1 {
-                acc += (i as f64 * u + (1.0 - i as f64) * (1.0 - u)) *
-                       (j as f64 * v + (1.0 - j as f64) * (1.0 - v)) *
-                       (k as f64 * w + (1.0 - k as f64) * (1.0 - w)) *
-                       c[i][j][k];
+                let weight = Vec3::new(u - i as f64, v - j as f64, w - k as f64);
+
+                acc += (i as f64 * uu + (1.0 - i as f64) * (1.0 - uu)) *
+                       (j as f64 * vv + (1.0 - j as f64) * (1.0 - vv)) *
+                       (k as f64 * ww + (1.0 - k as f64) * (1.0 - ww)) *
+                       Vec3::dot(c[i][j][k], weight);
             }
         }
     }
