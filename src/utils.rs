@@ -20,3 +20,5 @@ pub fn download_image(png_image: String) {
     link.set_href(png_image.as_str());
     link.click();
 }
+
+

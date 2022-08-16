@@ -53,3 +53,42 @@ pub fn refract(incident: Vec3, normal: Vec3, ref_ratio: f64) -> Vec3 {
     ref_perp + ref_par 
 
 }
+
+pub fn lerp(t0: f64, t1: f64, w: f64) -> f64 {
+    t0 + (t1 - t0) * w
+}
+
+/// https://en.wikipedia.org/wiki/Trilinear_interpolation
+pub fn t_lerp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+    // x
+    let c00 = lerp(c[0][0][0], c[1][0][0], u);
+    let c01 = lerp(c[0][0][1], c[1][0][1], u);
+    let c10 = lerp(c[0][1][0], c[1][1][0], u);
+    let c11 = lerp(c[0][1][1], c[1][1][1], u);
+
+    // y
+    let c0 = lerp(c00, c10, v);
+    let c1 = lerp(c01, c11, v);
+
+    // z
+    let c = lerp(c0, c1, w);
+
+    c
+}
+
+pub fn t_lerp2(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+    let mut acc = 0f64;
+
+    for i in 0..=1 {
+        for j in 0..=1 {
+            for k in 0..=1 {
+                acc += (i as f64 * u + (1.0 - i as f64) * (1.0 - u)) *
+                       (j as f64 * v + (1.0 - j as f64) * (1.0 - v)) *
+                       (k as f64 * w + (1.0 - k as f64) * (1.0 - w)) *
+                       c[i][j][k];
+            }
+        }
+    }
+
+    acc
+}

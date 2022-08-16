@@ -1,3 +1,4 @@
+use crate::PerlinTexture;
 use crate::collisions::{Collidable, CollisionRecord};
 use crate::image::Color;
 use crate::material::{Material, MaterialType, Dielectric, Lambertian, Metal};
@@ -49,7 +50,7 @@ pub struct Scene {
 }
 
 impl Default for Scene {
-    fn default() -> Scene { Scene::materials() }
+    fn default() -> Scene { Scene::one_sphere() }
 }
 
 impl Scene {
@@ -88,6 +89,18 @@ impl Scene {
                     id: ElementId::new(),
                     material: MaterialType::Lambertian(Lambertian::new(Color::new(0.2, 0.8, 0.2).into())),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, 5.0, 0.0), 5.0))
+                }
+            ]
+        }
+    }
+
+    pub fn one_sphere() -> Scene {
+        Scene {
+            objects: vec![
+                Element {
+                    id: ElementId::new(),
+                    material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
+                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(-1.0, 0.5, -1.0), 0.5))
                 }
             ]
         }
@@ -149,6 +162,11 @@ impl Scene {
                     id: ElementId::new(),
                     material: MaterialType::Metal(Metal::new(Color::new(0.2, 0.2, 0.6).into(), 0.0)),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(1.0, 0.5, -1.0), 0.5))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
+                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(2.0, 0.5, -1.0), 0.5))
                 },
             ]
         }

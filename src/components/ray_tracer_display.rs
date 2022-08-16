@@ -140,35 +140,29 @@ impl Component for RayTracerDisplay {
             Signal::Render
         });
 
-        let increase_y = link.callback(|_| {
+        let increase_y = |_| {
             RayTracerDisplay::translate_camera(Vec3::new(0.0, 0.5, 0.0));
-            Signal::Render
-        });
+        };
 
-        let decrease_y = link.callback(|_: MouseEvent| {
+        let decrease_y = |_: MouseEvent| {
             RayTracerDisplay::translate_camera(Vec3::new(0.0, -0.5, 0.0));
-            Signal::Render
-        });
+        };
 
-        let increase_x = link.callback(|_| {
+        let increase_x = |_| {
             RayTracerDisplay::translate_camera(Vec3::new(0.5, 0.0, 0.0));
-            Signal::Render
-        });
+        };
 
-        let decrease_x = link.callback(|_: MouseEvent| {
+        let decrease_x = |_: MouseEvent| {
             RayTracerDisplay::translate_camera(Vec3::new(-0.5, 0.0, 0.0));
-            Signal::Render
-        });
+        };
 
-        let increase_z = link.callback(|_| {
+        let increase_z = |_| {
             RayTracerDisplay::translate_camera(Vec3::new(0.0, 0.0, 0.5));
-            Signal::Render
-        });
+        };
 
-        let decrease_z = link.callback(|_: MouseEvent| {
+        let decrease_z = |_: MouseEvent| {
             RayTracerDisplay::translate_camera(Vec3::new(-0.5, 0.0, -0.5));
-            Signal::Render
-        });
+        };
 
         let c_dispatch = Dispatch::<CameraStore>::new();
         let camera = c_dispatch.get().camera; 

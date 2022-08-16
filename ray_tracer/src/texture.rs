@@ -82,10 +82,16 @@ impl PerlinTexture {
 impl Texture for PerlinTexture {
     fn value(&self, _uv: UV, point: Vec3) -> Color {
         Color::new(
-          self.noise_gen.noise(point),   
-          self.noise_gen.noise(point),   
-          self.noise_gen.noise(point),   
+          self.noise_gen.smooth_noise(point),   
+          self.noise_gen.smooth_noise(point),   
+          self.noise_gen.smooth_noise(point),   
         )
+    }
+}
+
+impl From<PerlinTexture> for TextureType {
+    fn from(perlin: PerlinTexture) -> Self {
+        TextureType::PerlinTexture(perlin)
     }
 }
 

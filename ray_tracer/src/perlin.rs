@@ -1,5 +1,5 @@
 use crate::vec3::Vec3;
-use crate::utils::{random_float, u32_random_range};
+use crate::utils::{random_float, u32_random_range, t_lerp, t_lerp2};
 
 #[derive(Clone)]
 pub struct Perlin {
@@ -25,12 +25,38 @@ impl Perlin {
         }
     }
 
+    pub fn xor_hash(&self, i: i32, j: i32, k: i32) -> u32 {
+        self.x[(i & 255) as usize] ^ self.y[(j & 255) as usize] ^ self.z[(k & 255) as usize]
+    }
+
     pub fn noise(&self, p: Vec3) -> f64 {
         let i = (4f64 * p.x) as i32 & 255;
         let j = (4f64 * p.y) as i32 & 255;
         let k = (4f64 * p.z) as i32 & 255;
 
-        self.randoms[(self.x[i as usize] ^ self.y[j as usize] ^ self.z[k as usize]) as usize]
+        self.randoms[(self.xor_hash(i, j, k)) as usize]
+    }
+
+    pub fn smooth_noise(&self, p: Vec3) -> f64 {
+        let u = p.x - p.x.floor();
+        let v = p.y - p.y.floor();
+        let w = p.z - p.z.floor();
+
+        let i = p.x.floor() as i32;
+        let j = p.y.floor() as i32;
+        let k = p.z.floor() as i32;
+
+        let mut cube = [[[0f64; 2]; 2]; 2];
+        cube[0][0][0] = self.randoms[self.xor_hash(i + 0, j + 0, k + 0) as usize];
+        cube[0][0][1] = self.randoms[self.xor_hash(i + 0, j + 0, k + 1) as usize];
+        cube[0][1][0] = self.randoms[self.xor_hash(i + 0, j + 1, k + 0) as usize];
+        cube[0][1][1] = self.randoms[self.xor_hash(i + 0, j + 1, k + 1) as usize];
+        cube[1][0][0] = self.randoms[self.xor_hash(i + 1, j + 0, k + 0) as usize];
+        cube[1][0][1] = self.randoms[self.xor_hash(i + 1, j + 0, k + 1) as usize];
+        cube[1][1][0] = self.randoms[self.xor_hash(i + 1, j + 1, k + 0) as usize];
+        cube[1][1][1] = self.randoms[self.xor_hash(i + 1, j + 1, k + 1) as usize];
+
+        t_lerp(cube, u, v, w)
     }
 
     fn generate_perm() -> Box<[u32; Perlin::POINT_COUNT as usize]> {
