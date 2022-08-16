@@ -16,15 +16,14 @@ function main(wasm) {
     mod = wasm;
     pool = new WorkerPool(threadCount);
 
-    mod.launch_yew();
-
     setInterval(() => {
         createFrameButton = document.getElementById("create_frame_btn")
         if (createFrameButton != null) {
             createFrameButton.onclick = js_render
         }
-    }, 100);
+    }, 10);
 
+    mod.launch_yew();
 }
 
 let mod = null; // wasm module 

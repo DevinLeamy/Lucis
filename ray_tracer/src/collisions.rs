@@ -1,4 +1,4 @@
-use crate::{ray::Ray, shape::UV, vec3::Vec3};
+use crate::{ray::Ray, shape::UV, vec3::Vec3, ElementId};
 
 #[derive(Debug, PartialEq)]
 pub enum Face {
@@ -11,7 +11,7 @@ pub struct CollisionRecord {
     pub s_normal: Vec3,
     pub t: f64,
     pub uv: UV,
-    pub face: Face
+    pub face: Face,
 }
 
 impl CollisionRecord {

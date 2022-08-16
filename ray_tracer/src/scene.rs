@@ -1,5 +1,7 @@
+use crate::collisions::{Collidable, CollisionRecord};
 use crate::image::Color;
 use crate::material::{Material, MaterialType, Dielectric, Lambertian, Metal};
+use crate::ray::Ray;
 use crate::shape::{ShapeType, Sphere};
 use crate::texture::{TextureType, CheckeredTexture};
 use crate::utils::random_float;
@@ -14,6 +16,18 @@ pub struct Element {
     pub shape: ShapeType,
 }
 
+impl Element {
+    pub fn set_material(&mut self, material: MaterialType) {
+        self.material = material;
+    }
+}
+
+impl Collidable for Element {
+    fn collide(&self, ray: Ray) -> Option<CollisionRecord> {
+        self.shape.collide(ray)
+    }
+}
+
 #[readonly::make]
 #[derive(Copy, Clone, PartialEq)]
 pub struct ElementId {
@@ -25,12 +39,17 @@ impl ElementId {
         ElementId {
             id: (random_float() * (u64::MAX - 1) as f64) as u64
         }
-    }
+    } 
 }
 
 #[readonly::make]
+#[derive(Clone)]
 pub struct Scene {
     pub objects: Vec<Element> 
+}
+
+impl Default for Scene {
+    fn default() -> Scene { Scene::materials() }
 }
 
 impl Scene {
@@ -40,9 +59,16 @@ impl Scene {
     }
 
     /// get element by id
-    pub fn get(&mut self, id: ElementId) -> &mut Element {
+    pub fn get_element_mut(&mut self, id: ElementId) -> &mut Element {
         self.objects
             .iter_mut()
+            .find(|e| e.id == id)
+            .expect("ElementId not found")
+    }
+
+    pub fn get_element(&self, id: ElementId) -> &Element {
+        self.objects
+            .iter()
             .find(|e| e.id == id)
             .expect("ElementId not found")
     }

@@ -24,6 +24,14 @@ pub enum ShapeType {
     Sphere(Sphere)
 }
 
+impl Collidable for ShapeType {
+    fn collide(&self, ray: Ray) -> Option<CollisionRecord> {
+       match self {
+            ShapeType::Sphere(c) => c.collide(ray)
+       } 
+    }
+}
+
 
 #[derive(Copy, Clone)]
 pub struct Sphere {
@@ -97,7 +105,7 @@ impl Collidable for Sphere {
             s_normal,
             t: intersection_time,
             uv: self.map(s_normal),
-            face: collision_face(ray.direction, s_normal)
+            face: collision_face(ray.direction, s_normal),
         })
     }
 }
