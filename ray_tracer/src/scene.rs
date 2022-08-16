@@ -29,7 +29,7 @@ impl Collidable for Element {
 }
 
 #[readonly::make]
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub struct ElementId {
     pub id: u64
 }

@@ -1,4 +1,4 @@
-use ray_tracer::{Image, Camera, Scene};
+use ray_tracer::{Image, Camera, Scene, Element, ElementId};
 use yewdux::store::Store;
 
 #[derive(Default, Store)]
@@ -42,9 +42,17 @@ impl PartialEq for CanvasClickStore {
     fn eq(&self, _: &Self) -> bool { false }
 }
 
-#[derive(Default, Store)]
+#[derive(Store)]
 pub struct SceneStore {
-    pub(super) scene: Scene
+    pub(super) scene: Scene,
+    // selected element
+    pub(super) element_id: Option<ElementId>
+}
+
+impl Default for SceneStore {
+    fn default() -> Self {
+        Self { scene: Default::default(), element_id: None }
+    }
 }
 
 impl PartialEq for SceneStore {

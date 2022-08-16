@@ -1,5 +1,5 @@
 use js_sys::{Promise, Function};
-use ray_tracer::{Scene, RayTracer, Image, Camera, WorkerPool, Vec3, Lambertian, Color, MaterialType};
+use ray_tracer::{Scene, RayTracer, Image, Camera, WorkerPool, Vec3, Lambertian, Color, MaterialType, Element, ElementId};
 use wasm_bindgen::prelude::{wasm_bindgen, Closure};
 use wasm_bindgen::{JsCast, JsValue};
 use super::stores::*;
@@ -14,8 +14,9 @@ use yewdux::prelude::*;
 
 use instant::Instant;
 
-const CANVAS_WIDTH: u32 = 1000;
-const CANVAS_HEIGHT: u32 = (CANVAS_WIDTH as f64 / (16.0 / 9.0)) as u32;
+const ASPECT: f64 = 1.0;
+const CANVAS_WIDTH: u32 = 600;
+const CANVAS_HEIGHT: u32 = (CANVAS_WIDTH as f64 / ASPECT) as u32;
 
 
 #[derive(Debug)]
@@ -169,8 +170,10 @@ impl Component for RayTracerDisplay {
             Signal::Render
         });
 
-        let dispatch = Dispatch::<CameraStore>::new();
-        let camera = dispatch.get().camera; 
+        let c_dispatch = Dispatch::<CameraStore>::new();
+        let camera = c_dispatch.get().camera; 
+
+        let element_id = Dispatch::<SceneStore>::new().get().element_id;
 
         html! {
             <div>
@@ -189,6 +192,9 @@ impl Component for RayTracerDisplay {
                 <div>
                     <button onclick={increase_z}>{"+z"}</button>
                     <button onclick={decrease_z}>{"-z"}</button>
+                </div>
+                <div>
+                    <ElementDisplay element_id={element_id} />
                 </div>
                 <button onclick={request_render}>
                     { "Render" }
@@ -209,7 +215,8 @@ impl Component for RayTracerDisplay {
                         format!("{:?}", elapsed)
                     },
                     RenderStatus::Idle             => "".to_string()
-                })}</h5>
+                })}
+                </h5>
             </div>
         }
     }
@@ -306,18 +313,19 @@ impl RayTracerDisplay {
     /// highlights the selected element in the scene
     /// TODO: this clones the scene - let's try and avoid that
     fn pick_element(&mut self, mouse_x: i32, mouse_y: i32) {
-        let mut scene = self.scene_store.scene.clone(); 
+        let scene = self.scene_store.scene.clone(); 
         let camera = &self.camera_store.camera;
 
         let ray = camera.create_ray(mouse_x as f64 / CANVAS_WIDTH as f64, ((CANVAS_HEIGHT as f64) - mouse_y as f64) / CANVAS_HEIGHT as f64);
 
         if let Some(element) = RayTracer::compute_collision_element(&scene, ray) {
-            let element = scene.get_element_mut(element.id);
-
-            element.set_material(MaterialType::Lambertian(Lambertian::new(Color::new(1.0, 0.0, 0.0).into())));
-
             let dispatch = Dispatch::<SceneStore>::new();
-            dispatch.set(SceneStore { scene });
+            dispatch.set(
+                SceneStore { 
+                    scene,
+                    element_id: Some(element.id)
+                }
+            );
         } 
     }
 }
@@ -350,4 +358,80 @@ impl RequestEmitter {
     }
 }
 
+#[derive(Properties)]
+pub struct Props {
+    element_id: Option<ElementId>
+}
 
+impl PartialEq for Props {
+    fn eq(&self, _: &Self) -> bool {
+        false
+    }
+}
+
+#[function_component(ElementDisplay)]
+fn element_display(props: &Props) -> Html {
+
+    if props.element_id.is_none() {
+        return html! {
+            <h1>{"No element selected"}</h1>
+        }
+    }
+    let scene = &Dispatch::<SceneStore>::new().get().scene;
+    let element = scene.get_element(props.element_id.unwrap());
+    let on_material_change = Callback::from(move |material: MaterialType| {
+
+    });
+
+    let id = element.id; 
+    let mat = &element.material;
+    let shape = &element.shape;
+
+
+    html! {
+        <div>
+            <h4>{format!("{:?}", id)}</h4>
+            <MaterialDisplay {on_material_change} material={mat.clone()} />
+        </div>
+    }
+}
+
+#[derive(Properties)]
+pub struct MatProps {
+    material: MaterialType,
+    on_material_change: Callback<MaterialType>, 
+}
+
+impl PartialEq for MatProps {
+    fn eq(&self, _: &Self) -> bool {
+        false
+    }
+}
+
+#[function_component(MaterialDisplay)]
+fn material_display(props: &MatProps) -> Html {
+    html! {
+        <div>
+        {
+            match &props.material {
+                MaterialType::Lambertian(m) => { 
+                    html! {
+                        <h5>{"Lambertian"}</h5>
+                    } 
+                },
+                MaterialType::Dielectric(m) => { 
+                    html! {
+                        <h5>{"Dielectric"}</h5>
+
+                    } 
+                },
+                MaterialType::Metal(m)      => { 
+                    html! {
+                        <h5>{"Metal"}</h5>
+                    } 
+                },
+            }
+        }
+        </div>
+    }
+}

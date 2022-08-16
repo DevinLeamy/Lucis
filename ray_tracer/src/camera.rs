@@ -19,7 +19,7 @@ pub struct CameraConfig {
 impl Default for CameraConfig {
     fn default() -> Self {
         CameraConfig {
-            aspect: 16.0 / 9.0,
+            aspect: 1.0,// 16.0 / 9.0,
             // origin: Vec3::new(13.0, 3.0, 3.0),
             origin: Vec3::new(3.0, 3.0, 4.0),
             look_at: Vec3::new(0.0, 1.0, 0.1),
