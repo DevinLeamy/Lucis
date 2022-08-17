@@ -139,6 +139,20 @@ impl Scene {
         }
     }
 
+    pub fn sphere(element: Element) -> Scene {
+        Scene {
+            objects: vec![
+                element,
+                // ground
+                Element {
+                    id: ElementId::new(),
+                    material: MaterialType::Lambertian(Lambertian::new(Color::new(0.2, 0.2, 0.2).into())),
+                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0))
+                }, 
+            ]
+        }
+   }
+
     pub fn materials() -> Scene {
         Scene {
             objects: vec![

@@ -3,11 +3,14 @@ use ray_tracer::{Scene, RayTracer, Image, Camera, WorkerPool, Vec3, Lambertian, 
 use wasm_bindgen::prelude::{wasm_bindgen, Closure};
 use wasm_bindgen::{JsCast, JsValue};
 use super::stores::*;
+use super::utils::get_element_ref;
 use crate::utils::{log, download_image};
+
+use super::element_display::ElementDisplay;
 
 use web_sys::console::log_1;
 
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlButtonElement};
 use std::rc::Rc;
 use yew::prelude::*;
 use yewdux::prelude::*;
@@ -115,7 +118,6 @@ impl Component for RayTracerDisplay {
             }
             Signal::OnSceneUpdate(scene_store) => {
                 self.scene_store = scene_store;
-                ctx.link().send_message(Signal::Render) 
             }
             _ => (),
         }
@@ -167,7 +169,13 @@ impl Component for RayTracerDisplay {
         let c_dispatch = Dispatch::<CameraStore>::new();
         let camera = c_dispatch.get().camera; 
 
+        let scene = &Dispatch::<SceneStore>::new().get().scene;
         let element_id = Dispatch::<SceneStore>::new().get().element_id;
+
+        let on_update_element = Callback::from(|_element: Element| {
+            log("Element updated".to_string());
+        });
+
 
         html! {
             <div>
@@ -188,7 +196,22 @@ impl Component for RayTracerDisplay {
                     <button onclick={decrease_z}>{"-z"}</button>
                 </div>
                 <div>
-                    <ElementDisplay element_id={element_id} />
+                    <ElementDDisplay element_id={element_id} />
+                    {
+                        if element_id.is_some() {
+                            let element = scene.get_element(element_id.unwrap()).clone();
+                            html! {
+                                <ElementDisplay 
+                                    {element} 
+                                    {on_update_element}
+                                />
+                            }
+                        } else {
+                            html! {
+                                <div></div>
+                            }
+                        }
+                    }
                 </div>
                 <button onclick={request_render}>
                     { "Render" }
@@ -253,22 +276,14 @@ impl RayTracerDisplay {
     }
 
 
+    // note: this method depends on an onclick being set for the
+    // create_frame_btn canvas, in index.js
     fn request_render(&mut self) {
         self.render_status = RenderStatus::Rendering(Instant::now());
+        let render_btn = get_element_ref::<HtmlButtonElement>("create_frame_btn".into()).unwrap();
 
-        let window = web_sys::window().expect("no global `window` exists");
-        let document = window.document().expect("should have a document on window");
-        
-        let button = document
-            .get_element_by_id("create_frame_btn")
-            .unwrap()
-            .dyn_into::<web_sys::HtmlButtonElement>();
-        let render_btn = button.unwrap();
-
-        let btn_onclick = render_btn.onclick();
-        if btn_onclick.is_some() {
-            let onclick = btn_onclick.unwrap();
-            let _res = onclick.call0(&JsValue::undefined());
+        if let Some(onclick) = render_btn.onclick() {
+            let _ = onclick.call0(&JsValue::undefined());
         }
    }
 
@@ -363,7 +378,7 @@ impl PartialEq for Props {
     }
 }
 
-#[function_component(ElementDisplay)]
+#[function_component(ElementDDisplay)]
 fn element_display(props: &Props) -> Html {
 
     if props.element_id.is_none() {
