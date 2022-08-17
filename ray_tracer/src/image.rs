@@ -84,7 +84,7 @@ impl From<Color> for ColorU8 {
     }
 } 
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct Color {
     pub red: f64,
     pub green: f64,

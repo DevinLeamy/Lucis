@@ -5,6 +5,8 @@ use crate::vec3::Vec3;
 use crate::aabb::{AABB, Boundable};
 use crate::ray::Ray;
 
+use serde::{Serialize, Deserialize};
+
 #[derive(Copy, Clone)]
 pub struct UV {
     u: f64,
@@ -19,7 +21,7 @@ pub trait SurfaceNormal {
     fn surface_normal(&self, point: Vec3) -> Vec3;
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub enum ShapeType {
     Sphere(Sphere)
 }
@@ -33,7 +35,7 @@ impl Collidable for ShapeType {
 }
 
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct Sphere {
     center: Vec3,
     radius: f64,

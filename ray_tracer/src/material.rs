@@ -5,6 +5,8 @@ use crate::texture::{TextureType, Texture};
 use crate::utils::{reflect, random_unit_vector, sample_unit_sphere};
 use crate::vec3::Vec3;
 
+use serde::{Deserialize, Serialize};
+
 pub struct CollisionResult {
     pub reflected_ray: Ray,
     pub color: Color
@@ -14,7 +16,7 @@ pub trait Material {
     fn resolve(&self, ray: Ray, collision: CollisionRecord) -> CollisionResult;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub enum MaterialType {
     Lambertian(Lambertian), 
     Dielectric(Dielectric),
@@ -31,7 +33,7 @@ impl Material for MaterialType {
     }
 } 
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Lambertian {
     texture: TextureType 
 }
@@ -57,7 +59,7 @@ impl Material for Lambertian {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct Dielectric {
     ref_index: f64,
 }
@@ -99,7 +101,7 @@ impl Material for Dielectric {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Metal {
     texture: TextureType,
     fuzz: f64,

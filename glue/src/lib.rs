@@ -1,6 +1,6 @@
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;
-use ray_tracer::{Camera, WorkerPool, Scene, RayTracer};
+use ray_tracer::{Camera, WorkerPool, Scene, RayTracer, ElementId, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType};
 use web_sys::console::log_1;
 
 const ASPECT: f64 = 1.0;
@@ -33,4 +33,18 @@ impl RequestEmitter {
     pub fn display_image(&self, image: &JsValue) {
         log("Displaying image".to_string());
     }
+
+    /// TESTING - get serialized element
+    pub fn get_element(&self) -> Result<JsValue, JsValue> {
+        let element = Element::new( 
+            MaterialType::Metal(Metal::new(Color::new(0.2, 0.2, 0.9).into(), 0.2)),
+            ShapeType::Sphere(Sphere::new(Vec3::new(-1.0, 0.5, -1.0), 0.5))
+        );
+
+        let serialized = JsValue::from_serde(&element).unwrap(); 
+
+        Ok(JsValue::from_serde(&element).unwrap())
+    }
 }
+
+

@@ -1,7 +1,9 @@
 use std::ops;
+use serde::{Deserialize, Serialize};
+
 use crate::utils::{random_float};
 
-#[derive(Debug, Copy, Clone, PartialEq, Default)]
+#[derive(Debug, Copy, Clone, PartialEq, Default, Serialize, Deserialize)]
 #[readonly::make]
 pub struct Vec3 {
     pub x: f64,

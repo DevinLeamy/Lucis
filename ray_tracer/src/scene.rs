@@ -7,10 +7,11 @@ use crate::shape::{ShapeType, Sphere};
 use crate::texture::{TextureType, CheckeredTexture};
 use crate::utils::random_float;
 use crate::vec3::Vec3;
+use serde::{Deserialize, Serialize};
 
 
 #[readonly::make]
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Element {
     pub id: ElementId,
     pub material: MaterialType, 
@@ -18,6 +19,13 @@ pub struct Element {
 }
 
 impl Element {
+    pub fn new(material: MaterialType, shape: ShapeType) -> Element {
+        Element {
+            id: ElementId::new(),
+            material,
+            shape
+        }
+    }
     pub fn set_material(&mut self, material: MaterialType) {
         self.material = material;
     }
@@ -30,7 +38,7 @@ impl Collidable for Element {
 }
 
 #[readonly::make]
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct ElementId {
     pub id: u64
 }
@@ -99,12 +107,19 @@ impl Scene {
             objects: vec![
                 Element {
                     id: ElementId::new(),
-                    material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new_scaled(4.0).into())),
+                    material: MaterialType::Metal(Metal::new(Color::new(0.2, 0.2, 0.9).into(), 0.2)),
+                    // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new_scaled(4.0).into())),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(-1.0, 0.5, -1.0), 0.5))
                 },
                 Element {
                     id: ElementId::new(),
-                    material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
+                    material: MaterialType::Lambertian(Lambertian::new(
+                        TextureType::CheckeredTexture(CheckeredTexture::new(
+                            Color::white(),
+                            Color::new(0.8, 0.8, 1.0),
+                        )))
+                    ),
+                    // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0))
                 },
             ]
@@ -184,7 +199,8 @@ impl Scene {
                 },
                 Element {
                     id: ElementId::new(),
-                    material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
+                    material: MaterialType::Metal(Metal::new(Color::new(0.6, 0.2, 0.0).into(), 0.0)),
+                    // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(2.0, 0.5, -1.0), 0.5))
                 },
             ]

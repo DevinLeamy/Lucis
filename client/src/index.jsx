@@ -2,30 +2,35 @@ import React, { useRef } from "react";
 import ReactDOM from "react-dom/client";
 import Button from '@mui/material/Button';
 import { ElementDisplay } from "./element_display"
+
+import { loadWasm, WorkerPool, RequestEmitter } from "./wasm_loader";
 import "./index.css";
 
-function loadWasm() {
-    wasm_bindgen("./glue_bg.wasm")
-        .then((wasm) => {
-            console.log("Loaded WebAssembly module");
-            main(wasm);
-        })
-        .catch(console.error);
-}
-loadWasm();
+// function loadWasm() {
+//     wasm_bindgen("./glue_bg.wasm")
+//         .then((wasm) => {
+//             console.log("Loaded WebAssembly module");
+//             main(wasm);
+//         })
+//         .catch(console.error);
+// }
+// loadWasm();
 
-const { WorkerPool, RequestEmitter } = wasm_bindgen;
+loadWasm(main);
+// import { WorkerPool, RequestEmitter } from "./wasm_loader";
+
 let threadCount = navigator.hardwareConcurrency;
 
 function main(wasm) {
     mod = wasm;
+    let requestEmitter = new RequestEmitter();
     pool = new WorkerPool(threadCount);
+
 
     const App = () => {
         const canvasRef = useRef();
 
         const render_preview = (_e) => {
-            let requestEmitter = new RequestEmitter();
             requestEmitter.send_request(pool)
                 .then(wasm_image => {
                     console.log(wasm_image)
