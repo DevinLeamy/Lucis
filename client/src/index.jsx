@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import ReactDOM from "react-dom/client";
 
 function loadWasm() {
@@ -19,12 +19,42 @@ function main(wasm) {
     pool = new WorkerPool(threadCount);
 
     const App = () => {
+        const canvasRef = useRef();
+
         const render_preview = (_e) => {
             let requestEmitter = new RequestEmitter();
             requestEmitter.send_request(pool)
                 .then(wasm_image => {
+                    console.log(wasm_image)
+                    display_image(wasm_image)
                     requestEmitter.display_image(wasm_image)
                 })
+        }
+
+        const colorToRGB = (color) => {
+            return `rgb(${color.red}, ${color.green}, ${color.blue})`;
+        }
+
+        const display_image = (image) => {
+            let width = image.width;
+            let height = image.height;
+            let buffer = image.buffer;
+
+            let canvas = canvasRef.current;
+
+            canvas.setHeight(height);
+            canvas.setWidth(width);
+
+            let context = canvas.getContext("2d");
+
+            for (let i = 0; i < height; ++i) {
+                for (let j = 0; j < width; ++j) {
+                    let color = buffer[i][j];
+
+                    context.set_fill_color(colorToRGB(color));
+                    context.fill_rect(j, height - 1 - i, 1, 1);
+                }
+            }
         }
 
         return (
@@ -35,6 +65,7 @@ function main(wasm) {
                 <button onClick={render_preview}>
                     Render
                 </button>
+                <canvas ref={canvasRef} />
             </div>
         )
     };
