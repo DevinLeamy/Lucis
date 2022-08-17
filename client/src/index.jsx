@@ -1,5 +1,8 @@
 import React, { useRef } from "react";
 import ReactDOM from "react-dom/client";
+import Button from '@mui/material/Button';
+import { ElementDisplay } from "./element_display"
+import "./index.css";
 
 function loadWasm() {
     wasm_bindgen("./glue_bg.wasm")
@@ -42,9 +45,6 @@ function main(wasm) {
 
             let canvas = canvasRef.current;
 
-            // canvas.setHeight(height);
-            // canvas.setWidth(width);
-
             let context = canvas.getContext("2d");
 
             for (let i = 0; i < height; ++i) {
@@ -59,10 +59,11 @@ function main(wasm) {
 
         return (
             <div>
-                <button onClick={render_preview}>
+                <Button variant="contained" onClick={render_preview}>
                     Render
-                </button>
+                </Button>
                 <canvas width={600} height={600} ref={canvasRef} />
+                <ElementDisplay wasm={wasm} />
             </div>
         )
     };
