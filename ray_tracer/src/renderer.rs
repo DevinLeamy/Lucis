@@ -151,7 +151,6 @@ impl RayTracer {
                         
                         image.set_color(row, col, ColorU8::from(colors[*i as usize]))
                     });
-                    web_sys::console::log_1(&JsValue::from("Render complete"));
                     Ok(JsValue::from_serde(&image).unwrap())
                 },
                 Err(_) => Err(JsValue::undefined())

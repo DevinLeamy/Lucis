@@ -1,5 +1,5 @@
 [package]
-name = "Lucis"
+name = "glue"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,7 +7,9 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-ray_tracer = { path = "ray_tracer" }
+wasm-bindgen = { version = "0.2.82", features = ["serde-serialize"] }
+ray_tracer = { path = "../ray_tracer" }
+# TODO: some of these crates are not required/used
 rayon = "1.5"
 rand = "0.8.5"
 futures = "0.3.21"
@@ -15,16 +17,11 @@ futures = "0.3.21"
 getrandom = { version = "0.2", features = ["js"] }
 wasm-logger = "0.2.0"
 log = "0.4.6"
-wasm-bindgen = "0.2.82"
 instant = { version = "0.1", features = ["stdweb", "wasm-bindgen"] }
 wasm-bindgen-futures = "0.4.32"
 js-sys = "0.3.59"
-# yew
-yew = { git = "https://github.com/yewstack/yew.git", features = ["csr"] }
-yewdux = { git = "https://github.com/intendednull/yewdux.git" }
-# material-yew = { path = "material-yew/material-yew", features = ["full"] }
 
-
+# TODO: some of these features are not required/used
 [dependencies.web-sys]
 version = "0.3.59"
 features = [
@@ -39,4 +36,3 @@ features = [
     "HtmlButtonElement",
     "MouseEvent"
 ]
-
