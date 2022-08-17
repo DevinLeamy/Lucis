@@ -12,16 +12,6 @@ pub fn log(s: String) {
 }
 
 #[wasm_bindgen]
-extern "C" {
-    fn alert(s: &str);
-}
-
-#[wasm_bindgen]
-pub fn big_computation() {
-    alert("Big computation in Rust");
-}
-
-#[wasm_bindgen]
 pub struct RequestEmitter { }
 
 #[allow(dead_code)]

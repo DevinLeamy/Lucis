@@ -42,8 +42,8 @@ function main(wasm) {
 
             let canvas = canvasRef.current;
 
-            canvas.setHeight(height);
-            canvas.setWidth(width);
+            // canvas.setHeight(height);
+            // canvas.setWidth(width);
 
             let context = canvas.getContext("2d");
 
@@ -51,21 +51,18 @@ function main(wasm) {
                 for (let j = 0; j < width; ++j) {
                     let color = buffer[i][j];
 
-                    context.set_fill_color(colorToRGB(color));
-                    context.fill_rect(j, height - 1 - i, 1, 1);
+                    context.setFillColor(colorToRGB(color));
+                    context.fillRect(j, height - 1 - i, 1, 1);
                 }
             }
         }
 
         return (
             <div>
-                <button onClick={() => wasm.big_computation()}>
-                    Do Math
-                </button>
                 <button onClick={render_preview}>
                     Render
                 </button>
-                <canvas ref={canvasRef} />
+                <canvas width={600} height={600} ref={canvasRef} />
             </div>
         )
     };
