@@ -1,74 +1,47 @@
-import React, { useRef } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import Button from '@mui/material/Button';
 import { ElementDisplay } from "./element_display"
+import { loadWasm, WorkerPool } from "./wasm_loader";
 
-import { loadWasm, WorkerPool, RequestEmitter } from "./wasm_loader";
 import "./index.css";
-
-// function loadWasm() {
-//     wasm_bindgen("./glue_bg.wasm")
-//         .then((wasm) => {
-//             console.log("Loaded WebAssembly module");
-//             main(wasm);
-//         })
-//         .catch(console.error);
-// }
-// loadWasm();
+import "./styles.css";
 
 loadWasm(main);
-// import { WorkerPool, RequestEmitter } from "./wasm_loader";
 
-let threadCount = navigator.hardwareConcurrency;
+const Element = {
+  id: { id: 6559696101191670000 },
+  material: {
+    Metal: {
+      texture: { SolidTexture: { color: { red: 0.2, green: 0.2, blue: 0.9 } } },
+      fuzz: 0.2,
+    },
+  },
+  shape: { Sphere: { center: { x: 0.0, y: 0.0, z: 0.0 }, radius: 0.5 } },
+}; 
+
 
 function main(wasm) {
-    mod = wasm;
-    let requestEmitter = new RequestEmitter();
-    pool = new WorkerPool(threadCount);
-
-
     const App = () => {
-        const canvasRef = useRef();
+        const [element, setElement] = useState(Element);
 
-        const render_preview = (_e) => {
-            requestEmitter.send_request(pool)
-                .then(wasm_image => {
-                    console.log(wasm_image)
-                    display_image(wasm_image)
-                    requestEmitter.display_image(wasm_image)
-                })
-        }
+        useEffect(() => {
+            setElement(Element);
+        }, [])
 
-        const colorToRGB = (color) => {
-            return `rgb(${color.red}, ${color.green}, ${color.blue})`;
-        }
-
-        const display_image = (image) => {
-            let width = image.width;
-            let height = image.height;
-            let buffer = image.buffer;
-
-            let canvas = canvasRef.current;
-
-            let context = canvas.getContext("2d");
-
-            for (let i = 0; i < height; ++i) {
-                for (let j = 0; j < width; ++j) {
-                    let color = buffer[i][j];
-
-                    context.setFillColor(colorToRGB(color));
-                    context.fillRect(j, height - 1 - i, 1, 1);
-                }
-            }
+        const onElementUpdate = (element) => {
+            // re-render
+            setElement(element);
         }
 
         return (
             <div>
-                <Button variant="contained" onClick={render_preview}>
-                    Render
-                </Button>
-                <canvas width={600} height={600} ref={canvasRef} />
-                <ElementDisplay wasm={wasm} />
+                <div className="app-header" position="static">
+                    Ray Tracer Playground
+                </div>
+                <ElementDisplay 
+                    element={element} 
+                    onElementUpdate={onElementUpdate} 
+                />
             </div>
         )
     };
@@ -77,13 +50,7 @@ function main(wasm) {
     root.render(
         <React.StrictMode>
             <App />
+            <button onClick={() => wasm.marco()}>Marco</button>
         </React.StrictMode>
     );
 }
-
-let mod = null; // wasm module 
-let pool = null; // web worker pool 
-
-/*
-Figure out how this can be done WITHOUT a bundler
-*/

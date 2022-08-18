@@ -13,6 +13,6 @@ wasm-bindgen target/wasm32-unknown-unknown/release/glue.wasm \
 
 cd ../client
 
-cp ../glue/worker.js ./dist
+cp ../glue/worker.js ./dist/worker.js
 
 npx webpack

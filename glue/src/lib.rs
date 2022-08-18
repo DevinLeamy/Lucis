@@ -29,9 +29,9 @@ impl RequestEmitter {
         RayTracer::render_scene_wasm(Scene::default(), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
-    /// display a serialized image 
-    pub fn display_image(&self, image: &JsValue) {
-        log("Displaying image".to_string());
+    pub fn render_element(&self, element: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
+        let element = element.into_serde().unwrap();
+        RayTracer::render_scene_wasm(Scene::sphere(element), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
     /// TESTING - get serialized element
@@ -47,4 +47,12 @@ impl RequestEmitter {
     }
 }
 
+#[wasm_bindgen]
+extern "C" {
+    fn alert(s: &str);
+}
 
+#[wasm_bindgen]
+pub fn marco() {
+    alert("polo");
+}

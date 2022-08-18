@@ -1,0 +1,30 @@
+.app-header {
+    padding: 10px;
+    background-color: var(--white);
+    color: var(--black);
+    border-bottom: 1px solid var(--light-grey);
+}
+
+.canvas-container {
+    /* background-color: orange; */
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+}
+
+.material-display-container {
+    background-color: rgb(250, 250, 250);
+    padding: 10px;
+}
+
+
+.material-options-container {
+}
+
+.render-button {
+    width: 100%;
+}
+
+.config-slider-label {
+    color: rgb(115, 115, 115); 
+}

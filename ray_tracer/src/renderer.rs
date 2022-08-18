@@ -15,7 +15,7 @@ use futures::channel::oneshot;
 use wasm_bindgen::JsValue;
 
 const MAX_BOUNCE_DEPTH: u32 = 50;
-const SAMPLES_PER_PIXEL: u32 = 20;
+const SAMPLES_PER_PIXEL: u32 = 100;
 const MIN_INTERSECTION_T: f64 = 0.001;
 
 pub trait Render {

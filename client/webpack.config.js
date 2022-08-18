@@ -49,7 +49,8 @@ module.exports = {
             filename: "index.html",
         }),
         new WasmPackPlugin({
-            crateDirectory: path.resolve(__dirname, "../glue")
+            crateDirectory: path.resolve(__dirname, "../glue"),
+            extraArgs: "--target no-modules --mode normal"
         })
     ],
     mode: "development",
