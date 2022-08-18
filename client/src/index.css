@@ -25,6 +25,8 @@ body {
     --l5-fs: 16px;
     --l6-fs: 13px;
     overflow-y: scroll;
+
+    padding-bottom: 300px;
 }
 
 ::selection {

@@ -38,3 +38,7 @@
 .config-slider-label {
     color: rgb(115, 115, 115); 
 }
+
+.color-picker-container {
+    /* padding-bottom: 10px; */
+}
