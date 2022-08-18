@@ -35,22 +35,29 @@ const DIELECTRIC_DEFAULT = {
     }
 }
 
-let threadCount = 3; // navigator.hardwareConcurrency;
+let threadCount = 5; // navigator.hardwareConcurrency;
 
 let objName = (obj) => {
     return Object.keys(obj)[0]
 }
 
 const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
-    const [pool, setPool] = useState(undefined); // new WorkerPool(threadCount));
+    const [pool, setPool] = useState<typeof WorkerPool>(undefined); 
+    const [canvasImageURL, setCanvasImageURL] = useState<string>(undefined);
 
     let requestEmitter = new RequestEmitter();
 
-    const canvasRef = useRef();
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
     const { material, shape } = element;
 
     useEffect(() => {
-        setPool(new WorkerPool(threadCount));
+        let pool = new WorkerPool(threadCount);
+
+        requestEmitter.render_element(element, pool)
+            .then(wasm_image => displayImage(wasm_image))
+
+        setPool(pool);
     }, [])
 
     console.log("Displayed element", element)
@@ -83,6 +90,8 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
                 context.fillRect(j, height - 1 - i, 1, 1);
             }
         }
+
+        setCanvasImageURL(getCanvasURL);
     }
 
     const onMatChange = (mat) => {
@@ -94,20 +103,44 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
         renderElement(elementClone);
     }
 
+    const getCanvasURL = (): string => {
+        if (canvasRef.current === null) return;
+
+        return canvasRef.current.toDataURL("image/png");
+    }
+
     return (
         <div>
             <div className="canvas-container">
                 <Paper elevation={5}>
-                    <canvas className="element-preview-canvas" width={600} height={600} ref={canvasRef} />
+                    <canvas 
+                        className="element-preview-canvas" 
+                        width={750} 
+                        height={600} 
+                        ref={canvasRef} 
+                    />
                 </Paper>
             </div>
             <Button 
                 className="render-button" 
                 variant="outlined" 
                 color="primary" 
-                onClick={(e) => renderElement(element)}
+                size="small"
+                onClick={(_e) => renderElement(element)}
             >
                 Render
+            </Button>
+            <Button 
+                className="download-button" 
+                variant="outlined" 
+                color="primary" 
+                size="small"
+            >
+                <a 
+                    className="download-link"
+                    href={canvasImageURL}
+                    download={`${Math.round(Math.random() * 100000)}_render.png`}
+                >Download Image</a>
             </Button>
             <Card>
                 <MaterialDisplay material={material} onMatChange={onMatChange} />

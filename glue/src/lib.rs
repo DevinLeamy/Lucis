@@ -3,9 +3,9 @@ use wasm_bindgen::prelude::*;
 use ray_tracer::{Camera, WorkerPool, Scene, RayTracer, ElementId, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType};
 use web_sys::console::log_1;
 
-const ASPECT: f64 = 1.0;
-const CANVAS_WIDTH: u32 = 600;
-const CANVAS_HEIGHT: u32 = (CANVAS_WIDTH as f64 / ASPECT) as u32;
+// const ASPECT: f64 = 1.0;
+const CANVAS_WIDTH: u32 = 750; // 600;
+const CANVAS_HEIGHT: u32 = 600; // (CANVAS_WIDTH as f64 / ASPECT) as u32;
 
 pub fn log(s: String) {
     log_1(&JsValue::from(s));

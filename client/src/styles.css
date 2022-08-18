@@ -23,6 +23,16 @@
 
 .render-button {
     width: 100%;
+    border-radius: 0px;
+}
+
+.download-button {
+    border-radius: 0px;
+}
+
+.download-link {
+    color: inherit;
+    text-decoration: none;
 }
 
 .config-slider-label {
