@@ -1,4 +1,4 @@
-use crate::{PerlinTexture, Camera, CameraConfig};
+use crate::{PerlinTexture, Camera, CameraConfig, DiffuseLight};
 use crate::collisions::{Collidable, CollisionRecord};
 use crate::image::Color;
 use crate::material::{Material, MaterialType, Dielectric, Lambertian, Metal};
@@ -217,7 +217,7 @@ impl Scene {
     pub fn rectangles() -> (Camera, Scene) {
         let camera = Camera::new(
             CameraConfig {
-                origin: Vec3::new(0.0, 2.0, 5.0),
+                origin: Vec3::new(0.0, 5.0, 5.0),
                 look_at: Vec3::new(0.0, 0.5, 0.0),
                 aspect: 1.0,
                 ..CameraConfig::default()
@@ -228,20 +228,28 @@ impl Scene {
             objects: vec![
                 Element {
                     id: ElementId::new(),
-                    material: MaterialType::Metal(Metal::new(Color::new(0.6, 0.2, 0.0).into(), 0.0)),
+                    material: MaterialType::Metal(Metal::new(Color::new(1.0, 0.0, 0.0).into(), 0.0)),
                     // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
+                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, 0.5, -1.0), 0.5))
+                },
+                Element {
+                    id: ElementId::new(),
+                    // material: MaterialType::Metal(Metal::new(Color::new(0.6, 0.2, 0.0).into(), 0.0)),
+                    // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
+                    material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 100.0)),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, 0.5, 0.0), 0.5))
                 },
                 // ground
                 Element {
                     id: ElementId::new(),
-                    // material: MaterialType::Lambertian(Lambertian::new(Color::new(0.1, 0.1, 0.1).into())),
-                    material: MaterialType::Lambertian(Lambertian::new(
-                        TextureType::CheckeredTexture(CheckeredTexture::new(
-                            Color::white(),
-                            Color::new(0.1, 0.1, 0.1),
-                        )))
-                    ),
+                    material: MaterialType::Lambertian(Lambertian::new(Color::new(0.1, 0.1, 0.1).into())),
+                    // material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
+                    // material: MaterialType::Lambertian(Lambertian::new(
+                    //     TextureType::CheckeredTexture(CheckeredTexture::new(
+                    //         Color::white(),
+                    //         Color::new(0.1, 0.1, 0.1),
+                    //     )))
+                    // ),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.5, 0.0), 1000.0))
                 }, 
             ]

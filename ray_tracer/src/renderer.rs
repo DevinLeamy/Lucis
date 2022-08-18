@@ -22,6 +22,8 @@ pub trait Render {
     fn render_scene(scene: &Scene, camera: Camera, width: u32, height: u32) -> Image; 
 }
 
+const BACKGROUND_COLOR: Color = Color::black();
+
 pub struct RayTracer {}
 
 impl RayTracer {
@@ -33,9 +35,10 @@ impl RayTracer {
         if let Some((element, record)) = RayTracer::compute_collision(scene, ray) {
             let result = element.material.resolve(ray, record);
 
-            result.color * RayTracer::compute_ray_color(scene, result.reflected_ray, bounce_depth + 1)
+            // this is a hack - see DiffuseLight in material.rs
+            result.emitted_light + result.color * RayTracer::compute_ray_color(scene, result.reflected_ray, bounce_depth + 1)
         } else {
-            return Color::white();
+            BACKGROUND_COLOR
         }
     }
 }
