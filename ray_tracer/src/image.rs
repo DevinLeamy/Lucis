@@ -98,7 +98,7 @@ impl Color {
     }
 
     pub fn to_u8(channel: f64) -> u8 {
-        (channel * 255f64) as u8
+        u8::min(255, (channel * 255f64) as u8)
     }
 
     pub fn gamma_corrected(&self) -> Color {

@@ -3,7 +3,7 @@ use crate::collisions::{Collidable, CollisionRecord};
 use crate::image::Color;
 use crate::material::{Material, MaterialType, Dielectric, Lambertian, Metal};
 use crate::ray::Ray;
-use crate::shape::{ShapeType, Sphere};
+use crate::shape::{ShapeType, Sphere, RectangleXY, RectangleXZ, RectangleYZ};
 use crate::texture::{TextureType, CheckeredTexture};
 use crate::utils::random_float;
 use crate::vec3::Vec3;
@@ -217,7 +217,7 @@ impl Scene {
     pub fn rectangles() -> (Camera, Scene) {
         let camera = Camera::new(
             CameraConfig {
-                origin: Vec3::new(0.0, 5.0, 5.0),
+                origin: Vec3::new(0.0, 3.0, 5.0),
                 look_at: Vec3::new(0.0, 0.5, 0.0),
                 aspect: 1.0,
                 ..CameraConfig::default()
@@ -234,10 +234,23 @@ impl Scene {
                 },
                 Element {
                     id: ElementId::new(),
-                    // material: MaterialType::Metal(Metal::new(Color::new(0.6, 0.2, 0.0).into(), 0.0)),
+                    material: MaterialType::Metal(Metal::new(Color::new(0.6, 0.2, 0.0).into(), 0.0)),
                     // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
-                    material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 100.0)),
+                    // material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, 0.5, 0.0), 0.5))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
+                    // shape: ShapeType::RectangleXY(RectangleXY::new(
+                    //     -0.5, 0.5, 0.0, 1.0, -3.0
+                    // )),
+                    // shape: ShapeType::RectangleYZ(RectangleYZ::new(
+                    //     0.0, 1.0, 0.0, 1.0, 0.7
+                    // )),
+                    shape: ShapeType::RectangleXZ(RectangleXZ::new(
+                        -0.5, 0.5, 0.0, 1.0, 0.1
+                    ))
                 },
                 // ground
                 Element {

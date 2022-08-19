@@ -22,7 +22,8 @@ pub trait Render {
     fn render_scene(scene: &Scene, camera: Camera, width: u32, height: u32) -> Image; 
 }
 
-const BACKGROUND_COLOR: Color = Color::black();
+// const BACKGROUND_COLOR: Color = Color::black();
+const BACKGROUND_COLOR: Color = Color::white();
 
 pub struct RayTracer {}
 
