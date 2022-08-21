@@ -84,7 +84,7 @@ impl From<Color> for ColorU8 {
     }
 } 
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct Color {
     pub red: f64,
     pub green: f64,
@@ -93,12 +93,12 @@ pub struct Color {
 
 
 impl Color {
-    pub fn new(red: f64, green: f64, blue: f64) -> Color {
+    pub const fn new(red: f64, green: f64, blue: f64) -> Color {
         Color { red, green, blue }
     }
 
     pub fn to_u8(channel: f64) -> u8 {
-        (channel * 255f64) as u8
+        u8::min(255, (channel * 255f64) as u8)
     }
 
     pub fn gamma_corrected(&self) -> Color {
@@ -109,8 +109,8 @@ impl Color {
         } 
     }
 
-    pub fn white() -> Color { Color::new(1.0, 1.0, 1.0) }
-    pub fn black() -> Color { Color::new(0.0, 0.0, 0.0) }
+    pub const fn white() -> Color { Color::new(1.0, 1.0, 1.0) }
+    pub const fn black() -> Color { Color::new(0.0, 0.0, 0.0) }
 }
 
 impl Default for Color {
@@ -133,6 +133,18 @@ impl std::ops::Mul<Color> for Color {
             red: self.red * rhs.red,
             green: self.green * rhs.green,
             blue: self.blue * rhs.blue,
+        }
+    }
+}
+
+impl std::ops::Mul<f64> for Color {
+    type Output = Color;
+
+    fn mul(self, scale: f64) -> Color {
+        Color {
+            red: self.red * scale,
+            green: self.green * scale,
+            blue: self.blue * scale,
         }
     }
 }

@@ -5,15 +5,17 @@ use crate::image::Color;
 use crate::vec3::Vec3;
 use crate::perlin::Perlin;
 
+use serde::{Deserialize, Serialize};
+
 pub trait Texture {
     fn value(&self, uv: UV, point: Vec3) -> Color;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub enum TextureType {
     CheckeredTexture(CheckeredTexture),
     SolidTexture(SolidTexture),
-    PerlinTexture(PerlinTexture)
+    // PerlinTexture(PerlinTexture)
 }
 
 impl Texture for TextureType {
@@ -21,12 +23,12 @@ impl Texture for TextureType {
         match self {
             TextureType::CheckeredTexture(tx) => tx.value(uv, point),
             TextureType::SolidTexture(tx)     => tx.value(uv, point),
-            TextureType::PerlinTexture(tx)    => tx.value(uv, point),
+            // TextureType::PerlinTexture(tx)    => tx.value(uv, point),
         }
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct CheckeredTexture {
     odd: Color,
     even: Color
@@ -47,7 +49,7 @@ impl Texture for CheckeredTexture {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct SolidTexture {
     color: Color
 }
@@ -70,7 +72,7 @@ impl From<Color> for TextureType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone )]
 pub struct PerlinTexture {
     scale: f64,
     noise_gen: Arc<Box<Perlin>>
@@ -116,10 +118,10 @@ impl Texture for PerlinTexture {
     }
 }
 
-impl From<PerlinTexture> for TextureType {
-    fn from(perlin: PerlinTexture) -> Self {
-        TextureType::PerlinTexture(perlin)
-    }
-}
+// impl From<PerlinTexture> for TextureType {
+//     fn from(perlin: PerlinTexture) -> Self {
+//         TextureType::PerlinTexture(perlin)
+//     }
+// }
 
 

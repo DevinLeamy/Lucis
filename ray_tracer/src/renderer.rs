@@ -15,12 +15,15 @@ use futures::channel::oneshot;
 use wasm_bindgen::JsValue;
 
 const MAX_BOUNCE_DEPTH: u32 = 50;
-const SAMPLES_PER_PIXEL: u32 = 20;
+const SAMPLES_PER_PIXEL: u32 = 100;
 const MIN_INTERSECTION_T: f64 = 0.001;
 
 pub trait Render {
     fn render_scene(scene: &Scene, camera: Camera, width: u32, height: u32) -> Image; 
 }
+
+const BACKGROUND_COLOR: Color = Color::black();
+// const BACKGROUND_COLOR: Color = Color::white();
 
 pub struct RayTracer {}
 
@@ -33,9 +36,10 @@ impl RayTracer {
         if let Some((element, record)) = RayTracer::compute_collision(scene, ray) {
             let result = element.material.resolve(ray, record);
 
-            result.color * RayTracer::compute_ray_color(scene, result.reflected_ray, bounce_depth + 1)
+            // this is a hack - see DiffuseLight in material.rs
+            result.emitted_light + result.color * RayTracer::compute_ray_color(scene, result.reflected_ray, bounce_depth + 1)
         } else {
-            return Color::white();
+            BACKGROUND_COLOR
         }
     }
 }
@@ -151,7 +155,6 @@ impl RayTracer {
                         
                         image.set_color(row, col, ColorU8::from(colors[*i as usize]))
                     });
-                    web_sys::console::log_1(&JsValue::from("Render complete"));
                     Ok(JsValue::from_serde(&image).unwrap())
                 },
                 Err(_) => Err(JsValue::undefined())

@@ -5,37 +5,49 @@ use crate::texture::{TextureType, Texture};
 use crate::utils::{reflect, random_unit_vector, sample_unit_sphere};
 use crate::vec3::Vec3;
 
+use serde::{Deserialize, Serialize};
+
 pub struct CollisionResult {
     pub reflected_ray: Ray,
-    pub color: Color
+    pub color: Color,
+    pub emitted_light: Color
 }
 
 pub trait Material {
+    /// Takes in a ray and a collision record and performs 
+    /// collision resolution 
     fn resolve(&self, ray: Ray, collision: CollisionRecord) -> CollisionResult;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub enum MaterialType {
     Lambertian(Lambertian), 
     Dielectric(Dielectric),
-    Metal(Metal)
+    Metal(Metal),
+    DiffuseLight(DiffuseLight),
 }
 
 impl Material for MaterialType {
+    // This allows use to resolve collision for non-homogenous data 
+    // without having to use trait objects 
     fn resolve(&self, ray: Ray, collision: CollisionRecord) -> CollisionResult {
         match self {
-            MaterialType::Dielectric(m) => m.resolve(ray, collision),
-            MaterialType::Lambertian(m) => m.resolve(ray, collision),
-            MaterialType::Metal(m)      => m.resolve(ray, collision),
+            MaterialType::Dielectric(m)   => m.resolve(ray, collision),
+            MaterialType::Lambertian(m)   => m.resolve(ray, collision),
+            MaterialType::Metal(m)        => m.resolve(ray, collision),
+            MaterialType::DiffuseLight(m) => m.resolve(ray, collision),
         }
     }
 } 
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Lambertian {
     texture: TextureType 
 }
 
+/// Reflects all incoming rays with the same intensity.
+/// Rays are reflected in random directions with a distribution
+/// consistent with Lambertian reflection
 impl Lambertian {
     pub fn new(texture: TextureType) -> Lambertian {
         Lambertian { texture }
@@ -52,12 +64,15 @@ impl Material for Lambertian {
 
         CollisionResult {
             reflected_ray: Ray::new(collision.point, bounce_dir),
-            color: self.texture.value(collision.uv, collision.point)
+            color: self.texture.value(collision.uv, collision.point),
+            emitted_light: Color::new(0.0, 0.0, 0.0)
         }
     }
 }
 
-#[derive(Copy, Clone)]
+/// Perfectly reflects/refracts all incoming rays. No light intensity is lost.
+/// Rays are reflected or refracted based on the refractive index of the material
+#[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct Dielectric {
     ref_index: f64,
 }
@@ -95,11 +110,16 @@ impl Material for Dielectric {
                 false => ray.refract(collision.normal(), collision.point, ref_ratio)
             },
             color: Color::new(1.0, 1.0, 1.0),
+            emitted_light: Color::new(0.0, 0.0, 0.0)
         }
     }
 }
 
-#[derive(Clone)]
+/// Reflects all incoming rays with the same intensity.
+/// Rays reflect perfectly off of the surface of the object.
+/// Fuzz [0, 1] determines how much the perfectly reflected
+/// rays are perturbed
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Metal {
     texture: TextureType,
     fuzz: f64,
@@ -129,6 +149,7 @@ impl Material for Metal {
                 CollisionResult {
                     color: self.texture.value(collision.uv, collision.point),
                     reflected_ray: ref_ray,
+                    emitted_light: Color::new(0.0, 0.0, 0.0)
                 }
     
             }
@@ -136,7 +157,39 @@ impl Material for Metal {
             Face::Inner => CollisionResult {
                 color: Color::black(),
                 reflected_ray: ref_ray,
+                emitted_light: Color::new(0.0, 0.0, 0.0)
             } 
         }
+    }
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+pub struct DiffuseLight {
+    hue: Color,
+    brightness: f64,
+}
+
+impl DiffuseLight {
+    pub fn new(hue: Color, brightness: f64) -> DiffuseLight {
+        DiffuseLight { hue, brightness }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn resolve(&self, ray: Ray, collision: CollisionRecord) -> CollisionResult {
+        /*
+        This is a temporary hack. Basically, currently we have "color" determined 
+        seperately from "emitted_light". Eventually these two things will
+        be combined by applying the Blinn-Phong reflection model 
+
+        For now, to determine the light coming from light emitting surfaces,
+        we will simply zero out the impact of all incoming light on the surface
+        by making the attentuation "color"=Color(0, 0, 0).
+        */
+        CollisionResult {
+            reflected_ray: ray, 
+            color: Color::new(0.0, 0.0, 0.0),
+            emitted_light: self.hue * self.brightness,
+        }    
     }
 }

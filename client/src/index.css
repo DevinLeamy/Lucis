@@ -1,0 +1,34 @@
+body, html {
+    margin: 0px;
+    width: 100vw;
+    height: 100vh;
+    padding: 0px;
+    max-width: 800px;
+    margin: auto;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+
+    --white: #fafafa;
+    --off-white: #eeeeee; 
+    --black: #151515;
+    --light-grey: #cbcbcb;
+    --blue: #0073ff;
+    --red: rgb(245, 68, 68);
+
+    --l1-fs: 40px;
+    --l2-fs: 31px;
+    --l3-fs: 25px;
+    --l4-fs: 20px;
+    --l5-fs: 16px;
+    --l6-fs: 13px;
+    overflow-y: scroll;
+
+    padding-bottom: 300px;
+}
+
+::selection {
+    background: rgb(120, 201, 255);
+}

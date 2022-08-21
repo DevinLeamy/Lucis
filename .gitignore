@@ -1,9 +1,6 @@
-/target
-/dist
-Cargo.lock
 Notes.md
 *.ppm
 *.png
 /server
 /images
-/client
+.DS_Store

@@ -1,16 +1,17 @@
-use crate::PerlinTexture;
+use crate::{PerlinTexture, Camera, CameraConfig, DiffuseLight};
 use crate::collisions::{Collidable, CollisionRecord};
 use crate::image::Color;
 use crate::material::{Material, MaterialType, Dielectric, Lambertian, Metal};
 use crate::ray::Ray;
-use crate::shape::{ShapeType, Sphere};
+use crate::shape::{ShapeType, Sphere, RectangleXY, RectangleXZ, RectangleYZ, Box};
 use crate::texture::{TextureType, CheckeredTexture};
 use crate::utils::random_float;
 use crate::vec3::Vec3;
+use serde::{Deserialize, Serialize};
 
 
 #[readonly::make]
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Element {
     pub id: ElementId,
     pub material: MaterialType, 
@@ -18,6 +19,13 @@ pub struct Element {
 }
 
 impl Element {
+    pub fn new(material: MaterialType, shape: ShapeType) -> Element {
+        Element {
+            id: ElementId::new(),
+            material,
+            shape
+        }
+    }
     pub fn set_material(&mut self, material: MaterialType) {
         self.material = material;
     }
@@ -30,7 +38,7 @@ impl Collidable for Element {
 }
 
 #[readonly::make]
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct ElementId {
     pub id: u64
 }
@@ -99,12 +107,19 @@ impl Scene {
             objects: vec![
                 Element {
                     id: ElementId::new(),
-                    material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new_scaled(4.0).into())),
+                    material: MaterialType::Metal(Metal::new(Color::new(0.2, 0.2, 0.9).into(), 0.2)),
+                    // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new_scaled(4.0).into())),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(-1.0, 0.5, -1.0), 0.5))
                 },
                 Element {
                     id: ElementId::new(),
-                    material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
+                    material: MaterialType::Lambertian(Lambertian::new(
+                        TextureType::CheckeredTexture(CheckeredTexture::new(
+                            Color::white(),
+                            Color::new(0.8, 0.8, 1.0),
+                        )))
+                    ),
+                    // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0))
                 },
             ]
@@ -139,6 +154,7 @@ impl Scene {
         }
     }
 
+    // TODO: make sure that the element is centered at (0, 0)
     pub fn sphere(element: Element) -> Scene {
         Scene {
             objects: vec![
@@ -146,8 +162,14 @@ impl Scene {
                 // ground
                 Element {
                     id: ElementId::new(),
-                    material: MaterialType::Lambertian(Lambertian::new(Color::new(0.2, 0.2, 0.2).into())),
-                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0))
+                    // material: MaterialType::Lambertian(Lambertian::new(Color::new(0.1, 0.1, 0.1).into())),
+                    material: MaterialType::Lambertian(Lambertian::new(
+                        TextureType::CheckeredTexture(CheckeredTexture::new(
+                            Color::white(),
+                            Color::new(0.1, 0.1, 0.1),
+                        )))
+                    ),
+                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.5, 0.0), 1000.0))
                 }, 
             ]
         }
@@ -184,10 +206,132 @@ impl Scene {
                 },
                 Element {
                     id: ElementId::new(),
-                    material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
+                    material: MaterialType::Metal(Metal::new(Color::new(0.6, 0.2, 0.0).into(), 0.0)),
+                    // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(2.0, 0.5, -1.0), 0.5))
                 },
             ]
         }
     }
+
+    pub fn rectangles() -> (Camera, Scene) {
+        let camera = Camera::new(
+            CameraConfig {
+                origin: Vec3::new(0.0, 3.0, 5.0),
+                look_at: Vec3::new(0.0, 0.5, 0.0),
+                aspect: 1.0,
+                ..CameraConfig::default()
+            }
+        );
+        
+        let scene = Scene {
+            objects: vec![
+                Element {
+                    id: ElementId::new(),
+                    material: MaterialType::Metal(Metal::new(Color::new(1.0, 0.0, 0.0).into(), 0.0)),
+                    // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
+                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, 0.5, -1.0), 0.5))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: MaterialType::Metal(Metal::new(Color::new(0.6, 0.2, 0.0).into(), 0.0)),
+                    // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
+                    // material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
+                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, 0.5, 0.0), 0.5))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
+                    // shape: ShapeType::RectangleXY(RectangleXY::new(
+                    //     -0.5, 0.5, 0.0, 1.0, -3.0
+                    // )),
+                    // shape: ShapeType::RectangleYZ(RectangleYZ::new(
+                    //     0.0, 1.0, 0.0, 1.0, 0.7
+                    // )),
+                    shape: ShapeType::RectangleXZ(RectangleXZ::new(
+                        -0.5, 0.5, 0.0, 1.0, 0.1
+                    ))
+                },
+                // ground
+                Element {
+                    id: ElementId::new(),
+                    material: MaterialType::Lambertian(Lambertian::new(Color::new(0.1, 0.1, 0.1).into())),
+                    // material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
+                    // material: MaterialType::Lambertian(Lambertian::new(
+                    //     TextureType::CheckeredTexture(CheckeredTexture::new(
+                    //         Color::white(),
+                    //         Color::new(0.1, 0.1, 0.1),
+                    //     )))
+                    // ),
+                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.5, 0.0), 1000.0))
+                }, 
+            ]
+        };
+
+        return (camera, scene)
+   } 
+
+    pub fn cornell_box() -> (Camera, Scene) {
+        let camera = Camera::new(
+            CameraConfig {
+                origin: Vec3::new(278.0, 278.0, -800.0),
+                look_at: Vec3::new(278.0, 278.0, 0.0),
+                aspect: 1.0,
+                vertical_fov_degrees: 40.0,
+                ..CameraConfig::default()
+            }
+        );
+
+        let red = MaterialType::Lambertian(Lambertian::new(Color::new(0.65, 0.05, 0.05).into()));
+        let white = MaterialType::Lambertian(Lambertian::new(Color::new(0.73, 0.73, 0.73).into()));
+        let green = MaterialType::Lambertian(Lambertian::new(Color::new(0.12, 0.45, 0.15).into()));
+        let light = MaterialType::DiffuseLight(DiffuseLight::new(Color::new(1.0, 1.0, 1.0), 15.0));
+        
+        let scene = Scene {
+            objects: vec![
+                Element {
+                    id: ElementId::new(),
+                    material: green.clone(), 
+                    shape: ShapeType::RectangleYZ(RectangleYZ::new(0.0, 555.0, 0.0, 555.0, 555.0))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: red.clone(), 
+                    shape: ShapeType::RectangleYZ(RectangleYZ::new(0.0, 555.0, 0.0, 555.0, 0.0))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: light.clone(), 
+                    shape: ShapeType::RectangleXZ(RectangleXZ::new(213.0, 343.0, 227.0, 332.0, 554.0))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: white.clone(), 
+                    shape: ShapeType::RectangleXZ(RectangleXZ::new(0.0, 555.0, 0.0, 555.0, 0.0))
+                }, 
+                Element {
+                    id: ElementId::new(),
+                    material: white.clone(), 
+                    shape: ShapeType::RectangleXZ(RectangleXZ::new(0.0, 555.0, 0.0, 555.0, 555.0))
+                }, 
+                Element {
+                    id: ElementId::new(),
+                    material: white.clone(), 
+                    shape: ShapeType::RectangleXY(RectangleXY::new(0.0, 555.0, 0.0, 555.0, 555.0))
+                }, 
+                Element {
+                    id: ElementId::new(),
+                    material: white.clone(),
+                    shape: ShapeType::Box(Box::new(Vec3::new(130.0, 0.0, 65.0), Vec3::new(295.0, 165.0, 230.0)))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: white.clone(),
+                    shape: ShapeType::Box(Box::new(Vec3::new(265.0, 0.0, 295.0), Vec3::new(430.0, 330.0, 460.0)))
+                }
+            ]
+        };
+
+        (camera, scene)
+    } 
 }
