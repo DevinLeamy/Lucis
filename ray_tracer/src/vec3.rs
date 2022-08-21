@@ -12,7 +12,7 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-    pub fn new(x: f64, y: f64, z: f64) -> Self { Self { x, y, z } }
+    pub const fn new(x: f64, y: f64, z: f64) -> Self { Self { x, y, z } }
     pub fn ones() -> Self { Self { x: 1f64, y: 1f64, z: 1f64, } }
     pub fn zeros() -> Self { Self { x: 0f64, y: 0f64, z: 0f64, } }
 

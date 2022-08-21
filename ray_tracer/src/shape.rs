@@ -138,11 +138,13 @@ pub struct RectangleXY {
     y0: f64,
     y1: f64,
     k: f64,
+    flip_normal: bool,
 }
 
 impl RectangleXY {
-    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64) -> RectangleXY {
-        RectangleXY { x0, x1, y0, y1, k }
+    const SURFACE_NORMAL: Vec3 = Vec3::new(0.0, 0.0, 1.0);
+    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, flip_normal: bool) -> RectangleXY {
+        RectangleXY { x0, x1, y0, y1, k, flip_normal }
     }
 }
 
@@ -180,7 +182,7 @@ impl Boundable for RectangleXY {
 
 impl SurfaceNormal for RectangleXY {
     fn surface_normal(&self, point: Vec3) -> Vec3 {
-        Vec3::new(0.0, 0.0, 1.0)
+        RectangleXY::SURFACE_NORMAL * (if self.flip_normal { -1.0 } else { 1.0 })
     }
 }
 
@@ -203,11 +205,13 @@ pub struct RectangleXZ {
     z0: f64,
     z1: f64,
     k: f64,
+    flip_normal: bool,
 }
 
 impl RectangleXZ {
-    pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64) -> RectangleXZ {
-        RectangleXZ { x0, x1, z0, z1, k }
+    const SURFACE_NORMAL: Vec3 = Vec3::new(0.0, 1.0, 0.0);
+    pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, flip_normal: bool) -> RectangleXZ {
+        RectangleXZ { x0, x1, z0, z1, k, flip_normal }
     }
 }
 
@@ -245,7 +249,7 @@ impl Boundable for RectangleXZ {
 
 impl SurfaceNormal for RectangleXZ {
     fn surface_normal(&self, point: Vec3) -> Vec3 {
-        Vec3::new(0.0, 1.0, 0.0)
+        RectangleXZ::SURFACE_NORMAL * (if self.flip_normal { -1.0 } else { 1.0 })
     }
 }
 
@@ -267,11 +271,13 @@ pub struct RectangleYZ {
     z0: f64,
     z1: f64,
     k: f64,
+    flip_normal: bool
 }
 
 impl RectangleYZ {
-    pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64) -> RectangleYZ {
-        RectangleYZ { y0, y1, z0, z1, k }
+    const SURFACE_NORMAL: Vec3 = Vec3::new(1.0, 0.0, 0.0);
+    pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, flip_normal: bool) -> RectangleYZ {
+        RectangleYZ { y0, y1, z0, z1, k, flip_normal }
     }
 }
 
@@ -309,7 +315,7 @@ impl Boundable for RectangleYZ {
 
 impl SurfaceNormal for RectangleYZ {
     fn surface_normal(&self, point: Vec3) -> Vec3 {
-        Vec3::new(1.0, 0.0, 0.0)
+        RectangleYZ::SURFACE_NORMAL * (if self.flip_normal { -1.0 } else { 1.0 })
     }
 }
 
@@ -353,14 +359,14 @@ impl Box {
             max,
             sides: vec![
                 // back and front
-                RectangleType::RectangleXY(RectangleXY::new(min.x, max.x, min.y, max.y, min.z)),
-                RectangleType::RectangleXY(RectangleXY::new(min.x, max.x, min.y, max.y, max.z)),
+                RectangleType::RectangleXY(RectangleXY::new(min.x, max.x, min.y, max.y, min.z, true)),
+                RectangleType::RectangleXY(RectangleXY::new(min.x, max.x, min.y, max.y, max.z, false)),
                 // top and bottom
-                RectangleType::RectangleXZ(RectangleXZ::new(min.x, max.x, min.z, max.z, min.y)),
-                RectangleType::RectangleXZ(RectangleXZ::new(min.x, max.x, min.z, max.z, max.y)),
+                RectangleType::RectangleXZ(RectangleXZ::new(min.x, max.x, min.z, max.z, min.y, true)),
+                RectangleType::RectangleXZ(RectangleXZ::new(min.x, max.x, min.z, max.z, max.y, false)),
                 // left and right
-                RectangleType::RectangleYZ(RectangleYZ::new(min.y, max.y, min.z, max.z, min.x)),
-                RectangleType::RectangleYZ(RectangleYZ::new(min.y, max.y, min.z, max.z, max.x)),
+                RectangleType::RectangleYZ(RectangleYZ::new(min.y, max.y, min.z, max.z, min.x, true)),
+                RectangleType::RectangleYZ(RectangleYZ::new(min.y, max.y, min.z, max.z, max.x, false)),
 
             ]
         }

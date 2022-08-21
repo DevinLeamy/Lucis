@@ -217,8 +217,8 @@ impl Scene {
     pub fn rectangles() -> (Camera, Scene) {
         let camera = Camera::new(
             CameraConfig {
-                origin: Vec3::new(0.0, 3.0, 5.0),
-                look_at: Vec3::new(0.0, 0.5, 0.0),
+                origin: Vec3::new(-4.0, 3.0, 4.0),
+                look_at: Vec3::new(0.5, 0.5, 0.0),
                 aspect: 1.0,
                 ..CameraConfig::default()
             }
@@ -228,10 +228,15 @@ impl Scene {
             objects: vec![
                 Element {
                     id: ElementId::new(),
-                    material: MaterialType::Metal(Metal::new(Color::new(0.8, 0.0, 0.0).into(), 0.0)),
+                    material: MaterialType::Metal(Metal::new(Color::new(8.0, 1.0, 8.0).into(), 0.0)),
                     // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
                     // material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
-                    shape: ShapeType::Box(Box::cube(0.5, Vec3::new(0.0, 0.5, 0.0)))
+                    shape: ShapeType::Box(Box::cube(0.5, Vec3::new(0.2, 1.0, 0.0)))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: MaterialType::Lambertian(Lambertian::new(Color::new(0.2, 0.8, 0.2).into())),
+                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(1.0, 0.5, -1.0), 0.5))
                 },
                 // ground
                 Element {
@@ -273,32 +278,32 @@ impl Scene {
                 Element {
                     id: ElementId::new(),
                     material: green.clone(), 
-                    shape: ShapeType::RectangleYZ(RectangleYZ::new(0.0, 555.0, 0.0, 555.0, 555.0))
+                    shape: ShapeType::RectangleYZ(RectangleYZ::new(0.0, 555.0, 0.0, 555.0, 555.0, true))
                 },
                 Element {
                     id: ElementId::new(),
                     material: red.clone(), 
-                    shape: ShapeType::RectangleYZ(RectangleYZ::new(0.0, 555.0, 0.0, 555.0, 0.0))
+                    shape: ShapeType::RectangleYZ(RectangleYZ::new(0.0, 555.0, 0.0, 555.0, 0.0, false))
                 },
                 Element {
                     id: ElementId::new(),
                     material: light.clone(), 
-                    shape: ShapeType::RectangleXZ(RectangleXZ::new(213.0, 343.0, 227.0, 332.0, 554.0))
+                    shape: ShapeType::RectangleXZ(RectangleXZ::new(213.0, 343.0, 227.0, 332.0, 554.0, true))
                 },
                 Element {
                     id: ElementId::new(),
                     material: white.clone(), 
-                    shape: ShapeType::RectangleXZ(RectangleXZ::new(0.0, 555.0, 0.0, 555.0, 0.0))
+                    shape: ShapeType::RectangleXZ(RectangleXZ::new(0.0, 555.0, 0.0, 555.0, 0.0, false))
                 }, 
                 Element {
                     id: ElementId::new(),
                     material: white.clone(), 
-                    shape: ShapeType::RectangleXZ(RectangleXZ::new(0.0, 555.0, 0.0, 555.0, 555.0))
+                    shape: ShapeType::RectangleXZ(RectangleXZ::new(0.0, 555.0, 0.0, 555.0, 555.0, true))
                 }, 
                 Element {
                     id: ElementId::new(),
                     material: white.clone(), 
-                    shape: ShapeType::RectangleXY(RectangleXY::new(0.0, 555.0, 0.0, 555.0, 555.0))
+                    shape: ShapeType::RectangleXY(RectangleXY::new(0.0, 555.0, 0.0, 555.0, 555.0, false))
                 }, 
                 Element {
                     id: ElementId::new(),
