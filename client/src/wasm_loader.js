@@ -8,4 +8,3 @@ export function loadWasm(callback) {
 }
 
 export const { WorkerPool, RequestEmitter } = wasm_bindgen;
-

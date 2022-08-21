@@ -1,6 +1,6 @@
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;
-use ray_tracer::{Camera, WorkerPool, Scene, RayTracer, ElementId, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType};
+use ray_tracer::{Camera, Box, WorkerPool, Scene, RayTracer, ElementId, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType};
 use web_sys::console::log_1;
 
 // const ASPECT: f64 = 1.0;
@@ -41,9 +41,12 @@ impl RequestEmitter {
             ShapeType::Sphere(Sphere::new(Vec3::new(-1.0, 0.5, -1.0), 0.5))
         );
 
-        let serialized = JsValue::from_serde(&element).unwrap(); 
-
         Ok(JsValue::from_serde(&element).unwrap())
+    }
+
+    pub fn get_default_box(&self) -> Result<JsValue, JsValue> {
+        let new_box = ShapeType::Box(Box::cube(0.8, Vec3::new(0.0, 0.5, 0.0)));
+        Ok(JsValue::from_serde(&new_box).unwrap())
     }
 }
 

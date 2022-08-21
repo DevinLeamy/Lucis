@@ -228,41 +228,22 @@ impl Scene {
             objects: vec![
                 Element {
                     id: ElementId::new(),
-                    material: MaterialType::Metal(Metal::new(Color::new(1.0, 0.0, 0.0).into(), 0.0)),
-                    // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
-                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, 0.5, -1.0), 0.5))
-                },
-                Element {
-                    id: ElementId::new(),
-                    material: MaterialType::Metal(Metal::new(Color::new(0.6, 0.2, 0.0).into(), 0.0)),
+                    material: MaterialType::Metal(Metal::new(Color::new(0.8, 0.0, 0.0).into(), 0.0)),
                     // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
                     // material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
-                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, 0.5, 0.0), 0.5))
-                },
-                Element {
-                    id: ElementId::new(),
-                    material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
-                    // shape: ShapeType::RectangleXY(RectangleXY::new(
-                    //     -0.5, 0.5, 0.0, 1.0, -3.0
-                    // )),
-                    // shape: ShapeType::RectangleYZ(RectangleYZ::new(
-                    //     0.0, 1.0, 0.0, 1.0, 0.7
-                    // )),
-                    shape: ShapeType::RectangleXZ(RectangleXZ::new(
-                        -0.5, 0.5, 0.0, 1.0, 0.1
-                    ))
+                    shape: ShapeType::Box(Box::cube(0.5, Vec3::new(0.0, 0.5, 0.0)))
                 },
                 // ground
                 Element {
                     id: ElementId::new(),
-                    material: MaterialType::Lambertian(Lambertian::new(Color::new(0.1, 0.1, 0.1).into())),
+                    // material: MaterialType::Lambertian(Lambertian::new(Color::new(0.1, 0.1, 0.1).into())),
                     // material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
-                    // material: MaterialType::Lambertian(Lambertian::new(
-                    //     TextureType::CheckeredTexture(CheckeredTexture::new(
-                    //         Color::white(),
-                    //         Color::new(0.1, 0.1, 0.1),
-                    //     )))
-                    // ),
+                    material: MaterialType::Lambertian(Lambertian::new(
+                        TextureType::CheckeredTexture(CheckeredTexture::new(
+                            Color::white(),
+                            Color::new(0.1, 0.1, 0.1),
+                        )))
+                    ),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.5, 0.0), 1000.0))
                 }, 
             ]

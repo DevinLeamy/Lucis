@@ -365,6 +365,21 @@ impl Box {
             ]
         }
     }
+
+    pub fn from_size(width: f64, height: f64, depth: f64, center: Vec3) -> Box {
+        let half_w = width / 2.0;
+        let half_h = height / 2.0;
+        let half_d = depth / 2.0; 
+
+        Box::new(
+            Vec3::new(center.x - half_w, center.y - half_h, center.z - half_d),
+            Vec3::new(center.x + half_w, center.y + half_h, center.z + half_d),
+        )
+    }
+
+    pub fn cube(side_length: f64, center: Vec3) -> Box {
+        Box::from_size(side_length, side_length, side_length, center)
+    }
 }
 
 impl Collidable for Box {
