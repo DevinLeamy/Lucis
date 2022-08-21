@@ -15,15 +15,15 @@ use futures::channel::oneshot;
 use wasm_bindgen::JsValue;
 
 const MAX_BOUNCE_DEPTH: u32 = 50;
-const SAMPLES_PER_PIXEL: u32 = 20;
+const SAMPLES_PER_PIXEL: u32 = 300;
 const MIN_INTERSECTION_T: f64 = 0.001;
 
 pub trait Render {
     fn render_scene(scene: &Scene, camera: Camera, width: u32, height: u32) -> Image; 
 }
 
-// const BACKGROUND_COLOR: Color = Color::black();
-const BACKGROUND_COLOR: Color = Color::white();
+const BACKGROUND_COLOR: Color = Color::black();
+// const BACKGROUND_COLOR: Color = Color::white();
 
 pub struct RayTracer {}
 

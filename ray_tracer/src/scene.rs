@@ -270,4 +270,58 @@ impl Scene {
 
         return (camera, scene)
    } 
+
+    pub fn cornell_box() -> (Camera, Scene) {
+        let camera = Camera::new(
+            CameraConfig {
+                origin: Vec3::new(278.0, 278.0, -800.0),
+                look_at: Vec3::new(278.0, 278.0, 0.0),
+                aspect: 1.0,
+                vertical_fov_degrees: 40.0,
+                ..CameraConfig::default()
+            }
+        );
+
+        let red = MaterialType::Lambertian(Lambertian::new(Color::new(0.65, 0.05, 0.05).into()));
+        let white = MaterialType::Lambertian(Lambertian::new(Color::new(0.73, 0.73, 0.73).into()));
+        let green = MaterialType::Lambertian(Lambertian::new(Color::new(0.12, 0.45, 0.15).into()));
+        let light = MaterialType::DiffuseLight(DiffuseLight::new(Color::new(1.0, 1.0, 1.0), 15.0));
+        
+        let scene = Scene {
+            objects: vec![
+                Element {
+                    id: ElementId::new(),
+                    material: green.clone(), 
+                    shape: ShapeType::RectangleYZ(RectangleYZ::new(0.0, 555.0, 0.0, 555.0, 555.0))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: red.clone(), 
+                    shape: ShapeType::RectangleYZ(RectangleYZ::new(0.0, 555.0, 0.0, 555.0, 0.0))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: light.clone(), 
+                    shape: ShapeType::RectangleXZ(RectangleXZ::new(213.0, 343.0, 227.0, 332.0, 554.0))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: white.clone(), 
+                    shape: ShapeType::RectangleXZ(RectangleXZ::new(0.0, 555.0, 0.0, 555.0, 0.0))
+                }, 
+                Element {
+                    id: ElementId::new(),
+                    material: white.clone(), 
+                    shape: ShapeType::RectangleXZ(RectangleXZ::new(0.0, 555.0, 0.0, 555.0, 555.0))
+                }, 
+                Element {
+                    id: ElementId::new(),
+                    material: white.clone(), 
+                    shape: ShapeType::RectangleXY(RectangleXY::new(0.0, 555.0, 0.0, 555.0, 555.0))
+                }, 
+            ]
+        };
+
+        (camera, scene)
+    } 
 }

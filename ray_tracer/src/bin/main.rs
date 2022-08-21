@@ -4,7 +4,7 @@ fn main() {
     let width = 400u32;
     let height = width; 
 
-    let (camera, scene) = Scene::rectangles(); 
+    let (camera, scene) = Scene::cornell_box(); 
 
     let image = RayTracer::render_scene(
         &scene,
