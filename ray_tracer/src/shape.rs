@@ -21,27 +21,29 @@ pub trait SurfaceNormal {
     fn surface_normal(&self, point: Vec3) -> Vec3;
 }
 
-#[derive(Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub enum ShapeType {
     Sphere(Sphere),
     RectangleXY(RectangleXY),
     RectangleXZ(RectangleXZ),
     RectangleYZ(RectangleYZ),
+    Box(Box),
 }
 
 impl Collidable for ShapeType {
     fn collide(&self, ray: Ray) -> Option<CollisionRecord> {
        match self {
-            ShapeType::Sphere(c) => c.collide(ray),
+            ShapeType::Sphere(c)      => c.collide(ray),
             ShapeType::RectangleXY(c) => c.collide(ray),
             ShapeType::RectangleXZ(c) => c.collide(ray),
-            ShapeType::RectangleYZ(c) => c.collide(ray)
+            ShapeType::RectangleYZ(c) => c.collide(ray),
+            ShapeType::Box(c)         => c.collide(ray)
        } 
     }
 }
 
 
-#[derive(Copy, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Sphere {
     center: Vec3,
     radius: f64,
@@ -128,7 +130,7 @@ impl Boundable for Sphere {
 }
 
 /// Axis-aligned rectangle
-#[derive(Copy, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct RectangleXY {
     /// center of the rectangle 
     x0: f64,
@@ -193,7 +195,7 @@ impl TextureMap for RectangleXY {
 
 
 /// Axis-aligned rectangle
-#[derive(Copy, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct RectangleXZ {
     /// center of the rectangle 
     x0: f64,
@@ -257,7 +259,7 @@ impl TextureMap for RectangleXZ {
 }
 
 /// Axis-aligned rectangle
-#[derive(Copy, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct RectangleYZ {
     /// center of the rectangle 
     y0: f64,
@@ -317,5 +319,72 @@ impl TextureMap for RectangleYZ {
             u: (point.y - self.y0) / (self.y1 - self.y0), 
             v: (point.z - self.z0) / (self.z1 - self.z0) 
         }
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub enum RectangleType {
+    RectangleXY(RectangleXY),
+    RectangleYZ(RectangleYZ),
+    RectangleXZ(RectangleXZ),
+}
+
+impl Collidable for RectangleType {
+    fn collide(&self, ray: Ray) -> Option<CollisionRecord> {
+        match self {
+            RectangleType::RectangleXY(r) => r.collide(ray),
+            RectangleType::RectangleXZ(r) => r.collide(ray),
+            RectangleType::RectangleYZ(r) => r.collide(ray),
+        }
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Box {
+    min: Vec3,
+    max: Vec3,
+    sides: Vec<RectangleType>
+}
+
+impl Box {
+    pub fn new(min: Vec3, max: Vec3) -> Box {
+        Box {
+            min,
+            max,
+            sides: vec![
+                // back and front
+                RectangleType::RectangleXY(RectangleXY::new(min.x, max.x, min.y, max.y, min.z)),
+                RectangleType::RectangleXY(RectangleXY::new(min.x, max.x, min.y, max.y, max.z)),
+                // top and bottom
+                RectangleType::RectangleXZ(RectangleXZ::new(min.x, max.x, min.z, max.z, min.y)),
+                RectangleType::RectangleXZ(RectangleXZ::new(min.x, max.x, min.z, max.z, max.y)),
+                // left and right
+                RectangleType::RectangleYZ(RectangleYZ::new(min.y, max.y, min.z, max.z, min.x)),
+                RectangleType::RectangleYZ(RectangleYZ::new(min.y, max.y, min.z, max.z, max.x)),
+
+            ]
+        }
+    }
+}
+
+impl Collidable for Box {
+    fn collide(&self, ray: Ray) -> Option<CollisionRecord> {
+        let mut c_record: Option<CollisionRecord> = None;
+
+        for side in &self.sides {
+            if let Some(record) = side.collide(ray) {
+                if c_record.as_ref().is_none() || record.t < c_record.as_ref().unwrap().t {
+                    c_record = Some(record); 
+                }
+            }
+        }
+
+        c_record
+    }
+}
+
+impl Boundable for Box {
+    fn bound(&self) -> AABB {
+        AABB::new(self.min, self.max)
     }
 }

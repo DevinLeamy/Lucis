@@ -3,7 +3,7 @@ use crate::collisions::{Collidable, CollisionRecord};
 use crate::image::Color;
 use crate::material::{Material, MaterialType, Dielectric, Lambertian, Metal};
 use crate::ray::Ray;
-use crate::shape::{ShapeType, Sphere, RectangleXY, RectangleXZ, RectangleYZ};
+use crate::shape::{ShapeType, Sphere, RectangleXY, RectangleXZ, RectangleYZ, Box};
 use crate::texture::{TextureType, CheckeredTexture};
 use crate::utils::random_float;
 use crate::vec3::Vec3;
@@ -319,6 +319,16 @@ impl Scene {
                     material: white.clone(), 
                     shape: ShapeType::RectangleXY(RectangleXY::new(0.0, 555.0, 0.0, 555.0, 555.0))
                 }, 
+                Element {
+                    id: ElementId::new(),
+                    material: white.clone(),
+                    shape: ShapeType::Box(Box::new(Vec3::new(130.0, 0.0, 65.0), Vec3::new(295.0, 165.0, 230.0)))
+                },
+                Element {
+                    id: ElementId::new(),
+                    material: white.clone(),
+                    shape: ShapeType::Box(Box::new(Vec3::new(265.0, 0.0, 295.0), Vec3::new(430.0, 330.0, 460.0)))
+                }
             ]
         };
 
