@@ -14,7 +14,9 @@
 
 
 
-.material-display-container, .shape-display-container {
+.material-display-container, 
+.shape-display-container, 
+.camera-display-container {
     background-color: rgb(250, 250, 250);
     padding: 10px;
 }

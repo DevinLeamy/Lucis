@@ -1,6 +1,6 @@
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;
-use ray_tracer::{Camera, Box, WorkerPool, Scene, RayTracer, ElementId, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType};
+use ray_tracer::{Camera, Box, WorkerPool, Scene, RayTracer, ElementId, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType, CameraConfig};
 use web_sys::console::log_1;
 
 // const ASPECT: f64 = 1.0;
@@ -32,6 +32,19 @@ impl RequestEmitter {
     pub fn render_element(&self, element: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
         let element = element.into_serde().unwrap();
         RayTracer::render_scene_wasm(Scene::sphere(element), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
+    }
+
+    pub fn render_element_w_camera(&self, element: JsValue, origin: JsValue, look_at: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
+        let element = element.into_serde().unwrap();
+        let origin = origin.into_serde().unwrap();
+        let look_at = look_at.into_serde().unwrap();
+
+        let camera = Camera::new(CameraConfig {
+            origin,
+            look_at,
+            ..CameraConfig::default()
+        });
+        RayTracer::render_scene_wasm(Scene::sphere(element), camera, CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
     /// TESTING - get serialized element

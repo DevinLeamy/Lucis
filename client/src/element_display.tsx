@@ -4,6 +4,7 @@ import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { RequestEmitter, WorkerPool } from "./wasm_loader";
 import { MaterialDisplay } from "./material_display";
 import { ShapeDisplay } from "./shape_display";
+import { CameraDisplay, CAMERA_OPTIONS, CameraConfig } from "./camera_display";
 
 import "./styles.css";
 
@@ -17,6 +18,7 @@ let threadCount = 5; // navigator.hardwareConcurrency;
 const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
     const [pool, setPool] = useState<typeof WorkerPool>(undefined); 
     const [canvasImageURL, setCanvasImageURL] = useState<string>(undefined);
+    const [cameraType, setCameraType] = useState<string>("DEFAULT_VIEW");
 
     console.log("Element", element)
 
@@ -28,15 +30,21 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
 
     useEffect(() => {
         let pool = new WorkerPool(threadCount);
+        let camera = CAMERA_OPTIONS[cameraType]; 
 
-        requestEmitter.render_element(element, pool)
+        requestEmitter.render_element_w_camera(element, camera.origin, camera.look_at, pool)
             .then(wasm_image => displayImage(wasm_image))
 
         setPool(pool);
-    }, [])
+    }, [cameraType])
+
+    const onCameraChange = (newCameraType: string) => {
+        setCameraType(newCameraType)
+    }
 
     const renderElement = (element) => {
-        requestEmitter.render_element(element, pool)
+        let camera = CAMERA_OPTIONS[cameraType]; 
+        requestEmitter.render_element_w_camera(element, camera.origin, camera.look_at, pool)
             .then(wasm_image => {
                 displayImage(wasm_image)
             })
@@ -116,6 +124,9 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
                     download={`${Math.round(Math.random() * 100000)}_render.png`}
                 >Download Image</a>
             </Button>
+            <Card>
+                <CameraDisplay cameraType={cameraType} onCameraChange={onCameraChange} />
+            </Card>
             <Card>
                 <ShapeDisplay shape={shape} onShapeChange={onShapeChange} />
             </Card>

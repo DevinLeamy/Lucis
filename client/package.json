@@ -15,7 +15,8 @@
   "scripts": {
     "build": "./scripts/build.sh",
     "dev": "webpack server",
-    "start": "./scripts/run.sh"
+    "start": "./scripts/run.sh",
+    "clean": "./scripts/clean.sh"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.18.10",

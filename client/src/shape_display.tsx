@@ -8,7 +8,6 @@ const SPHERE = "Sphere";
 const BOX    = "Box";
 
 const SPHERE_DEFAULT = { Sphere: { radius: 0.5, center: { x: 0.0, y: 0.5, z: 0.0 } } }
-const BOX_DEFAULT = { Box: { min: { x: -0.5, y: 0.0, z: 0.0 }, max: { x: 0.5, y: 1.0, z: 1.0 } } }
 
 const ShapeDisplay = ({ shape, onShapeChange }) => {
     let shapeType = objName(shape);
