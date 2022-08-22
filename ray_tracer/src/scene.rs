@@ -162,13 +162,14 @@ impl Scene {
                 // ground
                 Element {
                     id: ElementId::new(),
-                    // material: MaterialType::Lambertian(Lambertian::new(Color::new(0.1, 0.1, 0.1).into())),
-                    material: MaterialType::Lambertian(Lambertian::new(
-                        TextureType::CheckeredTexture(CheckeredTexture::new(
-                            Color::white(),
-                            Color::new(0.1, 0.1, 0.1),
-                        )))
-                    ),
+                    // material: MaterialType::Lambertian(Lambertian::new(Color::new(0.7, 0.7, 0.7).into())),
+                    material: MaterialType::Lambertian(Lambertian::new(TextureType::PerlinTexture(PerlinTexture::new()))),
+                    // material: MaterialType::Lambertian(Lambertian::new(
+                    //     TextureType::CheckeredTexture(CheckeredTexture::new(
+                    //         Color::white(),
+                    //         Color::new(0.1, 0.1, 0.1),
+                    //     )))
+                    // ),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.5, 0.0), 1000.0))
                 }, 
             ]

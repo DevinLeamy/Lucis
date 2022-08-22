@@ -35,6 +35,7 @@ impl RequestEmitter {
     }
 
     pub fn render_element_w_camera(&self, element: JsValue, origin: JsValue, look_at: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
+        log(format!("{:?}", element));
         let element = element.into_serde().unwrap();
         let origin = origin.into_serde().unwrap();
         let look_at = look_at.into_serde().unwrap();

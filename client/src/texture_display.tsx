@@ -9,22 +9,27 @@ import "./styles.css";
 
 const SOLID_TEXTURE = "SolidTexture";
 const CHECKERED_TEXTURE = "CheckeredTexture";
+const PERLIN_TEXTURE = "PerlinTexture";
 
 const SOLID_TEXTURE_DEFAULT = structuredClone(TEXTURE_DEFAULT);
 const CHECKERED_TEXTURE_DEFAULT = { CheckeredTexture: {
     odd: { red: 1.0, green: 1.0, blue: 1.0 }, 
     even: { red: 0.2, green: 0.2, blue: 0.2 }, 
-}}
+}};
+const PERLIN_TEXTURE_DEFAULT = { PerlinTexture: { 
+    scale: 1.0 
+}};
 
 const TextureDisplay = ({ texture, onTextureChange }) => {
     let textureType = objName(texture);
 
-    // console.log("Texture", texture);
+    console.log(texture);
 
     const displayOptions = () : ReactJSXElement => {
         switch (textureType) {
-            case SOLID_TEXTURE: return displaySolid(texture.SolidTexture);
+            case SOLID_TEXTURE:     return displaySolid(texture.SolidTexture);
             case CHECKERED_TEXTURE: return displayCheckered(texture.CheckeredTexture);
+            case PERLIN_TEXTURE:    return displayPerlin(texture.PerlinTexture); 
         }
 
         return <>Invalid texture</>
@@ -41,6 +46,28 @@ const TextureDisplay = ({ texture, onTextureChange }) => {
                 checked={checked}
             />
         )
+    }
+
+    const displayPerlin = ({ scale }) : ReactJSXElement => {
+        const onScaleChange = (_e, newScale) => {
+            let textureClone = structuredClone(texture); 
+            textureClone.PerlinTexture.scale = newScale;
+            onTextureChange(textureClone); 
+        }
+
+        return (
+            <div>
+                <div className="config-slider-label">{`Scale (${scale})`}</div>
+                <Slider 
+                    min={0.05}
+                    max={1.0}
+                    step={0.05}
+                    value={scale}
+                    valueLabelDisplay="auto" 
+                    onChange={onScaleChange}
+                />
+            </div> 
+        ) 
     }
 
     const displaySolid = ({ color }) : ReactJSXElement => {
@@ -101,6 +128,7 @@ const TextureDisplay = ({ texture, onTextureChange }) => {
         switch (newTextureType) {
             case SOLID_TEXTURE:     { onTextureChange(SOLID_TEXTURE_DEFAULT);     break; }
             case CHECKERED_TEXTURE: { onTextureChange(CHECKERED_TEXTURE_DEFAULT); break; }
+            case PERLIN_TEXTURE:    { onTextureChange(PERLIN_TEXTURE_DEFAULT);    break; }
         }
     }
 
@@ -117,6 +145,7 @@ const TextureDisplay = ({ texture, onTextureChange }) => {
                 >
                     <TextureChoice textureName={SOLID_TEXTURE} />
                     <TextureChoice textureName={CHECKERED_TEXTURE} />
+                    <TextureChoice textureName={PERLIN_TEXTURE} />
                 </RadioGroup>
             </div>
             <div className="texture-options-container">
