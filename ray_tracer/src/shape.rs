@@ -392,6 +392,15 @@ impl Collidable for Box {
     fn collide(&self, ray: Ray) -> Option<CollisionRecord> {
         let mut c_record: Option<CollisionRecord> = None;
 
+        let aabb = self.bound();
+
+        // check if the bounding box collides
+        if !aabb.collide(ray) {
+            return None
+        }
+
+        // CLEAN: we can use the slab intersection method with some face checking
+        // to simplify the Box shape to one struct, and remove all the rectangles
         for side in &self.sides {
             if let Some(record) = side.collide(ray) {
                 if c_record.as_ref().is_none() || record.t < c_record.as_ref().unwrap().t {
