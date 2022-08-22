@@ -5,8 +5,8 @@ import React from "react";
 
 export const CAMERA_OPTIONS = {
     "DEFAULT_VIEW": {
-        origin:  { x: 0.0, y: 3.5, z: 4.0 },
-        look_at: { x: 0.0, y: 0.0, z: 0.0 }
+        origin:  { x: 0.0, y: 2.0, z: 4.0 },
+        look_at: { x: 0.0, y: 0.5, z: 0.5 }
     },
     "TOP_VIEW": {
         origin:  { x: 0.0, y: 4.0, z: 0.01 },
