@@ -15,37 +15,65 @@ use futures::channel::oneshot;
 use wasm_bindgen::JsValue;
 
 const MAX_BOUNCE_DEPTH: u32 = 50;
-const SAMPLES_PER_PIXEL: u32 = 20;
+const SAMPLES_PER_PIXEL: u32 = 100;
 const MIN_INTERSECTION_T: f64 = 0.001;
 
 pub trait Render {
-    fn render_scene(scene: &Scene, camera: Camera, width: u32, height: u32) -> Image; 
+    fn render_scene(&self, scene: &Scene, camera: Camera, width: u32, height: u32) -> Image; 
 }
 
 // const BACKGROUND_COLOR: Color = Color::black();
 const BACKGROUND_COLOR: Color = Color::white();
 
-pub struct RayTracer {}
+pub struct RayTracerConfig {
+    max_bounce_depth: u32,
+    samples: u32,
+    background_color: Color
+}
+
+impl Default for RayTracerConfig {
+    fn default() -> Self {
+        Self { 
+            max_bounce_depth: 50,
+            samples: 20,
+            background_color: Color::white() 
+        }
+    }
+}
+
+pub struct RayTracer {
+    max_bounce_depth: u32,
+    samples: u32,
+    background_color: Color
+}
 
 impl RayTracer {
-    fn compute_ray_color(scene: &Scene, ray: Ray, bounce_depth: u32) -> Color {
-        if bounce_depth == MAX_BOUNCE_DEPTH {
+    pub fn new(config: RayTracerConfig) -> Self { 
+        Self {
+            max_bounce_depth: config.max_bounce_depth,
+            samples: config.samples,
+            background_color: config.background_color, 
+        }
+    } 
+
+    fn compute_ray_color(&self, scene: &Scene, ray: Ray, bounce_depth: u32) -> Color {
+        if bounce_depth == self.max_bounce_depth {
             return Color::black();
         }
 
-        if let Some((element, record)) = RayTracer::compute_collision(scene, ray) {
+        if let Some((element, record)) = self.compute_collision(scene, ray) {
             let result = element.material.resolve(ray, record);
 
             // this is a hack - see DiffuseLight in material.rs
-            result.emitted_light + result.color * RayTracer::compute_ray_color(scene, result.reflected_ray, bounce_depth + 1)
+            result.emitted_light + result.color * self.compute_ray_color(scene, result.reflected_ray, bounce_depth + 1)
         } else {
-            BACKGROUND_COLOR
+            self.background_color
         }
     }
 }
 
 impl Render for RayTracer {
-    fn render_scene(scene: &Scene, camera: Camera, width: u32, height: u32) -> Image {
+    fn render_scene(&self, scene: &Scene, camera: Camera, width: u32, height: u32) -> Image {
         let mut image = Image::new(height, width); 
 
         let pixels = width * height;
@@ -70,15 +98,15 @@ impl Render for RayTracer {
 
                 let ray = camera.create_ray(world_x, world_y);
 
-                let color = RayTracer::compute_ray_color(scene, ray, 0);
+                let color = self.compute_ray_color(scene, ray, 0);
 
                 acc_color += color; 
             }
 
             let normalized = Color::new(
-                acc_color.red / SAMPLES_PER_PIXEL as f64,
-                acc_color.green / SAMPLES_PER_PIXEL as f64,
-                acc_color.blue / SAMPLES_PER_PIXEL as f64,
+                acc_color.red / self.samples as f64,
+                acc_color.green / self.samples as f64,
+                acc_color.blue / self.samples as f64,
             ).gamma_corrected(); 
 
             normalized
@@ -95,7 +123,7 @@ impl Render for RayTracer {
     }
 }
 impl RayTracer {
-    pub fn render_scene_wasm(scene: Scene, camera: Camera, width: u32, height: u32, pool: &WorkerPool) -> Result<Promise, JsValue> {
+    pub fn render_scene_wasm(self, scene: Scene, camera: Camera, width: u32, height: u32, pool: &WorkerPool) -> Result<Promise, JsValue> {
         let pixels = width * height;
         let indices = (0..pixels).collect::<Vec<u32>>();
         let mut colors = vec![Color::black(); pixels as usize];
@@ -116,7 +144,7 @@ impl RayTracer {
         
                     let mut acc_color = Color::black();
         
-                    for _ in 0..SAMPLES_PER_PIXEL {
+                    for _ in 0..self.samples {
                         let row_s = row as f64 + random_float();
                         let col_s = col as f64 + random_float();
         
@@ -126,15 +154,15 @@ impl RayTracer {
         
                         let ray = camera.create_ray(world_x, world_y);
         
-                        let color = RayTracer::compute_ray_color(&scene, ray, 0);
+                        let color = self.compute_ray_color(&scene, ray, 0);
         
                         acc_color += color; 
                     }
         
                     let normalized = Color::new(
-                        acc_color.red / SAMPLES_PER_PIXEL as f64,
-                        acc_color.green / SAMPLES_PER_PIXEL as f64,
-                        acc_color.blue / SAMPLES_PER_PIXEL as f64,
+                        acc_color.red / self.samples as f64,
+                        acc_color.green / self.samples as f64,
+                        acc_color.blue / self.samples as f64,
                     ).gamma_corrected(); 
         
                     normalized
@@ -166,7 +194,7 @@ impl RayTracer {
 }
 
 impl RayTracer {
-    fn compute_collision(scene: &Scene, ray: Ray) -> Option<(Element, CollisionRecord)> {
+    fn compute_collision(&self, scene: &Scene, ray: Ray) -> Option<(Element, CollisionRecord)> {
         let mut c_record: Option<CollisionRecord> = None;
         let mut c_t = f64::MAX;
         let mut c_element: Option<Element> = None;
@@ -190,8 +218,8 @@ impl RayTracer {
         Some((c_element.unwrap(), c_record.unwrap()))
     } 
 
-    pub fn compute_collision_element(scene: &Scene, ray: Ray) -> Option<Element> {
-        match RayTracer::compute_collision(scene, ray) {
+    pub fn compute_collision_element(&self, scene: &Scene, ray: Ray) -> Option<Element> {
+        match self.compute_collision(scene, ray) {
             Some((element, _)) => Some(element),
             None               => None
         }

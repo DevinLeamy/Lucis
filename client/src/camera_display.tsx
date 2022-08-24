@@ -46,7 +46,7 @@ const CameraDisplay = ({ cameraType, onCameraChange }) => {
         return (
             <FormControlLabel 
                 value={name}
-                control={<Radio />}
+                control={<Radio size={"small"}/>}
                 label={formatName(name)}
                 checked={checked}
             />
@@ -60,7 +60,7 @@ const CameraDisplay = ({ cameraType, onCameraChange }) => {
                 <RadioGroup
                     row
                     value={cameraType}
-                    name="shape-button-group"
+                    name="camera-button-group"
                     onChange={onCameraTypeChange}
                 >
                     <CameraChoice name={"DEFAULT_VIEW"} />

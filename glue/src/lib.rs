@@ -1,11 +1,11 @@
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;
-use ray_tracer::{Camera, Box, WorkerPool, Scene, RayTracer, ElementId, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType, CameraConfig};
+use ray_tracer::{Camera, Box, WorkerPool, Scene, RayTracer, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType, CameraConfig, RayTracerConfig};
 use web_sys::console::log_1;
 
 // const ASPECT: f64 = 1.0;
 const CANVAS_WIDTH: u32 = 750; // 600;
-const CANVAS_HEIGHT: u32 = 600; // (CANVAS_WIDTH as f64 / ASPECT) as u32;
+const CANVAS_HEIGHT: u32 = 450; // (CANVAS_WIDTH as f64 / ASPECT) as u32;
 
 pub fn log(s: String) {
     log_1(&JsValue::from(s));
@@ -26,12 +26,12 @@ impl RequestEmitter {
     /// request an image to the rendered
     /// returns a callback to the resulting, serialized, image
     pub fn send_request(&self, pool: &WorkerPool) -> Result<Promise, JsValue> {
-        RayTracer::render_scene_wasm(Scene::default(), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
+        RayTracer::new(RayTracerConfig::default()).render_scene_wasm(Scene::default(), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
     pub fn render_element(&self, element: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
         let element = element.into_serde().unwrap();
-        RayTracer::render_scene_wasm(Scene::sphere(element), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
+        RayTracer::new(RayTracerConfig::default()).render_scene_wasm(Scene::sphere(element), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
     pub fn render_element_w_camera(&self, element: JsValue, origin: JsValue, look_at: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
@@ -45,7 +45,7 @@ impl RequestEmitter {
             look_at,
             ..CameraConfig::default()
         });
-        RayTracer::render_scene_wasm(Scene::sphere(element), camera, CANVAS_WIDTH, CANVAS_HEIGHT, pool)
+        RayTracer::new(RayTracerConfig::default()).render_scene_wasm(Scene::sphere(element), camera, CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
     /// TESTING - get serialized element

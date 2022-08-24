@@ -107,7 +107,7 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
                     <canvas 
                         className="element-preview-canvas" 
                         width={750} 
-                        height={600} 
+                        height={450} 
                         ref={canvasRef} 
                     />
                 </Paper>
