@@ -60,3 +60,7 @@
 .element-display {
     display: flex;
 }
+
+.element-display-config {
+    width: 600px;
+}

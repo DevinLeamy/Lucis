@@ -17,11 +17,23 @@ interface ElementDisplayProps {
 
 let threadCount = 5; // navigator.hardwareConcurrency;
 
+const DEFAULT_BACKGROUND_MATERIAL = {
+    Lambertian: {
+        texture: { 
+            CheckeredTexture: { 
+                even: { red: 0.0, green: 0.0, blue: 0.0 },
+                odd:  { red: 1.0, green: 1.0, blue: 1.0 } 
+            } 
+        }
+    },
+}
+
 const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
     const { config } = useContext(ConfigContext)
     const [pool, setPool] = useState<typeof WorkerPool>(undefined); 
     const [framesRendering, setFramesRendering] = useState(0);
     const [canvasImageURL, setCanvasImageURL] = useState<string>(undefined);
+    const [backgroundMat, setBackgroundMat] = useState<any>(DEFAULT_BACKGROUND_MATERIAL);
 
     console.log("Element", element)
 
@@ -35,18 +47,18 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
         if (pool === undefined) {
             let newPool = new WorkerPool(threadCount);
 
-            render(element, config, newPool)
+            render(element, backgroundMat, config, newPool)
 
             setPool(newPool)
             return;
         }
 
-        render(element, config, pool)
-    }, [config, element])
+        render(element, backgroundMat, config, pool)
+    }, [config, element, backgroundMat])
 
-    const render = (element, config, workerPool) => {
+    const render = (element, backgroundMat, config, workerPool) => {
         setFramesRendering(frames => frames + 1)
-        requestEmitter.render_element(element, config, workerPool)
+        requestEmitter.render_element(element, backgroundMat, config, workerPool)
         .then(wasm_image => {
             setFramesRendering(frames => frames - 1)
             displayImage(wasm_image)  
@@ -113,7 +125,7 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
                     />
                 </Paper>
             </div>
-            <div>
+            <div className="element-display-config">
                 <Button 
                     className="download-button" 
                     variant="outlined" 
@@ -140,6 +152,7 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
                     <ShapeDisplay shape={shape} onShapeChange={onShapeChange} />
                     <MaterialDisplay material={material} onMatChange={onMatChange} />
                     <h3>Background</h3>
+                    <MaterialDisplay material={backgroundMat} onMatChange={setBackgroundMat} />
                 </Card>
             </div>
        </div>

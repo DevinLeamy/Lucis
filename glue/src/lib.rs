@@ -1,6 +1,6 @@
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;
-use ray_tracer::{Camera, Box, WorkerPool, Scene, RayTracer, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType, CameraConfig, RayTracerConfig};
+use ray_tracer::{Camera, Box, WorkerPool, Scene, RayTracer, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType, CameraConfig, RayTracerConfig, TextureType, CheckeredTexture, Lambertian};
 use web_sys::console::log_1;
 
 use serde::{Deserialize, Serialize};
@@ -44,10 +44,23 @@ impl RequestEmitter {
         RayTracer::new(RayTracerConfig::default()).render_scene_wasm(Scene::default(), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
-    pub fn render_element(&self, element: JsValue, config: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
+    pub fn render_element(&self, element: JsValue, background_mat: JsValue, config: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
         let config = config.into_serde::<ClientConfig>().unwrap();
 
         let element = element.into_serde().unwrap();
+
+        let background;
+
+        if background_mat == JsValue::UNDEFINED {
+            background = MaterialType::Lambertian(Lambertian::new(
+                    TextureType::CheckeredTexture(CheckeredTexture::new(
+                        Color::white(),
+                        Color::new(0.1, 0.1, 0.1),
+                    )))
+                );
+        } else {
+            background = background_mat.into_serde().unwrap(); 
+        }
 
         let camera = Camera::new(CameraConfig {
             origin: config.origin,
@@ -61,8 +74,10 @@ impl RequestEmitter {
             samples: config.samples,
             ..RayTracerConfig::default()
         });
+
+        let scene = Scene::element_with_background(element, background);
         
-        ray_tracer.render_scene_wasm(Scene::sphere(element), camera, CANVAS_WIDTH, CANVAS_HEIGHT, pool)
+        ray_tracer.render_scene_wasm(scene, camera, CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
     /// TESTING - get serialized element

@@ -100,7 +100,7 @@ const TextureDisplay = ({ texture, onTextureChange }) => {
             onTextureChange(textureClone);
         }
 
-        // console.log(even, odd)
+        console.log(even, odd)
 
         return (
             <div style={{display: "flex"}}>

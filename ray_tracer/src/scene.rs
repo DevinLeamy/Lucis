@@ -176,6 +176,20 @@ impl Scene {
         }
    }
 
+   pub fn element_with_background(element: Element, background_mat: MaterialType) -> Scene {
+        Scene {
+            objects: vec![
+                element,
+                Element {
+                    id: ElementId::new(),
+                    material: background_mat, 
+                    shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.5, 0.0), 1000.0))
+                }, 
+            ]
+        }
+ 
+   }
+
     pub fn materials() -> Scene {
         Scene {
             objects: vec![
@@ -244,7 +258,7 @@ impl Scene {
                     id: ElementId::new(),
                     // material: MaterialType::Lambertian(Lambertian::new(Color::new(0.1, 0.1, 0.1).into())),
                     // material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
-                    material: MaterialType::Lambertian(Lambertian::new(
+                material: MaterialType::Lambertian(Lambertian::new(
                         TextureType::CheckeredTexture(CheckeredTexture::new(
                             Color::white(),
                             Color::new(0.1, 0.1, 0.1),
