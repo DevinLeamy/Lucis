@@ -1,4 +1,5 @@
 use rand::{thread_rng, Rng};
+use serde::{Serialize, Deserialize};
 use crate::vec3::Vec3;
 
 pub fn random_float() -> f64 {

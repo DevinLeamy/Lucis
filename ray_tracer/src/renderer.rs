@@ -14,28 +14,23 @@ use rayon::prelude::*;
 use futures::channel::oneshot;
 use wasm_bindgen::JsValue;
 
-const MAX_BOUNCE_DEPTH: u32 = 50;
-const SAMPLES_PER_PIXEL: u32 = 100;
 const MIN_INTERSECTION_T: f64 = 0.001;
 
 pub trait Render {
     fn render_scene(&self, scene: &Scene, camera: Camera, width: u32, height: u32) -> Image; 
 }
 
-// const BACKGROUND_COLOR: Color = Color::black();
-const BACKGROUND_COLOR: Color = Color::white();
-
 pub struct RayTracerConfig {
-    max_bounce_depth: u32,
-    samples: u32,
-    background_color: Color
+    pub max_bounce_depth: u32,
+    pub samples: u32,
+    pub background_color: Color
 }
 
 impl Default for RayTracerConfig {
     fn default() -> Self {
         Self { 
-            max_bounce_depth: 50,
-            samples: 20,
+            max_bounce_depth: 3,
+            samples: 5,
             background_color: Color::white() 
         }
     }
@@ -88,7 +83,7 @@ impl Render for RayTracer {
 
             let mut acc_color = Color::black();
 
-            for _ in 0..SAMPLES_PER_PIXEL {
+            for _ in 0..self.samples {
                 let row_s = row as f64 + random_float();
                 let col_s = col as f64 + random_float();
 

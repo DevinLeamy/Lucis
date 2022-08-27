@@ -48,6 +48,7 @@ const ShapeDisplay = ({ shape, onShapeChange }) => {
                     step={0.05}
                     value={radius}
                     aria-label="Default" 
+                    size={"small"}
                     valueLabelDisplay="auto" 
                     onChange={updateRadius}
                 />

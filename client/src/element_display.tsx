@@ -1,12 +1,14 @@
 import { ReactJSXElement } from "@emotion/react/types/jsx-namespace";
 import { Button, FormControl, Card, FormControlLabel, FormLabel, Paper, Radio, RadioGroup, Slider } from "@mui/material";
-import React, { ReactNode, useEffect, useRef, useState } from "react"; 
+import React, { ReactNode, useContext, useEffect, useRef, useState } from "react"; 
 import { RequestEmitter, WorkerPool } from "./wasm_loader";
 import { MaterialDisplay } from "./material_display";
 import { ShapeDisplay } from "./shape_display";
-import { CameraDisplay, CAMERA_OPTIONS, CameraConfig } from "./camera_display";
+import { CameraDisplay } from "./camera_display";
+import { QualityDisplay } from "./quality_display";
 
 import "./styles.css";
+import { ConfigContext } from "./contexts/config";
 
 interface ElementDisplayProps {
     element: any,
@@ -16,9 +18,9 @@ interface ElementDisplayProps {
 let threadCount = 5; // navigator.hardwareConcurrency;
 
 const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
+    const { config } = useContext(ConfigContext)
     const [pool, setPool] = useState<typeof WorkerPool>(undefined); 
     const [canvasImageURL, setCanvasImageURL] = useState<string>(undefined);
-    const [cameraType, setCameraType] = useState<string>("DEFAULT_VIEW");
 
     console.log("Element", element)
 
@@ -29,26 +31,19 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
     const { material, shape } = element;
 
     useEffect(() => {
-        let pool = new WorkerPool(threadCount);
-        let camera = CAMERA_OPTIONS[cameraType]; 
+        if (pool === undefined) {
+            let newPool = new WorkerPool(threadCount);
 
-        requestEmitter.render_element_w_camera(element, camera.origin, camera.look_at, pool)
+            requestEmitter.render_element(element, config, newPool)
+                .then(wasm_image => displayImage(wasm_image))
+
+            setPool(newPool)
+            return;
+        }
+
+        requestEmitter.render_element(element, config, pool)
             .then(wasm_image => displayImage(wasm_image))
-
-        setPool(pool);
-    }, [cameraType])
-
-    const onCameraChange = (newCameraType: string) => {
-        setCameraType(newCameraType)
-    }
-
-    const renderElement = (element) => {
-        let camera = CAMERA_OPTIONS[cameraType]; 
-        requestEmitter.render_element_w_camera(element, camera.origin, camera.look_at, pool)
-            .then(wasm_image => {
-                displayImage(wasm_image)
-            })
-    }
+    }, [config, element])
 
     const colorToRGB = (color) => {
         return `rgb(${color.red}, ${color.green}, ${color.blue})`;
@@ -81,7 +76,6 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
         elementClone.material = mat;
 
         onElementUpdate(elementClone);
-        renderElement(elementClone);
     }
 
     const onShapeChange = (shape) => {
@@ -90,7 +84,6 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
         elementClone.shape = shape;
 
         onElementUpdate(elementClone);
-        renderElement(elementClone);
 
     }
 
@@ -124,13 +117,10 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
                     download={`${Math.round(Math.random() * 100000)}_render.png`}
                 >Download Image</a>
             </Button>
-            <Card>
-                <CameraDisplay cameraType={cameraType} onCameraChange={onCameraChange} />
-            </Card>
-            <Card>
+            <Card className="config-container">
+                <CameraDisplay />
+                <QualityDisplay />
                 <ShapeDisplay shape={shape} onShapeChange={onShapeChange} />
-            </Card>
-            <Card>
                 <MaterialDisplay material={material} onMatChange={onMatChange} />
             </Card>
         </div>

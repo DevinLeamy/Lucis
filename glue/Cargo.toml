@@ -20,6 +20,8 @@ log = "0.4.6"
 instant = { version = "0.1", features = ["stdweb", "wasm-bindgen"] }
 wasm-bindgen-futures = "0.4.32"
 js-sys = "0.3.59"
+serde = { version = "1.0", features = ["derive"] }
+console_error_panic_hook = "0.1.7"
 
 # TODO: some of these features are not required/used
 [dependencies.web-sys]

@@ -6,7 +6,7 @@ fn main() {
 
     let (camera, scene) = Scene::rectangles(); 
 
-    let image = RayTracer::render_scene(
+    let image = RayTracer::new(RayTracerConfig::default()).render_scene(
         &scene,
         camera,
         width,

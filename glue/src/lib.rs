@@ -3,12 +3,27 @@ use wasm_bindgen::prelude::*;
 use ray_tracer::{Camera, Box, WorkerPool, Scene, RayTracer, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType, CameraConfig, RayTracerConfig};
 use web_sys::console::log_1;
 
+use serde::{Deserialize, Serialize};
+
 // const ASPECT: f64 = 1.0;
 const CANVAS_WIDTH: u32 = 750; // 600;
 const CANVAS_HEIGHT: u32 = 450; // (CANVAS_WIDTH as f64 / ASPECT) as u32;
 
 pub fn log(s: String) {
     log_1(&JsValue::from(s));
+}
+
+#[wasm_bindgen]
+pub fn init_panic_hook() {
+    console_error_panic_hook::set_once();
+} 
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ClientConfig {
+    pub origin: Vec3,
+    pub look_at: Vec3,
+    pub max_bounce_depth: u32,
+    pub samples: u32
 }
 
 #[wasm_bindgen]
@@ -29,23 +44,24 @@ impl RequestEmitter {
         RayTracer::new(RayTracerConfig::default()).render_scene_wasm(Scene::default(), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
-    pub fn render_element(&self, element: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
-        let element = element.into_serde().unwrap();
-        RayTracer::new(RayTracerConfig::default()).render_scene_wasm(Scene::sphere(element), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
-    }
+    pub fn render_element(&self, element: JsValue, config: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
+        let config = config.into_serde::<ClientConfig>().unwrap();
 
-    pub fn render_element_w_camera(&self, element: JsValue, origin: JsValue, look_at: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
-        log(format!("{:?}", element));
         let element = element.into_serde().unwrap();
-        let origin = origin.into_serde().unwrap();
-        let look_at = look_at.into_serde().unwrap();
 
         let camera = Camera::new(CameraConfig {
-            origin,
-            look_at,
+            origin: config.origin,
+            look_at: config.look_at,
             ..CameraConfig::default()
         });
-        RayTracer::new(RayTracerConfig::default()).render_scene_wasm(Scene::sphere(element), camera, CANVAS_WIDTH, CANVAS_HEIGHT, pool)
+
+        let ray_tracer = RayTracer::new(RayTracerConfig {
+            max_bounce_depth: config.max_bounce_depth,
+            samples: config.samples,
+            ..RayTracerConfig::default()
+        });
+        
+        ray_tracer.render_scene_wasm(Scene::sphere(element), camera, CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
     /// TESTING - get serialized element
@@ -71,5 +87,6 @@ extern "C" {
 
 #[wasm_bindgen]
 pub fn marco() {
+    console_error_panic_hook::set_once();
     alert("polo");
 }

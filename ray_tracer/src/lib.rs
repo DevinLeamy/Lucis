@@ -22,5 +22,3 @@ pub mod material;
 pub mod texture;
 pub mod perlin;
 pub mod pool;
-
-

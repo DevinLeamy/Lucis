@@ -21,11 +21,11 @@ impl Default for CameraConfig {
         CameraConfig {
             aspect: 750.0 / 450.0, // 1.0,// 16.0 / 9.0,
             // origin: Vec3::new(13.0, 3.0, 3.0),
-            origin: Vec3::new(0.0, 3.5, 4.0),
-            look_at: Vec3::new(0.0, 0.2, 0.0),
+            origin: Vec3::new(0.0, 3.5, 2.5),
+            look_at: Vec3::new(0.0, 0.0, 0.0),
             world_up: Vec3::new(0.0, 1.0, 0.0),
             focus_dist: 10.0,
-            vertical_fov_degrees: 30.0,
+            vertical_fov_degrees: 25.0,
         }
     }
 }
@@ -40,14 +40,21 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(cfg: CameraConfig) -> Self {
+    pub fn new(mut cfg: CameraConfig) -> Self {
         let theta = cfg.vertical_fov_degrees.to_radians();
         let height = (theta / 2.0).tan();
 
         let viewport_height = 2.0 * height;
         let viewport_width: f64 = viewport_height * cfg.aspect;
 
-        let target = (cfg.origin - cfg.look_at).normalize(); // points in the +z
+        let mut target = cfg.origin - cfg.look_at;
+
+        // avoid division by zero (during normalization)
+        if target.near_zero() {
+            target += Vec3::new(0.01, 0.0, 0.0);
+        }
+
+        let target = target.normalize(); // points in +z
         let u = (Vec3::cross(cfg.world_up, target)).normalize(); // horizontal unit vector
         let v = (Vec3::cross(target, u)).normalize();
 

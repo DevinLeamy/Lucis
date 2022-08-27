@@ -64,6 +64,7 @@ const MaterialDisplay = ({ material, onMatChange }) => {
                 <Slider 
                     min={0.0}
                     max={1.0}
+                    size={"small"}
                     step={0.05}
                     value={fuzz}
                     aria-label="Default" 
@@ -105,6 +106,7 @@ const MaterialDisplay = ({ material, onMatChange }) => {
                     min={1.0}
                     max={3.0}
                     step={0.05}
+                    size={"small"}
                     value={ref_index}
                     aria-label="Default" 
                     valueLabelDisplay="auto" 
