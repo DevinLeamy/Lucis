@@ -20,6 +20,7 @@ let threadCount = 5; // navigator.hardwareConcurrency;
 const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
     const { config } = useContext(ConfigContext)
     const [pool, setPool] = useState<typeof WorkerPool>(undefined); 
+    const [framesRendering, setFramesRendering] = useState(0);
     const [canvasImageURL, setCanvasImageURL] = useState<string>(undefined);
 
     console.log("Element", element)
@@ -34,16 +35,23 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
         if (pool === undefined) {
             let newPool = new WorkerPool(threadCount);
 
-            requestEmitter.render_element(element, config, newPool)
-                .then(wasm_image => displayImage(wasm_image))
+            render(element, config, newPool)
 
             setPool(newPool)
             return;
         }
 
-        requestEmitter.render_element(element, config, pool)
-            .then(wasm_image => displayImage(wasm_image))
+        render(element, config, pool)
     }, [config, element])
+
+    const render = (element, config, workerPool) => {
+        setFramesRendering(frames => frames + 1)
+        requestEmitter.render_element(element, config, workerPool)
+        .then(wasm_image => {
+            setFramesRendering(frames => frames - 1)
+            displayImage(wasm_image)  
+        })
+    }
 
     const colorToRGB = (color) => {
         return `rgb(${color.red}, ${color.green}, ${color.blue})`;
@@ -94,36 +102,47 @@ const ElementDisplay = ({ element, onElementUpdate }: ElementDisplayProps) => {
     }
 
     return (
-        <div>
+        <div className="element-display">
             <div className="canvas-container">
                 <Paper elevation={5}>
                     <canvas 
                         className="element-preview-canvas" 
                         width={750} 
-                        height={450} 
+                        height={750} 
                         ref={canvasRef} 
                     />
                 </Paper>
             </div>
-            <Button 
-                className="download-button" 
-                variant="outlined" 
-                color="primary" 
-                size="small"
-            >
-                <a 
-                    className="download-link"
-                    href={canvasImageURL}
-                    download={`${Math.round(Math.random() * 100000)}_render.png`}
-                >Download Image</a>
-            </Button>
-            <Card className="config-container">
-                <CameraDisplay />
-                <QualityDisplay />
-                <ShapeDisplay shape={shape} onShapeChange={onShapeChange} />
-                <MaterialDisplay material={material} onMatChange={onMatChange} />
-            </Card>
-        </div>
+            <div>
+                <Button 
+                    className="download-button" 
+                    variant="outlined" 
+                    color="primary" 
+                    size="small"
+                >
+                    <a 
+                        className="download-link"
+                        href={canvasImageURL}
+                        download={`${Math.round(Math.random() * 100000)}_render.png`}
+                    >Download Image</a>
+                </Button>
+                <span className="rendering-status">
+                    {framesRendering > 0 ? 
+                        `Rendering: ${framesRendering} frame${framesRendering > 1 ? 's' : ''}` :
+                        "Idle"
+                    }
+                </span>
+                <Card className="config-container">
+                    <h3>Ray Tracer</h3>
+                    <CameraDisplay />
+                    <QualityDisplay />
+                    <h3>Element</h3>
+                    <ShapeDisplay shape={shape} onShapeChange={onShapeChange} />
+                    <MaterialDisplay material={material} onMatChange={onMatChange} />
+                    <h3>Background</h3>
+                </Card>
+            </div>
+       </div>
     )
 }
 

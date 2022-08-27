@@ -51,3 +51,12 @@
 .color-picker-container {
     /* padding-bottom: 10px; */
 }
+
+.rendering-status {
+    margin-left: 10px;
+    font-size: 12px;
+}
+
+.element-display {
+    display: flex;
+}
