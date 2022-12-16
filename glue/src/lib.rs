@@ -1,6 +1,9 @@
 use js_sys::Promise;
+use ray_tracer::{
+    Box, Camera, CameraConfig, CheckeredTexture, Color, Element, Lambertian, MaterialType, Metal,
+    RayTracer, RayTracerConfig, Scene, ShapeType, Sphere, TextureType, Vec3, WorkerPool,
+};
 use wasm_bindgen::prelude::*;
-use ray_tracer::{Camera, Box, WorkerPool, Scene, RayTracer, Element, MaterialType, Metal, Sphere, Vec3, Color, ShapeType, CameraConfig, RayTracerConfig, TextureType, CheckeredTexture, Lambertian};
 use web_sys::console::log_1;
 
 use serde::{Deserialize, Serialize};
@@ -16,24 +19,24 @@ pub fn log(s: String) {
 #[wasm_bindgen]
 pub fn init_panic_hook() {
     console_error_panic_hook::set_once();
-} 
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ClientConfig {
     pub origin: Vec3,
     pub look_at: Vec3,
     pub max_bounce_depth: u32,
-    pub samples: u32
+    pub samples: u32,
 }
 
 #[wasm_bindgen]
-pub struct RequestEmitter { }
+pub struct RequestEmitter {}
 
 #[allow(dead_code)]
 #[allow(unused_variables)]
 #[wasm_bindgen]
 impl RequestEmitter {
-    #[wasm_bindgen(constructor)] 
+    #[wasm_bindgen(constructor)]
     pub fn new() -> Result<RequestEmitter, JsValue> {
         Ok(RequestEmitter {})
     }
@@ -41,10 +44,22 @@ impl RequestEmitter {
     /// request an image to the rendered
     /// returns a callback to the resulting, serialized, image
     pub fn send_request(&self, pool: &WorkerPool) -> Result<Promise, JsValue> {
-        RayTracer::new(RayTracerConfig::default()).render_scene_wasm(Scene::default(), Camera::default(), CANVAS_WIDTH, CANVAS_HEIGHT, pool)
+        RayTracer::new(RayTracerConfig::default()).render_scene_wasm(
+            Scene::default(),
+            Camera::default(),
+            CANVAS_WIDTH,
+            CANVAS_HEIGHT,
+            pool,
+        )
     }
 
-    pub fn render_element(&self, element: JsValue, background_mat: JsValue, config: JsValue, pool: &WorkerPool) -> Result<Promise, JsValue> {
+    pub fn render_element(
+        &self,
+        element: JsValue,
+        background_mat: JsValue,
+        config: JsValue,
+        pool: &WorkerPool,
+    ) -> Result<Promise, JsValue> {
         let config = config.into_serde::<ClientConfig>().unwrap();
 
         let element = element.into_serde().unwrap();
@@ -52,14 +67,11 @@ impl RequestEmitter {
         let background;
 
         if background_mat == JsValue::UNDEFINED {
-            background = MaterialType::Lambertian(Lambertian::new(
-                    TextureType::CheckeredTexture(CheckeredTexture::new(
-                        Color::white(),
-                        Color::new(0.1, 0.1, 0.1),
-                    )))
-                );
+            background = MaterialType::Lambertian(Lambertian::new(TextureType::CheckeredTexture(
+                CheckeredTexture::new(Color::white(), Color::new(0.1, 0.1, 0.1)),
+            )));
         } else {
-            background = background_mat.into_serde().unwrap(); 
+            background = background_mat.into_serde().unwrap();
         }
 
         let camera = Camera::new(CameraConfig {
@@ -76,15 +88,15 @@ impl RequestEmitter {
         });
 
         let scene = Scene::element_with_background(element, background);
-        
+
         ray_tracer.render_scene_wasm(scene, camera, CANVAS_WIDTH, CANVAS_HEIGHT, pool)
     }
 
     /// TESTING - get serialized element
     pub fn get_element(&self) -> Result<JsValue, JsValue> {
-        let element = Element::new( 
+        let element = Element::new(
             MaterialType::Metal(Metal::new(Color::new(0.2, 0.2, 0.9).into(), 0.2)),
-            ShapeType::Sphere(Sphere::new(Vec3::new(-1.0, 0.5, -1.0), 0.5))
+            ShapeType::Sphere(Sphere::new(Vec3::new(-1.0, 0.5, -1.0), 0.5)),
         );
 
         Ok(JsValue::from_serde(&element).unwrap())

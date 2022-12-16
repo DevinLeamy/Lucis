@@ -1,16 +1,16 @@
 use std::f64::consts::PI;
 
-use crate::collisions::{CollisionRecord, Collidable, collision_face};
-use crate::vec3::Vec3;
-use crate::aabb::{AABB, Boundable};
+use crate::aabb::{Boundable, AABB};
+use crate::collisions::{collision_face, Collidable, CollisionRecord};
 use crate::ray::Ray;
+use crate::vec3::Vec3;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone)]
 pub struct UV {
     u: f64,
-    v: f64
+    v: f64,
 }
 
 pub trait TextureMap {
@@ -32,16 +32,15 @@ pub enum ShapeType {
 
 impl Collidable for ShapeType {
     fn collide(&self, ray: Ray) -> Option<CollisionRecord> {
-       match self {
-            ShapeType::Sphere(c)      => c.collide(ray),
+        match self {
+            ShapeType::Sphere(c) => c.collide(ray),
             ShapeType::RectangleXY(c) => c.collide(ray),
             ShapeType::RectangleXZ(c) => c.collide(ray),
             ShapeType::RectangleYZ(c) => c.collide(ray),
-            ShapeType::Box(c)         => c.collide(ray)
-       } 
+            ShapeType::Box(c) => c.collide(ray),
+        }
     }
 }
-
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Sphere {
@@ -54,8 +53,12 @@ impl Sphere {
         Sphere { center, radius }
     }
 
-    pub fn radius(&self) -> f64 { self.radius }
-    pub fn center(&self) -> Vec3 { self.center }
+    pub fn radius(&self) -> f64 {
+        self.radius
+    }
+    pub fn center(&self) -> Vec3 {
+        self.center
+    }
 
     pub fn intersections(&self, ray: Ray) -> Option<(f64, f64)> {
         let center_to_origin = ray.origin - self.center;
@@ -111,7 +114,7 @@ impl Collidable for Sphere {
         let s_normal = self.surface_normal(intersection_point);
 
         Some(CollisionRecord {
-            point: intersection_point, 
+            point: intersection_point,
             s_normal,
             t: intersection_time,
             uv: self.map(s_normal),
@@ -132,7 +135,7 @@ impl Boundable for Sphere {
 /// Axis-aligned rectangle
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RectangleXY {
-    /// center of the rectangle 
+    /// center of the rectangle
     x0: f64,
     x1: f64,
     y0: f64,
@@ -144,7 +147,14 @@ pub struct RectangleXY {
 impl RectangleXY {
     const SURFACE_NORMAL: Vec3 = Vec3::new(0.0, 0.0, 1.0);
     pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, flip_normal: bool) -> RectangleXY {
-        RectangleXY { x0, x1, y0, y1, k, flip_normal }
+        RectangleXY {
+            x0,
+            x1,
+            y0,
+            y1,
+            k,
+            flip_normal,
+        }
     }
 }
 
@@ -156,14 +166,14 @@ impl Collidable for RectangleXY {
 
         if self.x0 <= x && x <= self.x1 && self.y0 <= y && y <= self.y1 {
             let c_point = Vec3::new(x, y, self.k);
-            let s_normal = self.surface_normal(c_point); 
+            let s_normal = self.surface_normal(c_point);
 
             Some(CollisionRecord {
-                point: c_point, 
+                point: c_point,
                 t,
                 s_normal,
                 uv: self.map(c_point),
-                face: collision_face(ray.direction, s_normal)
+                face: collision_face(ray.direction, s_normal),
             })
         } else {
             None
@@ -188,18 +198,17 @@ impl SurfaceNormal for RectangleXY {
 
 impl TextureMap for RectangleXY {
     fn map(&self, point: Vec3) -> UV {
-        UV { 
-            u: (point.x - self.x0) / (self.x1 - self.x0), 
-            v: (point.y - self.y0) / (self.y1 - self.y0) 
+        UV {
+            u: (point.x - self.x0) / (self.x1 - self.x0),
+            v: (point.y - self.y0) / (self.y1 - self.y0),
         }
     }
 }
 
-
 /// Axis-aligned rectangle
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RectangleXZ {
-    /// center of the rectangle 
+    /// center of the rectangle
     x0: f64,
     x1: f64,
     z0: f64,
@@ -211,7 +220,14 @@ pub struct RectangleXZ {
 impl RectangleXZ {
     const SURFACE_NORMAL: Vec3 = Vec3::new(0.0, 1.0, 0.0);
     pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, flip_normal: bool) -> RectangleXZ {
-        RectangleXZ { x0, x1, z0, z1, k, flip_normal }
+        RectangleXZ {
+            x0,
+            x1,
+            z0,
+            z1,
+            k,
+            flip_normal,
+        }
     }
 }
 
@@ -223,14 +239,14 @@ impl Collidable for RectangleXZ {
 
         if self.x0 <= x && x <= self.x1 && self.z0 <= z && z <= self.z1 {
             let c_point = Vec3::new(x, self.k, z);
-            let s_normal = self.surface_normal(c_point); 
+            let s_normal = self.surface_normal(c_point);
 
             Some(CollisionRecord {
-                point: c_point, 
+                point: c_point,
                 t,
                 s_normal,
                 uv: self.map(c_point),
-                face: collision_face(ray.direction, s_normal)
+                face: collision_face(ray.direction, s_normal),
             })
         } else {
             None
@@ -255,9 +271,9 @@ impl SurfaceNormal for RectangleXZ {
 
 impl TextureMap for RectangleXZ {
     fn map(&self, point: Vec3) -> UV {
-        UV { 
-            u: (point.x - self.x0) / (self.x1 - self.x0), 
-            v: (point.z - self.z0) / (self.z1 - self.z0) 
+        UV {
+            u: (point.x - self.x0) / (self.x1 - self.x0),
+            v: (point.z - self.z0) / (self.z1 - self.z0),
         }
     }
 }
@@ -265,19 +281,26 @@ impl TextureMap for RectangleXZ {
 /// Axis-aligned rectangle
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RectangleYZ {
-    /// center of the rectangle 
+    /// center of the rectangle
     y0: f64,
     y1: f64,
     z0: f64,
     z1: f64,
     k: f64,
-    flip_normal: bool
+    flip_normal: bool,
 }
 
 impl RectangleYZ {
     const SURFACE_NORMAL: Vec3 = Vec3::new(1.0, 0.0, 0.0);
     pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, flip_normal: bool) -> RectangleYZ {
-        RectangleYZ { y0, y1, z0, z1, k, flip_normal }
+        RectangleYZ {
+            y0,
+            y1,
+            z0,
+            z1,
+            k,
+            flip_normal,
+        }
     }
 }
 
@@ -289,14 +312,14 @@ impl Collidable for RectangleYZ {
 
         if self.y0 <= y && y <= self.y1 && self.z0 <= z && z <= self.z1 {
             let c_point = Vec3::new(self.k, y, z);
-            let s_normal = self.surface_normal(c_point); 
+            let s_normal = self.surface_normal(c_point);
 
             Some(CollisionRecord {
-                point: c_point, 
+                point: c_point,
                 t,
                 s_normal,
                 uv: self.map(c_point),
-                face: collision_face(ray.direction, s_normal)
+                face: collision_face(ray.direction, s_normal),
             })
         } else {
             None
@@ -306,7 +329,7 @@ impl Collidable for RectangleYZ {
 
 impl Boundable for RectangleYZ {
     fn bound(&self) -> AABB {
-        let min = Vec3::new(self.k - 0.001, self.y0, self.z0); 
+        let min = Vec3::new(self.k - 0.001, self.y0, self.z0);
         let max = Vec3::new(self.k + 0.001, self.y1, self.z1);
 
         AABB::new(min, max)
@@ -321,9 +344,9 @@ impl SurfaceNormal for RectangleYZ {
 
 impl TextureMap for RectangleYZ {
     fn map(&self, point: Vec3) -> UV {
-        UV { 
-            u: (point.y - self.y0) / (self.y1 - self.y0), 
-            v: (point.z - self.z0) / (self.z1 - self.z0) 
+        UV {
+            u: (point.y - self.y0) / (self.y1 - self.y0),
+            v: (point.z - self.z0) / (self.z1 - self.z0),
         }
     }
 }
@@ -349,7 +372,7 @@ impl Collidable for RectangleType {
 pub struct Box {
     min: Vec3,
     max: Vec3,
-    sides: Vec<RectangleType>
+    sides: Vec<RectangleType>,
 }
 
 impl Box {
@@ -359,23 +382,34 @@ impl Box {
             max,
             sides: vec![
                 // back and front
-                RectangleType::RectangleXY(RectangleXY::new(min.x, max.x, min.y, max.y, min.z, true)),
-                RectangleType::RectangleXY(RectangleXY::new(min.x, max.x, min.y, max.y, max.z, false)),
+                RectangleType::RectangleXY(RectangleXY::new(
+                    min.x, max.x, min.y, max.y, min.z, true,
+                )),
+                RectangleType::RectangleXY(RectangleXY::new(
+                    min.x, max.x, min.y, max.y, max.z, false,
+                )),
                 // top and bottom
-                RectangleType::RectangleXZ(RectangleXZ::new(min.x, max.x, min.z, max.z, min.y, true)),
-                RectangleType::RectangleXZ(RectangleXZ::new(min.x, max.x, min.z, max.z, max.y, false)),
+                RectangleType::RectangleXZ(RectangleXZ::new(
+                    min.x, max.x, min.z, max.z, min.y, true,
+                )),
+                RectangleType::RectangleXZ(RectangleXZ::new(
+                    min.x, max.x, min.z, max.z, max.y, false,
+                )),
                 // left and right
-                RectangleType::RectangleYZ(RectangleYZ::new(min.y, max.y, min.z, max.z, min.x, true)),
-                RectangleType::RectangleYZ(RectangleYZ::new(min.y, max.y, min.z, max.z, max.x, false)),
-
-            ]
+                RectangleType::RectangleYZ(RectangleYZ::new(
+                    min.y, max.y, min.z, max.z, min.x, true,
+                )),
+                RectangleType::RectangleYZ(RectangleYZ::new(
+                    min.y, max.y, min.z, max.z, max.x, false,
+                )),
+            ],
         }
     }
 
     pub fn from_size(width: f64, height: f64, depth: f64, center: Vec3) -> Box {
         let half_w = width / 2.0;
         let half_h = height / 2.0;
-        let half_d = depth / 2.0; 
+        let half_d = depth / 2.0;
 
         Box::new(
             Vec3::new(center.x - half_w, center.y - half_h, center.z - half_d),
@@ -396,7 +430,7 @@ impl Collidable for Box {
 
         // check if the bounding box collides
         if !aabb.collide(ray) {
-            return None
+            return None;
         }
 
         // CLEAN: we can use the slab intersection method with some face checking
@@ -404,7 +438,7 @@ impl Collidable for Box {
         for side in &self.sides {
             if let Some(record) = side.collide(ray) {
                 if c_record.as_ref().is_none() || record.t < c_record.as_ref().unwrap().t {
-                    c_record = Some(record); 
+                    c_record = Some(record);
                 }
             }
         }

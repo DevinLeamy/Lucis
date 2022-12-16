@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use crate::shape::UV;
 use crate::image::Color;
-use crate::vec3::Vec3;
 use crate::perlin::Perlin;
+use crate::shape::UV;
+use crate::vec3::Vec3;
 
-use serde::{Deserialize, Serialize, ser::SerializeStruct};
+use serde::{ser::SerializeStruct, Deserialize, Serialize};
 
 pub trait Texture {
     fn value(&self, uv: UV, point: Vec3) -> Color;
@@ -15,15 +15,15 @@ pub trait Texture {
 pub enum TextureType {
     CheckeredTexture(CheckeredTexture),
     SolidTexture(SolidTexture),
-    PerlinTexture(PerlinTexture)
+    PerlinTexture(PerlinTexture),
 }
 
 impl Texture for TextureType {
     fn value(&self, uv: UV, point: Vec3) -> Color {
         match self {
             TextureType::CheckeredTexture(tx) => tx.value(uv, point),
-            TextureType::SolidTexture(tx)     => tx.value(uv, point),
-            TextureType::PerlinTexture(tx)    => tx.value(uv, point),
+            TextureType::SolidTexture(tx) => tx.value(uv, point),
+            TextureType::PerlinTexture(tx) => tx.value(uv, point),
         }
     }
 }
@@ -31,7 +31,7 @@ impl Texture for TextureType {
 #[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct CheckeredTexture {
     odd: Color,
-    even: Color
+    even: Color,
 }
 
 impl CheckeredTexture {
@@ -44,14 +44,17 @@ impl Texture for CheckeredTexture {
     fn value(&self, _uv: UV, p: Vec3) -> Color {
         let sines = (10.0 * p.x).sin() * (10.0 * p.y).sin() * (10.0 * p.z).sin();
 
-        if sines < 0.0 { self.odd } 
-        else { self.even }
+        if sines < 0.0 {
+            self.odd
+        } else {
+            self.even
+        }
     }
 }
 
 #[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct SolidTexture {
-    color: Color
+    color: Color,
 }
 
 impl SolidTexture {
@@ -77,7 +80,7 @@ impl From<Color> for TextureType {
 pub struct PerlinTexture {
     scale: f64,
     #[serde(skip)]
-    noise_gen: Arc<Box<Perlin>>
+    noise_gen: Arc<Box<Perlin>>,
 }
 
 #[derive(Deserialize)]
@@ -97,9 +100,9 @@ impl PerlinTexture {
     }
 
     pub fn new_scaled(scale: f64) -> PerlinTexture {
-        PerlinTexture { 
+        PerlinTexture {
             noise_gen: Arc::new(Box::new(Perlin::new())),
-            scale
+            scale,
         }
     }
 }
@@ -110,18 +113,16 @@ impl Texture for PerlinTexture {
     //     let depth = 7;
 
     //     Color::new(
-    //       0.5 * self.noise_gen.turbulence(point * self.scale, depth),   
-    //       0.5 * self.noise_gen.turbulence(point * self.scale, depth),   
-    //       0.5 * self.noise_gen.turbulence(point * self.scale, depth),   
+    //       0.5 * self.noise_gen.turbulence(point * self.scale, depth),
+    //       0.5 * self.noise_gen.turbulence(point * self.scale, depth),
+    //       0.5 * self.noise_gen.turbulence(point * self.scale, depth),
     //     )
     // }
     fn value(&self, _uv: UV, point: Vec3) -> Color {
         // TODO: make depth configurable
         let depth = 7;
 
-        let noise_manip = |noise: f64| {
-            0.5 * (1.0 + f64::sin(self.scale * point.z + 10.0 * noise))
-        };
+        let noise_manip = |noise: f64| 0.5 * (1.0 + f64::sin(self.scale * point.z + 10.0 * noise));
 
         Color::new(
             noise_manip(self.noise_gen.turbulence(point, depth)),
@@ -136,5 +137,3 @@ impl From<PerlinTexture> for TextureType {
         TextureType::PerlinTexture(perlin)
     }
 }
-
-

@@ -1,5 +1,5 @@
-use crate::vec3::Vec3;
 use crate::ray::Ray;
+use crate::vec3::Vec3;
 
 pub struct CameraConfig {
     /// aspect ratio (horizontal / vertical)
@@ -75,16 +75,17 @@ impl Camera {
         self.origin += translation;
     }
 
-    pub fn aspect(&self) -> f64 { self.aspect }
-    pub fn origin(&self) -> Vec3 {self.origin }
+    pub fn aspect(&self) -> f64 {
+        self.aspect
+    }
+    pub fn origin(&self) -> Vec3 {
+        self.origin
+    }
 
     pub fn create_ray(&self, h_offset: f64, v_offset: f64) -> Ray {
         Ray::new(
-            self.origin, 
-            self.lower_left
-            + self.horizontal * h_offset
-            + self.vertical * v_offset
-            - self.origin
+            self.origin,
+            self.lower_left + self.horizontal * h_offset + self.vertical * v_offset - self.origin,
         )
     }
 }

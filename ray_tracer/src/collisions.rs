@@ -20,15 +20,18 @@ impl CollisionRecord {
         match self.face {
             Face::Outer => self.s_normal,
             Face::Inner => -self.s_normal,
-        } 
+        }
     }
 }
 
 pub trait Collidable {
-    fn collide(&self, ray: Ray) -> Option<CollisionRecord>; 
+    fn collide(&self, ray: Ray) -> Option<CollisionRecord>;
 }
 
 pub fn collision_face(incident: Vec3, normal: Vec3) -> Face {
-    if Vec3::dot(incident, normal) < 0.0 { Face::Outer }
-    else { Face::Inner }
+    if Vec3::dot(incident, normal) < 0.0 {
+        Face::Outer
+    } else {
+        Face::Inner
+    }
 }

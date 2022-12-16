@@ -30,3 +30,12 @@ features = [
     'MessageEvent',
     'ErrorEvent'
 ]
+
+[dev-dependencies]
+# Benchmarking
+criterion = "0.4.0"
+# Profiling
+
+
+[profile.release]
+debug = true
