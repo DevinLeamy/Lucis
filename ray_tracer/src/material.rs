@@ -58,7 +58,7 @@ impl Material for Lambertian {
     fn resolve(&self, _ray: Ray, collision: CollisionRecord) -> CollisionResult {
         let mut bounce_dir = collision.normal() + random_unit_vector();
 
-        if bounce_dir.near_zero() {
+        if bounce_dir.length() < 0.001 {
             bounce_dir = collision.normal();
         }
 

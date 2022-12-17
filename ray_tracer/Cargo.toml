@@ -21,7 +21,7 @@ futures = "0.3.21"
 serde = { version = "1.0", features = ["derive"] }
 
 # Vec3 and other linear algebra constructs
-glam = "0.22.0"
+glam = { version = "0.22.0", features = ["serde"] }
 
 # wasm dependencies
 js-sys = "0.3.59"

@@ -11,7 +11,7 @@ pub struct Perlin {
 impl Perlin {
     const POINT_COUNT: u32 = 256;
     pub fn new() -> Perlin {
-        let mut vectors = Box::new([Vec3::zeros(); Perlin::POINT_COUNT as usize]);
+        let mut vectors = Box::new([Vec3::ZERO; Perlin::POINT_COUNT as usize]);
         for i in 0..vectors.len() as usize {
             vectors[i] = Vec3::new(
                 random_range(-1.0, 1.0),
@@ -42,7 +42,7 @@ impl Perlin {
         let j = p.y.floor() as i32;
         let k = p.z.floor() as i32;
 
-        let mut cube = [[[Vec3::zeros(); 2]; 2]; 2];
+        let mut cube = [[[Vec3::ZERO; 2]; 2]; 2];
         cube[0][0][0] = self.vectors[self.xor_hash(i + 0, j + 0, k + 0) as usize];
         cube[0][0][1] = self.vectors[self.xor_hash(i + 0, j + 0, k + 1) as usize];
         cube[0][1][0] = self.vectors[self.xor_hash(i + 0, j + 1, k + 0) as usize];

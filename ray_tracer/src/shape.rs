@@ -125,8 +125,8 @@ impl Collidable for Sphere {
 
 impl Boundable for Sphere {
     fn bound(&self) -> AABB {
-        let min = self.center - Vec3::ones() * self.radius;
-        let max = self.center + Vec3::ones() * self.radius;
+        let min = self.center - Vec3::ONE * self.radius;
+        let max = self.center + Vec3::ONE * self.radius;
 
         AABB::new(min, max)
     }

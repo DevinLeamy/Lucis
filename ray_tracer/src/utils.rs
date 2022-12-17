@@ -30,7 +30,7 @@ pub fn sample_unit_sphere() -> Vec3 {
 }
 
 pub fn random_unit_vector() -> Vec3 {
-    Vec3::normalized(sample_unit_sphere())
+    sample_unit_sphere().normalize_or_zero()
 }
 
 pub fn reflect(incident: Vec3, normal: Vec3) -> Vec3 {

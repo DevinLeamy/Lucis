@@ -49,8 +49,8 @@ impl Camera {
 
         let mut target = cfg.origin - cfg.look_at;
 
-        // avoid division by zero (during normalization)
-        if target.near_zero() {
+        // Don't allow target be a near-zero vector
+        if target.length() < 0.001 {
             target += Vec3::new(0.01, 0.0, 0.0);
         }
 

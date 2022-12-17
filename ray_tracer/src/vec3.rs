@@ -14,22 +14,11 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
+    pub const ONE: Vec3 = Vec3::new(1.0, 1.0, 1.0);
+    pub const ZERO: Vec3 = Vec3::new(0.0, 0.0, 0.0);
+
     pub const fn new(x: f32, y: f32, z: f32) -> Self {
         Self { x, y, z }
-    }
-    pub fn ones() -> Self {
-        Self {
-            x: 1f32,
-            y: 1f32,
-            z: 1f32,
-        }
-    }
-    pub fn zeros() -> Self {
-        Self {
-            x: 0f32,
-            y: 0f32,
-            z: 0f32,
-        }
     }
 
     pub fn random() -> Self {
@@ -42,6 +31,14 @@ impl Vec3 {
 
     pub fn normalized(v: Vec3) -> Vec3 {
         v / v.length()
+    }
+
+    pub fn normalize_or_zero(self) -> Vec3 {
+        if self.length() == 0.0 {
+            return Vec3::ZERO;
+        }
+
+        self.normalize()
     }
     pub fn normalize(self) -> Vec3 {
         Vec3::normalized(self)
