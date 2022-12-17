@@ -13,7 +13,7 @@ use js_sys::Promise;
 use rayon::prelude::*;
 use wasm_bindgen::JsValue;
 
-const MIN_INTERSECTION_T: f64 = 0.001;
+const MIN_INTERSECTION_T: f32 = 0.001;
 
 pub trait Render {
     fn render_scene(&self, scene: &Scene, camera: Camera, width: u32, height: u32) -> Image;
@@ -91,12 +91,12 @@ impl Render for RayTracer {
                 let mut acc_color = Color::black();
 
                 for _ in 0..self.samples {
-                    let row_s = row as f64 + random_float();
-                    let col_s = col as f64 + random_float();
+                    let row_s = row as f32 + random_float();
+                    let col_s = col as f32 + random_float();
 
                     // convert pixel coordinate to world coordinates
-                    let world_x = col_s / (width - 1) as f64;
-                    let world_y = row_s / (height - 1) as f64;
+                    let world_x = col_s / (width - 1) as f32;
+                    let world_y = row_s / (height - 1) as f32;
 
                     let ray = camera.create_ray(world_x, world_y);
 
@@ -106,9 +106,9 @@ impl Render for RayTracer {
                 }
 
                 let normalized = Color::new(
-                    acc_color.red / self.samples as f64,
-                    acc_color.green / self.samples as f64,
-                    acc_color.blue / self.samples as f64,
+                    acc_color.red / self.samples as f32,
+                    acc_color.green / self.samples as f32,
+                    acc_color.blue / self.samples as f32,
                 )
                 .gamma_corrected();
 
@@ -158,12 +158,12 @@ impl RayTracer {
                         let mut acc_color = Color::black();
 
                         for _ in 0..self.samples {
-                            let row_s = row as f64 + random_float();
-                            let col_s = col as f64 + random_float();
+                            let row_s = row as f32 + random_float();
+                            let col_s = col as f32 + random_float();
 
                             // convert pixel coordinate to world coordinates
-                            let world_x = col_s / (width - 1) as f64;
-                            let world_y = row_s / (height - 1) as f64;
+                            let world_x = col_s / (width - 1) as f32;
+                            let world_y = row_s / (height - 1) as f32;
 
                             let ray = camera.create_ray(world_x, world_y);
 
@@ -173,9 +173,9 @@ impl RayTracer {
                         }
 
                         let normalized = Color::new(
-                            acc_color.red / self.samples as f64,
-                            acc_color.green / self.samples as f64,
-                            acc_color.blue / self.samples as f64,
+                            acc_color.red / self.samples as f32,
+                            acc_color.green / self.samples as f32,
+                            acc_color.blue / self.samples as f32,
                         )
                         .gamma_corrected();
 
@@ -211,7 +211,7 @@ impl RayTracer {
 impl RayTracer {
     fn compute_collision(&self, scene: &Scene, ray: Ray) -> Option<(Element, CollisionRecord)> {
         let mut c_record: Option<CollisionRecord> = None;
-        let mut c_t = f64::MAX;
+        let mut c_t = f32::MAX;
         let mut c_element: Option<Element> = None;
 
         scene.objects.iter().for_each(|element| {

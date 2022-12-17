@@ -18,7 +18,7 @@ impl Ray {
         }
     }
 
-    pub fn position_at(&self, time: f64) -> Vec3 {
+    pub fn position_at(&self, time: f32) -> Vec3 {
         self.origin + self.direction * time
     }
 }
@@ -39,7 +39,7 @@ impl Ray {
         }
     }
 
-    pub fn refract(&self, normal: Vec3, point: Vec3, ref_ratio: f64) -> Ray {
+    pub fn refract(&self, normal: Vec3, point: Vec3, ref_ratio: f32) -> Ray {
         Ray {
             origin: point,
             direction: refract(self.direction, normal, ref_ratio),

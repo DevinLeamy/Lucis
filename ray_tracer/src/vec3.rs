@@ -3,30 +3,32 @@ use std::ops;
 
 use crate::utils::random_float;
 
+// pub use glam::Vec3;
+
 #[derive(Debug, Copy, Clone, PartialEq, Default, Serialize, Deserialize)]
 #[readonly::make]
 pub struct Vec3 {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
 impl Vec3 {
-    pub const fn new(x: f64, y: f64, z: f64) -> Self {
+    pub const fn new(x: f32, y: f32, z: f32) -> Self {
         Self { x, y, z }
     }
     pub fn ones() -> Self {
         Self {
-            x: 1f64,
-            y: 1f64,
-            z: 1f64,
+            x: 1f32,
+            y: 1f32,
+            z: 1f32,
         }
     }
     pub fn zeros() -> Self {
         Self {
-            x: 0f64,
-            y: 0f64,
-            z: 0f64,
+            x: 0f32,
+            y: 0f32,
+            z: 0f32,
         }
     }
 
@@ -44,15 +46,15 @@ impl Vec3 {
     pub fn normalize(self) -> Vec3 {
         Vec3::normalized(self)
     }
-    pub fn length(&self) -> f64 {
+    pub fn length(&self) -> f32 {
         self.length_squared().sqrt()
     }
 
-    pub fn length_squared(&self) -> f64 {
+    pub fn length_squared(&self) -> f32 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    pub fn dot(lhs: Vec3, rhs: Vec3) -> f64 {
+    pub fn dot(lhs: Vec3, rhs: Vec3) -> f32 {
         lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2]
     }
 
@@ -80,7 +82,7 @@ impl ops::Neg for Vec3 {
 }
 
 impl ops::Index<usize> for Vec3 {
-    type Output = f64;
+    type Output = f32;
 
     fn index(&self, index: usize) -> &Self::Output {
         match index {
@@ -111,11 +113,11 @@ impl ops::DivAssign for Vec3 {
     }
 }
 
-impl ops::Div<f64> for Vec3 {
+impl ops::Div<f32> for Vec3 {
     type Output = Vec3;
 
-    fn div(self, t: f64) -> Self {
-        if t == 0f64 {
+    fn div(self, t: f32) -> Self {
+        if t == 0f32 {
             panic!("Division by zero");
         } else {
             Vec3::new(self.x / t, self.y / t, self.z / t)
@@ -131,15 +133,15 @@ impl ops::MulAssign for Vec3 {
     }
 }
 
-impl ops::MulAssign<f64> for Vec3 {
-    fn mul_assign(&mut self, rhs: f64) {
+impl ops::MulAssign<f32> for Vec3 {
+    fn mul_assign(&mut self, rhs: f32) {
         self.x *= rhs;
         self.y *= rhs;
         self.z *= rhs;
     }
 }
 
-impl ops::Mul<Vec3> for f64 {
+impl ops::Mul<Vec3> for f32 {
     type Output = Vec3;
 
     fn mul(self, rhs: Vec3) -> Vec3 {
@@ -155,10 +157,10 @@ impl ops::Mul<Vec3> for Vec3 {
     }
 }
 
-impl ops::Mul<f64> for Vec3 {
+impl ops::Mul<f32> for Vec3 {
     type Output = Vec3;
 
-    fn mul(self, t: f64) -> Self {
+    fn mul(self, t: f32) -> Self {
         Vec3::new(self.x * t, self.y * t, self.z * t)
     }
 }

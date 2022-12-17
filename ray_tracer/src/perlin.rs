@@ -33,7 +33,7 @@ impl Perlin {
         self.x[(i & 255) as usize] ^ self.y[(j & 255) as usize] ^ self.z[(k & 255) as usize]
     }
 
-    pub fn smooth_noise(&self, p: Vec3) -> f64 {
+    pub fn smooth_noise(&self, p: Vec3) -> f32 {
         let u = p.x - p.x.floor();
         let v = p.y - p.y.floor();
         let w = p.z - p.z.floor();
@@ -69,7 +69,7 @@ impl Perlin {
     }
 
     /// add together 'depth' layers of noise of progressively weaker weight
-    pub fn turbulence(&self, p: Vec3, depth: u32) -> f64 {
+    pub fn turbulence(&self, p: Vec3, depth: u32) -> f32 {
         let mut acc = 0.0;
         let mut weight = 1.0;
         let mut probe = p;

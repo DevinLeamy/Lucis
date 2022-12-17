@@ -74,18 +74,18 @@ impl Material for Lambertian {
 /// Rays are reflected or refracted based on the refractive index of the material
 #[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct Dielectric {
-    ref_index: f64,
+    ref_index: f32,
 }
 
 impl Dielectric {
-    pub fn new(ref_index: f64) -> Dielectric {
+    pub fn new(ref_index: f32) -> Dielectric {
         Dielectric { ref_index }
     }
 
-    fn reflectance(cos: f64, ref_ratio: f64) -> f64 {
+    fn reflectance(cos: f32, ref_ratio: f32) -> f32 {
         // Schlick's approximation to reflectance
         let x = (1.0 - ref_ratio) / (1.0 + ref_ratio);
-        x * x + (1.0 - x * x) * f64::powf(1.0 - cos, 5.0)
+        x * x + (1.0 - x * x) * f32::powf(1.0 - cos, 5.0)
     }
 }
 
@@ -96,7 +96,7 @@ impl Material for Dielectric {
             Face::Inner => self.ref_index,
         };
 
-        let cos = f64::min(Vec3::dot(-ray.direction, collision.normal()), 1.0);
+        let cos = f32::min(Vec3::dot(-ray.direction, collision.normal()), 1.0);
         let sin = (1.0 - cos * cos).sqrt();
 
         let must_reflect = ref_ratio * sin > 1.0;
@@ -122,11 +122,11 @@ impl Material for Dielectric {
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Metal {
     texture: TextureType,
-    fuzz: f64,
+    fuzz: f32,
 }
 
 impl Metal {
-    pub fn new(texture: TextureType, fuzz: f64) -> Self {
+    pub fn new(texture: TextureType, fuzz: f32) -> Self {
         Metal { texture, fuzz }
     }
 }
@@ -163,11 +163,11 @@ impl Material for Metal {
 #[derive(Clone, Deserialize, Serialize)]
 pub struct DiffuseLight {
     hue: Color,
-    brightness: f64,
+    brightness: f32,
 }
 
 impl DiffuseLight {
-    pub fn new(hue: Color, brightness: f64) -> DiffuseLight {
+    pub fn new(hue: Color, brightness: f32) -> DiffuseLight {
         DiffuseLight { hue, brightness }
     }
 }

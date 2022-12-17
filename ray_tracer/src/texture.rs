@@ -78,14 +78,14 @@ impl From<Color> for TextureType {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(from = "DeserializePerlinTexture")]
 pub struct PerlinTexture {
-    scale: f64,
+    scale: f32,
     #[serde(skip)]
     noise_gen: Arc<Box<Perlin>>,
 }
 
 #[derive(Deserialize)]
 pub struct DeserializePerlinTexture {
-    scale: f64,
+    scale: f32,
 }
 
 impl From<DeserializePerlinTexture> for PerlinTexture {
@@ -99,7 +99,7 @@ impl PerlinTexture {
         PerlinTexture::new_scaled(1.0)
     }
 
-    pub fn new_scaled(scale: f64) -> PerlinTexture {
+    pub fn new_scaled(scale: f32) -> PerlinTexture {
         PerlinTexture {
             noise_gen: Arc::new(Box::new(Perlin::new())),
             scale,
@@ -122,7 +122,7 @@ impl Texture for PerlinTexture {
         // TODO: make depth configurable
         let depth = 7;
 
-        let noise_manip = |noise: f64| 0.5 * (1.0 + f64::sin(self.scale * point.z + 10.0 * noise));
+        let noise_manip = |noise: f32| 0.5 * (1.0 + f32::sin(self.scale * point.z + 10.0 * noise));
 
         Color::new(
             noise_manip(self.noise_gen.turbulence(point, depth)),

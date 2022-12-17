@@ -1,3 +1,5 @@
+// rectangles_baseline
+
 use criterion::{criterion_group, criterion_main, Criterion};
 use ray_tracer::*;
 
@@ -16,7 +18,7 @@ fn benchmark(c: &mut Criterion) {
 
 criterion_group!(
     name = ray_trace_benches;
-    config = Criterion::default().sample_size(20);
+    config = Criterion::default().sample_size(100);
     targets = benchmark
 );
 criterion_main!(ray_trace_benches);

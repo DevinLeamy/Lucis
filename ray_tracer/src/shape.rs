@@ -1,4 +1,4 @@
-use std::f64::consts::PI;
+use std::f32::consts::PI;
 
 use crate::aabb::{Boundable, AABB};
 use crate::collisions::{collision_face, Collidable, CollisionRecord};
@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone)]
 pub struct UV {
-    u: f64,
-    v: f64,
+    u: f32,
+    v: f32,
 }
 
 pub trait TextureMap {
@@ -45,22 +45,22 @@ impl Collidable for ShapeType {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Sphere {
     center: Vec3,
-    radius: f64,
+    radius: f32,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64) -> Sphere {
+    pub fn new(center: Vec3, radius: f32) -> Sphere {
         Sphere { center, radius }
     }
 
-    pub fn radius(&self) -> f64 {
+    pub fn radius(&self) -> f32 {
         self.radius
     }
     pub fn center(&self) -> Vec3 {
         self.center
     }
 
-    pub fn intersections(&self, ray: Ray) -> Option<(f64, f64)> {
+    pub fn intersections(&self, ray: Ray) -> Option<(f32, f32)> {
         let center_to_origin = ray.origin - self.center;
 
         // quadratic formula
@@ -74,24 +74,24 @@ impl Sphere {
         let c = center_to_origin.length_squared() - self.radius * self.radius;
         let discriminant = half_b * half_b - a * c;
 
-        if discriminant < 0f64 {
+        if discriminant < 0f32 {
             return None;
         }
 
         let r1 = (-half_b - discriminant.sqrt()) / a;
         let r2 = (-half_b + discriminant.sqrt()) / a;
 
-        Some((f64::min(r1, r2), f64::max(r1, r2)))
+        Some((f32::min(r1, r2), f32::max(r1, r2)))
     }
 }
 
 impl TextureMap for Sphere {
     fn map(&self, p: Vec3) -> UV {
         let theta = (-p.y).acos();
-        let phi = f64::atan2(-p.z, p.x) + PI;
+        let phi = f32::atan2(-p.z, p.x) + PI;
 
         UV {
-            u: phi / (2f64 * PI),
+            u: phi / (2f32 * PI),
             v: theta / PI,
         }
     }
@@ -106,7 +106,7 @@ impl SurfaceNormal for Sphere {
 impl Collidable for Sphere {
     fn collide(&self, ray: Ray) -> Option<CollisionRecord> {
         let intersection_time = match self.intersections(ray) {
-            Some((r1, r2)) => f64::min(r1, r2),
+            Some((r1, r2)) => f32::min(r1, r2),
             _ => return None,
         };
 
@@ -136,17 +136,17 @@ impl Boundable for Sphere {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RectangleXY {
     /// center of the rectangle
-    x0: f64,
-    x1: f64,
-    y0: f64,
-    y1: f64,
-    k: f64,
+    x0: f32,
+    x1: f32,
+    y0: f32,
+    y1: f32,
+    k: f32,
     flip_normal: bool,
 }
 
 impl RectangleXY {
     const SURFACE_NORMAL: Vec3 = Vec3::new(0.0, 0.0, 1.0);
-    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, flip_normal: bool) -> RectangleXY {
+    pub fn new(x0: f32, x1: f32, y0: f32, y1: f32, k: f32, flip_normal: bool) -> RectangleXY {
         RectangleXY {
             x0,
             x1,
@@ -209,17 +209,17 @@ impl TextureMap for RectangleXY {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RectangleXZ {
     /// center of the rectangle
-    x0: f64,
-    x1: f64,
-    z0: f64,
-    z1: f64,
-    k: f64,
+    x0: f32,
+    x1: f32,
+    z0: f32,
+    z1: f32,
+    k: f32,
     flip_normal: bool,
 }
 
 impl RectangleXZ {
     const SURFACE_NORMAL: Vec3 = Vec3::new(0.0, 1.0, 0.0);
-    pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, flip_normal: bool) -> RectangleXZ {
+    pub fn new(x0: f32, x1: f32, z0: f32, z1: f32, k: f32, flip_normal: bool) -> RectangleXZ {
         RectangleXZ {
             x0,
             x1,
@@ -282,17 +282,17 @@ impl TextureMap for RectangleXZ {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RectangleYZ {
     /// center of the rectangle
-    y0: f64,
-    y1: f64,
-    z0: f64,
-    z1: f64,
-    k: f64,
+    y0: f32,
+    y1: f32,
+    z0: f32,
+    z1: f32,
+    k: f32,
     flip_normal: bool,
 }
 
 impl RectangleYZ {
     const SURFACE_NORMAL: Vec3 = Vec3::new(1.0, 0.0, 0.0);
-    pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, flip_normal: bool) -> RectangleYZ {
+    pub fn new(y0: f32, y1: f32, z0: f32, z1: f32, k: f32, flip_normal: bool) -> RectangleYZ {
         RectangleYZ {
             y0,
             y1,
@@ -406,7 +406,7 @@ impl Box {
         }
     }
 
-    pub fn from_size(width: f64, height: f64, depth: f64, center: Vec3) -> Box {
+    pub fn from_size(width: f32, height: f32, depth: f32, center: Vec3) -> Box {
         let half_w = width / 2.0;
         let half_h = height / 2.0;
         let half_d = depth / 2.0;
@@ -417,7 +417,7 @@ impl Box {
         )
     }
 
-    pub fn cube(side_length: f64, center: Vec3) -> Box {
+    pub fn cube(side_length: f32, center: Vec3) -> Box {
         Box::from_size(side_length, side_length, side_length, center)
     }
 }

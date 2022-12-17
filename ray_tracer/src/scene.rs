@@ -45,7 +45,7 @@ pub struct ElementId {
 impl ElementId {
     pub fn new() -> ElementId {
         ElementId {
-            id: (random_float() * (u64::MAX - 1) as f64) as u64,
+            id: (random_float() * (u64::MAX - 1) as f32) as u64,
         }
     }
 }

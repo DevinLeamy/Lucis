@@ -20,6 +20,9 @@ rayon = "1.5"
 futures = "0.3.21"
 serde = { version = "1.0", features = ["derive"] }
 
+# Vec3 and other linear algebra constructs
+glam = "0.22.0"
+
 # wasm dependencies
 js-sys = "0.3.59"
 wasm-bindgen = { version = "0.2.82", features = ["serde-serialize"] }
