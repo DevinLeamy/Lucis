@@ -1,7 +1,7 @@
 use ray_tracer::*;
 
 fn main() {
-    let width = 400u32;
+    let width = 800u32;
     let height = width;
 
     let (camera, scene) = Scene::rectangles();

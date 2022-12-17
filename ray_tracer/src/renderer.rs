@@ -1,13 +1,12 @@
 use crate::camera::Camera;
 use crate::collisions::{Collidable, CollisionRecord};
 use crate::image::{Color, ColorU8, Image};
-use crate::material::{Material, MaterialType};
+use crate::material::Material;
 use crate::pool::WorkerPool;
 use crate::ray::Ray;
 use crate::scene::Scene;
-use crate::shape::ShapeType;
 use crate::utils::random_float;
-use crate::{Element, ElementId};
+use crate::Element;
 
 use futures::channel::oneshot;
 use js_sys::Promise;
@@ -20,9 +19,13 @@ pub trait Render {
     fn render_scene(&self, scene: &Scene, camera: Camera, width: u32, height: u32) -> Image;
 }
 
+/// Configuration for the [RayTracer]
 pub struct RayTracerConfig {
+    /// Maximum number of ray bounces
     pub max_bounce_depth: u32,
+    /// Number of samples per pixel
     pub samples: u32,
+    /// Background color (the color of a ray when it "hit" nothing)
     pub background_color: Color,
 }
 

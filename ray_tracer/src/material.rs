@@ -28,7 +28,7 @@ pub enum MaterialType {
 }
 
 impl Material for MaterialType {
-    // This allows use to resolve collision for non-homogenous data
+    // This allows us to resolve collision for non-homogenous data
     // without having to use trait objects
     fn resolve(&self, ray: Ray, collision: CollisionRecord) -> CollisionResult {
         match self {
