@@ -1,6 +1,5 @@
 // Taken from: https://github.com/rustwasm/wasm-bindgen/blob/main/examples/raytrace-parallel/src/pool.rs
 
-
 // Silences warnings from the compiler about Work.func and child_entry_point
 // being unused when the target is not wasm.
 #![cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
@@ -21,12 +20,11 @@ extern "C" {
     fn log(s: &str);
     #[wasm_bindgen(js_namespace = console, js_name = log)]
     fn logv(x: &JsValue);
-} 
+}
 
 macro_rules! console_log {
     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
 }
-
 
 #[wasm_bindgen]
 pub struct WorkerPool {

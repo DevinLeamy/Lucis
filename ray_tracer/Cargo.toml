@@ -6,6 +6,12 @@ edition = "2021"
 [lib]
 name = "ray_tracer"
 path = "src/lib.rs"
+bench = false
+
+[[bin]]
+name = "main"
+path = "src/bin/main.rs"
+bench = false
 
 [dependencies]
 rand = "0.8.5"
@@ -13,6 +19,9 @@ readonly = "0.2.2"
 rayon = "1.5"
 futures = "0.3.21"
 serde = { version = "1.0", features = ["derive"] }
+
+# Vec3 and other linear algebra constructs
+glam = { version = "0.22.0", features = ["serde"] }
 
 # wasm dependencies
 js-sys = "0.3.59"
@@ -30,3 +39,16 @@ features = [
     'MessageEvent',
     'ErrorEvent'
 ]
+
+[dev-dependencies]
+# Benchmarking
+criterion = "0.4.0"
+# Profiling
+
+
+[profile.release]
+debug = true
+
+[[bench]]
+name = "rectangles"
+harness = false

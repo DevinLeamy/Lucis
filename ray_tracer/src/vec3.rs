@@ -1,20 +1,25 @@
-use std::ops;
 use serde::{Deserialize, Serialize};
+use std::ops;
 
-use crate::utils::{random_float};
+use crate::utils::random_float;
+
+// pub use glam::Vec3;
 
 #[derive(Debug, Copy, Clone, PartialEq, Default, Serialize, Deserialize)]
 #[readonly::make]
 pub struct Vec3 {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
 impl Vec3 {
-    pub const fn new(x: f64, y: f64, z: f64) -> Self { Self { x, y, z } }
-    pub fn ones() -> Self { Self { x: 1f64, y: 1f64, z: 1f64, } }
-    pub fn zeros() -> Self { Self { x: 0f64, y: 0f64, z: 0f64, } }
+    pub const ONE: Vec3 = Vec3::new(1.0, 1.0, 1.0);
+    pub const ZERO: Vec3 = Vec3::new(0.0, 0.0, 0.0);
+
+    pub const fn new(x: f32, y: f32, z: f32) -> Self {
+        Self { x, y, z }
+    }
 
     pub fn random() -> Self {
         Self {
@@ -24,15 +29,29 @@ impl Vec3 {
         }
     }
 
-    pub fn normalized(v: Vec3) -> Vec3 { v / v.length() }
-    pub fn normalize(self) -> Vec3 { Vec3::normalized(self) }
-    pub fn length(&self) -> f64 { self.length_squared().sqrt() }
+    pub fn normalized(v: Vec3) -> Vec3 {
+        v / v.length()
+    }
 
-    pub fn length_squared(&self) -> f64 {
+    pub fn normalize_or_zero(self) -> Vec3 {
+        if self.length() == 0.0 {
+            return Vec3::ZERO;
+        }
+
+        self.normalize()
+    }
+    pub fn normalize(self) -> Vec3 {
+        Vec3::normalized(self)
+    }
+    pub fn length(&self) -> f32 {
+        self.length_squared().sqrt()
+    }
+
+    pub fn length_squared(&self) -> f32 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    pub fn dot(lhs: Vec3, rhs: Vec3) -> f64 {
+    pub fn dot(lhs: Vec3, rhs: Vec3) -> f32 {
         lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2]
     }
 
@@ -43,7 +62,6 @@ impl Vec3 {
             lhs[0] * rhs[1] - lhs[1] * rhs[0],
         )
     }
-
 
     pub fn near_zero(&self) -> bool {
         let tolerance = 1e-8;
@@ -61,7 +79,7 @@ impl ops::Neg for Vec3 {
 }
 
 impl ops::Index<usize> for Vec3 {
-    type Output = f64;
+    type Output = f32;
 
     fn index(&self, index: usize) -> &Self::Output {
         match index {
@@ -92,11 +110,11 @@ impl ops::DivAssign for Vec3 {
     }
 }
 
-impl ops::Div<f64> for Vec3 {
+impl ops::Div<f32> for Vec3 {
     type Output = Vec3;
 
-    fn div(self, t: f64) -> Self {
-        if t == 0f64 {
+    fn div(self, t: f32) -> Self {
+        if t == 0f32 {
             panic!("Division by zero");
         } else {
             Vec3::new(self.x / t, self.y / t, self.z / t)
@@ -112,15 +130,15 @@ impl ops::MulAssign for Vec3 {
     }
 }
 
-impl ops::MulAssign<f64> for Vec3 {
-    fn mul_assign(&mut self, rhs: f64) {
+impl ops::MulAssign<f32> for Vec3 {
+    fn mul_assign(&mut self, rhs: f32) {
         self.x *= rhs;
         self.y *= rhs;
         self.z *= rhs;
     }
 }
 
-impl ops::Mul<Vec3> for f64 {
+impl ops::Mul<Vec3> for f32 {
     type Output = Vec3;
 
     fn mul(self, rhs: Vec3) -> Vec3 {
@@ -136,10 +154,10 @@ impl ops::Mul<Vec3> for Vec3 {
     }
 }
 
-impl ops::Mul<f64> for Vec3 {
+impl ops::Mul<f32> for Vec3 {
     type Output = Vec3;
 
-    fn mul(self, t: f64) -> Self {
+    fn mul(self, t: f32) -> Self {
         Vec3::new(self.x * t, self.y * t, self.z * t)
     }
 }

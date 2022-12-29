@@ -1,5 +1,5 @@
-use crate::vec3::Vec3;
 use crate::utils::{reflect, refract};
+use crate::vec3::Vec3;
 
 #[derive(Default, Copy, Clone, PartialEq)]
 #[readonly::make]
@@ -12,10 +12,13 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Vec3, direction: Vec3) -> Self {
-        Ray { origin, direction: direction.normalize() }
+        Ray {
+            origin,
+            direction: direction.normalize(),
+        }
     }
 
-    pub fn position_at(&self, time: f64) -> Vec3 {
+    pub fn position_at(&self, time: f32) -> Vec3 {
         self.origin + self.direction * time
     }
 }
@@ -32,14 +35,14 @@ impl Ray {
         */
         Ray {
             origin: point,
-            direction: reflect(self.direction, normal)
+            direction: reflect(self.direction, normal),
         }
-    } 
+    }
 
-    pub fn refract(&self, normal: Vec3, point: Vec3, ref_ratio: f64) -> Ray {
+    pub fn refract(&self, normal: Vec3, point: Vec3, ref_ratio: f32) -> Ray {
         Ray {
             origin: point,
-            direction: refract(self.direction, normal, ref_ratio)
+            direction: refract(self.direction, normal, ref_ratio),
         }
     }
 }

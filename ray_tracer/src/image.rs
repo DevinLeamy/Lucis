@@ -30,14 +30,18 @@ impl Image {
         self.buffer[row as usize][col as usize]
     }
 
-    pub fn width(&self) -> u32 { self.width }
-    pub fn height(&self) -> u32 { self.height }
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+    pub fn height(&self) -> u32 {
+        self.height
+    }
 
     pub fn clear(&mut self) {
         for color in self.buffer.iter_mut().flatten() {
             *color = ColorU8::black();
         }
-   }
+    }
 }
 
 pub trait WritePPM {
@@ -65,7 +69,13 @@ pub struct ColorU8 {
 }
 
 impl ColorU8 {
-    pub fn black() -> ColorU8 { ColorU8 { red: 0, blue: 0, green: 0 } }
+    pub fn black() -> ColorU8 {
+        ColorU8 {
+            red: 0,
+            blue: 0,
+            green: 0,
+        }
+    }
 }
 
 impl Display for ColorU8 {
@@ -82,23 +92,22 @@ impl From<Color> for ColorU8 {
             blue: Color::to_u8(color.blue),
         }
     }
-} 
+}
 
 #[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct Color {
-    pub red: f64,
-    pub green: f64,
-    pub blue: f64 
+    pub red: f32,
+    pub green: f32,
+    pub blue: f32,
 }
 
-
 impl Color {
-    pub const fn new(red: f64, green: f64, blue: f64) -> Color {
+    pub const fn new(red: f32, green: f32, blue: f32) -> Color {
         Color { red, green, blue }
     }
 
-    pub fn to_u8(channel: f64) -> u8 {
-        u8::min(255, (channel * 255f64) as u8)
+    pub fn to_u8(channel: f32) -> u8 {
+        u8::min(255, (channel * 255f32) as u8)
     }
 
     pub fn gamma_corrected(&self) -> Color {
@@ -106,16 +115,24 @@ impl Color {
             red: self.red.sqrt(),
             blue: self.blue.sqrt(),
             green: self.green.sqrt(),
-        } 
+        }
     }
 
-    pub const fn white() -> Color { Color::new(1.0, 1.0, 1.0) }
-    pub const fn black() -> Color { Color::new(0.0, 0.0, 0.0) }
+    pub const fn white() -> Color {
+        Color::new(1.0, 1.0, 1.0)
+    }
+    pub const fn black() -> Color {
+        Color::new(0.0, 0.0, 0.0)
+    }
 }
 
 impl Default for Color {
-    fn default() -> Color { 
-        Color { red: 0f64, green: 0f64, blue: 0f64 }
+    fn default() -> Color {
+        Color {
+            red: 0f32,
+            green: 0f32,
+            blue: 0f32,
+        }
     }
 }
 
@@ -137,10 +154,10 @@ impl std::ops::Mul<Color> for Color {
     }
 }
 
-impl std::ops::Mul<f64> for Color {
+impl std::ops::Mul<f32> for Color {
     type Output = Color;
 
-    fn mul(self, scale: f64) -> Color {
+    fn mul(self, scale: f32) -> Color {
         Color {
             red: self.red * scale,
             green: self.green * scale,
@@ -161,7 +178,10 @@ impl std::ops::Add for Color {
     type Output = Color;
 
     fn add(self, rhs: Self) -> Self {
-        Color::new(self.red + rhs.red, self.green + rhs.green, self.blue + rhs.blue)
+        Color::new(
+            self.red + rhs.red,
+            self.green + rhs.green,
+            self.blue + rhs.blue,
+        )
     }
 }
-

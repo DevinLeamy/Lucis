@@ -1,9 +1,9 @@
-use crate::vec3::Vec3;
 use crate::ray::Ray;
+use crate::vec3::Vec3;
 
 pub struct CameraConfig {
     /// aspect ratio (horizontal / vertical)
-    pub aspect: f64,
+    pub aspect: f32,
     /// origin in world coordinates
     pub origin: Vec3,
     /// look at vector
@@ -11,9 +11,9 @@ pub struct CameraConfig {
     /// unit vector for world's vertical axis
     pub world_up: Vec3,
     /// distance to "focus"
-    pub focus_dist: f64,
+    pub focus_dist: f32,
     /// vertical field of view in degrees
-    pub vertical_fov_degrees: f64,
+    pub vertical_fov_degrees: f32,
 }
 
 impl Default for CameraConfig {
@@ -32,7 +32,7 @@ impl Default for CameraConfig {
 
 #[derive(Copy, Clone)]
 pub struct Camera {
-    aspect: f64,
+    aspect: f32,
     origin: Vec3,
     horizontal: Vec3,
     vertical: Vec3,
@@ -40,17 +40,17 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(mut cfg: CameraConfig) -> Self {
+    pub fn new(cfg: CameraConfig) -> Self {
         let theta = cfg.vertical_fov_degrees.to_radians();
         let height = (theta / 2.0).tan();
 
         let viewport_height = 2.0 * height;
-        let viewport_width: f64 = viewport_height * cfg.aspect;
+        let viewport_width: f32 = viewport_height * cfg.aspect;
 
         let mut target = cfg.origin - cfg.look_at;
 
-        // avoid division by zero (during normalization)
-        if target.near_zero() {
+        // Don't allow target be a near-zero vector
+        if target.length() < 0.001 {
             target += Vec3::new(0.01, 0.0, 0.0);
         }
 
@@ -58,8 +58,8 @@ impl Camera {
         let u = (Vec3::cross(cfg.world_up, target)).normalize(); // horizontal unit vector
         let v = (Vec3::cross(target, u)).normalize();
 
-        let horizontal = u * (viewport_width as f64) * cfg.focus_dist;
-        let vertical = v * (viewport_height as f64) * cfg.focus_dist;
+        let horizontal = u * (viewport_width as f32) * cfg.focus_dist;
+        let vertical = v * (viewport_height as f32) * cfg.focus_dist;
         let lower_left = cfg.origin - horizontal / 2.0 - vertical / 2.0 - target * cfg.focus_dist;
 
         Self {
@@ -75,16 +75,17 @@ impl Camera {
         self.origin += translation;
     }
 
-    pub fn aspect(&self) -> f64 { self.aspect }
-    pub fn origin(&self) -> Vec3 {self.origin }
+    pub fn aspect(&self) -> f32 {
+        self.aspect
+    }
+    pub fn origin(&self) -> Vec3 {
+        self.origin
+    }
 
-    pub fn create_ray(&self, h_offset: f64, v_offset: f64) -> Ray {
+    pub fn create_ray(&self, h_offset: f32, v_offset: f32) -> Ray {
         Ray::new(
-            self.origin, 
-            self.lower_left
-            + self.horizontal * h_offset
-            + self.vertical * v_offset
-            - self.origin
+            self.origin,
+            self.lower_left + self.horizontal * h_offset + self.vertical * v_offset - self.origin,
         )
     }
 }

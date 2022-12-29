@@ -1,3 +1,3 @@
-fn main() {
+// Consider deleting this
 
-}
+fn main() {}
