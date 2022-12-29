@@ -1,4 +1,4 @@
-use crate::{ray::Ray, shape::UV, vec3::Vec3, ElementId};
+use crate::{ray::Ray, shape::UV, vec3::Vec3};
 
 #[derive(Debug, PartialEq)]
 pub enum Face {

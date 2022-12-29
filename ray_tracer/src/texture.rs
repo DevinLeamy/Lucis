@@ -5,7 +5,7 @@ use crate::perlin::Perlin;
 use crate::shape::UV;
 use crate::vec3::Vec3;
 
-use serde::{ser::SerializeStruct, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 pub trait Texture {
     fn value(&self, uv: UV, point: Vec3) -> Color;

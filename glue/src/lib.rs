@@ -8,9 +8,9 @@ use web_sys::console::log_1;
 
 use serde::{Deserialize, Serialize};
 
-// const ASPECT: f64 = 1.0;
+// const ASPECT: f32 = 1.0;
 const CANVAS_WIDTH: u32 = 750; // 600;
-const CANVAS_HEIGHT: u32 = 750; // (CANVAS_WIDTH as f64 / ASPECT) as u32;
+const CANVAS_HEIGHT: u32 = 750; // (CANVAS_WIDTH as f32 / ASPECT) as u32;
 
 pub fn log(s: String) {
     log_1(&JsValue::from(s));
@@ -77,7 +77,7 @@ impl RequestEmitter {
         let camera = Camera::new(CameraConfig {
             origin: config.origin,
             look_at: config.look_at,
-            aspect: CANVAS_WIDTH as f64 / CANVAS_HEIGHT as f64,
+            aspect: CANVAS_WIDTH as f32 / CANVAS_HEIGHT as f32,
             ..CameraConfig::default()
         });
 

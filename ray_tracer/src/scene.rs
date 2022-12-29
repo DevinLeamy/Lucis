@@ -1,12 +1,12 @@
 use crate::collisions::{Collidable, CollisionRecord};
 use crate::image::Color;
-use crate::material::{Dielectric, Lambertian, Material, MaterialType, Metal};
+use crate::material::{Dielectric, Lambertian, MaterialType, Metal};
 use crate::ray::Ray;
 use crate::shape::{Box, RectangleXY, RectangleXZ, RectangleYZ, ShapeType, Sphere};
 use crate::texture::{CheckeredTexture, TextureType};
 use crate::utils::random_float;
 use crate::vec3::Vec3;
-use crate::{Camera, CameraConfig, DiffuseLight, PerlinTexture};
+use crate::{Camera, CameraConfig, DiffuseLight, SolidTexture};
 use serde::{Deserialize, Serialize};
 
 #[readonly::make]
@@ -264,7 +264,7 @@ impl Scene {
                 Element {
                     id: ElementId::new(),
                     material: MaterialType::Metal(Metal::new(
-                        Color::new(8.0, 1.0, 8.0).into(),
+                        Color::new(0.0, 1.0, 0.0).into(),
                         0.0,
                     )),
                     // material: MaterialType::Lambertian(Lambertian::new(PerlinTexture::new().into())),
@@ -283,12 +283,9 @@ impl Scene {
                     id: ElementId::new(),
                     // material: MaterialType::Lambertian(Lambertian::new(Color::new(0.1, 0.1, 0.1).into())),
                     // material: MaterialType::DiffuseLight(DiffuseLight::new(Color::white(), 15.0)),
-                    material: MaterialType::Lambertian(Lambertian::new(
-                        TextureType::CheckeredTexture(CheckeredTexture::new(
-                            Color::white(),
-                            Color::new(0.1, 0.1, 0.1),
-                        )),
-                    )),
+                    material: MaterialType::Lambertian(Lambertian::new(TextureType::SolidTexture(
+                        SolidTexture::new(Color::new(0.1, 0.1, 0.1)),
+                    ))),
                     shape: ShapeType::Sphere(Sphere::new(Vec3::new(0.0, -1000.5, 0.0), 1000.0)),
                 },
             ],

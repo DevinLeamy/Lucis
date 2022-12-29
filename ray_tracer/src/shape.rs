@@ -191,7 +191,7 @@ impl Boundable for RectangleXY {
 }
 
 impl SurfaceNormal for RectangleXY {
-    fn surface_normal(&self, point: Vec3) -> Vec3 {
+    fn surface_normal(&self, _point: Vec3) -> Vec3 {
         RectangleXY::SURFACE_NORMAL * (if self.flip_normal { -1.0 } else { 1.0 })
     }
 }
@@ -264,7 +264,7 @@ impl Boundable for RectangleXZ {
 }
 
 impl SurfaceNormal for RectangleXZ {
-    fn surface_normal(&self, point: Vec3) -> Vec3 {
+    fn surface_normal(&self, _point: Vec3) -> Vec3 {
         RectangleXZ::SURFACE_NORMAL * (if self.flip_normal { -1.0 } else { 1.0 })
     }
 }
@@ -337,7 +337,7 @@ impl Boundable for RectangleYZ {
 }
 
 impl SurfaceNormal for RectangleYZ {
-    fn surface_normal(&self, point: Vec3) -> Vec3 {
+    fn surface_normal(&self, _point: Vec3) -> Vec3 {
         RectangleYZ::SURFACE_NORMAL * (if self.flip_normal { -1.0 } else { 1.0 })
     }
 }

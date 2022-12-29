@@ -40,7 +40,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(mut cfg: CameraConfig) -> Self {
+    pub fn new(cfg: CameraConfig) -> Self {
         let theta = cfg.vertical_fov_degrees.to_radians();
         let height = (theta / 2.0).tan();
 

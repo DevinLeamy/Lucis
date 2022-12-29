@@ -173,7 +173,7 @@ impl DiffuseLight {
 }
 
 impl Material for DiffuseLight {
-    fn resolve(&self, ray: Ray, collision: CollisionRecord) -> CollisionResult {
+    fn resolve(&self, ray: Ray, _collision: CollisionRecord) -> CollisionResult {
         /*
         This is a temporary hack. Basically, currently we have "color" determined
         seperately from "emitted_light". Eventually these two things will

@@ -1,4 +1,4 @@
-use crate::utils::{perlin_t_lerp, random_float, random_range, t_lerp, u32_random_range};
+use crate::utils::{perlin_t_lerp, random_range, u32_random_range};
 use crate::vec3::Vec3;
 
 pub struct Perlin {
